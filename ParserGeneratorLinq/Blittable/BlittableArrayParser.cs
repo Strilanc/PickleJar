@@ -4,10 +4,16 @@ namespace ParserGenerator.Blittable {
     public sealed class BlittableArrayParser<T> : IArrayParser<T> {
         private readonly UnsafeBlitUtil.UnsafeArrayBlitParser<T> _parser;
         private readonly int _itemLength; 
-        public BlittableArrayParser(IParser<T> subParser) {
-            if (!subParser.IsBlittable) throw new ArgumentException("!subParser.IsBlittable", "subParser");
-            _itemLength = subParser.OptionalConstantSerializedLength.Value;
+        private BlittableArrayParser(IParser<T> itemParser) {
+            _itemLength = itemParser.OptionalConstantSerializedLength.Value;
             _parser = UnsafeBlitUtil.MakeUnsafeArrayBlitParser<T>();
+        }
+
+        public static BlittableArrayParser<T> TryMake(IParser<T> itemParser) {
+            if (itemParser == null) throw new ArgumentNullException("itemParser");
+            if (!itemParser.IsBlittable) return null;
+            if (!itemParser.OptionalConstantSerializedLength.HasValue) return null;
+            return new BlittableArrayParser<T>(itemParser);
         }
 
         public ParsedValue<T[]> Parse(ArraySegment<byte> data, int count) {

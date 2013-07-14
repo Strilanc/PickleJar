@@ -4,10 +4,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using ParserGenerator;
-using ParserGenerator.Blittable;
 
 public class Program {
     public struct Pointy2 {
@@ -19,39 +16,53 @@ public class Program {
     public struct Pointy {
         public readonly int X;
         public readonly int Y;
-        public readonly int M;
-        public Pointy(int x, int y, int m) {
+        public readonly Int16 M;
+        public readonly Int16 N;
+        public Pointy(int x, int y, Int16 m, Int16 n) {
             X = x;
             Y = y;
             M = m;
+            N = n;
         }
-        public Pointy(byte[] data) {
-            unsafe {
-                fixed (byte* x = data) {
-                    var y = (Int32*)x;
-                    X = y[0];
-                    Y = y[1];
-                    M = y[2];
-                }
-            }
-        }
+
     }
     private static Pointy[] ParseFrom(ArraySegment<byte> data) {
         var r = new Pointy[5000];
         var j = data.Offset;
-        for (var i = 0; i < 5000; i++) {
-            r[i] = new Pointy(BitConverter.ToInt32(data.Array, j), BitConverter.ToInt32(data.Array, j + 4), BitConverter.ToInt32(data.Array, j+8));
-            j += 12;
+        for (var i = 0; i < 5000; i += 4) {
+            r[i] = new Pointy(
+                BitConverter.ToInt32(data.Array, j+0),
+                BitConverter.ToInt32(data.Array, j + 4),
+                BitConverter.ToInt16(data.Array, j + 8),
+                BitConverter.ToInt16(data.Array, j + 10));
+            r[i+1] = new Pointy(
+                BitConverter.ToInt32(data.Array, j+12),
+                BitConverter.ToInt32(data.Array, j + 16),
+                BitConverter.ToInt16(data.Array, j + 20),
+                BitConverter.ToInt16(data.Array, j + 22));
+            r[i + 2] = new Pointy(
+                BitConverter.ToInt32(data.Array, j+24),
+                BitConverter.ToInt32(data.Array, j + 28),
+                BitConverter.ToInt16(data.Array, j + 32),
+                BitConverter.ToInt16(data.Array, j + 34));
+            r[i + 3] = new Pointy(
+                BitConverter.ToInt32(data.Array, j+36),
+                BitConverter.ToInt32(data.Array, j + 40),
+                BitConverter.ToInt16(data.Array, j + 44),
+                BitConverter.ToInt16(data.Array, j + 46));
+            j += 48;
         }
         return r;
     }
     static void Main() {
-        var blitParser = new ParseBuilder {
-            {"x", Parse.Int32LittleEndian},
-            {"y", Parse.Int32LittleEndian},
-            {"m", Parse.Int32LittleEndian}
-        }.BuildAsParserForType<Pointy>();
-        var repeatBlitParser = new BlittableArrayParser<Pointy>(blitParser);
+        var repeatBlitParser = 
+            new ParseBuilder {
+                {"y", Parse.Int32LittleEndian},
+                {"x", Parse.Int32LittleEndian},
+                {"m", Parse.Int16LittleEndian},
+                {"n", Parse.Int16LittleEndian},
+            }.BuildAsParserForType<Pointy>()
+            .GreedyRepeat();
 
         var m = Enumerable.Repeat(new byte[] { 1, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 }, 5000).SelectMany(e => e).ToArray();
         var m2 = new ArraySegment<byte>(m, 0, m.Length);
@@ -67,11 +78,11 @@ public class Program {
             s.Reset();
             s.Start();
             for (var i = 0; i < 20000; i++) {
-                var z = repeatBlitParser.Parse(m2, 5000);
+                var z = repeatBlitParser.Parse(m2);
             }
             s.Stop();
             var t2 = s.Elapsed;
-            var b = ParseFrom(m2).SequenceEqual(repeatBlitParser.Parse(m2, 5000).Value);
+            var b = ParseFrom(m2).SequenceEqual(repeatBlitParser.Parse(m2).Value);
             Console.WriteLine(t.TotalSeconds);
             Console.WriteLine(t2.TotalSeconds);
             Console.WriteLine(b);

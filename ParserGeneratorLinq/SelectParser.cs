@@ -6,6 +6,9 @@ public sealed class SelectParser<T, R> : IParser<R> {
     public readonly Expression<Func<T, R>> Proj;
     public bool IsBlittable { get { return false; } }
     public int? OptionalConstantSerializedLength { get { return null; } }
+    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+        return null;
+    }
 
     public SelectParser(IParser<T> subParser, Expression<Func<T, R>> proj) {
         this.SubParser = subParser;

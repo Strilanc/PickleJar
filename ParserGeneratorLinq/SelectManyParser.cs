@@ -7,6 +7,9 @@ public sealed class SelectManyParser<T, M, R> : IParser<R> {
     public readonly Expression<Func<T, M, R>> Proj2;
     public bool IsBlittable { get { return false; } }
     public int? OptionalConstantSerializedLength { get { return null; } }
+    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+        return null;
+    }
 
     public SelectManyParser(IParser<T> subParser, Expression<Func<T, IParser<M>>> proj1, Expression<Func<T, M, R>> proj2) {
         this.SubParser = subParser;

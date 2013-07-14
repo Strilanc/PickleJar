@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 sealed class SequencedParser<T1, T2> : IParser<Tuple<T1, T2>> {
     public readonly IParser<T1> SubParser1;
@@ -16,6 +17,9 @@ sealed class SequencedParser<T1, T2> : IParser<Tuple<T1, T2>> {
     }
     public bool IsBlittable { get { return false; } }
     public int? OptionalConstantSerializedLength { get { return SubParser1.OptionalConstantSerializedLength + SubParser2.OptionalConstantSerializedLength; } }
+    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+        return null;
+    }
 }
 sealed class SequencedParser<T> : IParser<IReadOnlyList<T>> {
     public readonly IReadOnlyList<IParser<T>> SubParsers;
@@ -34,4 +38,7 @@ sealed class SequencedParser<T> : IParser<IReadOnlyList<T>> {
     }
     public bool IsBlittable { get { return false; } }
     public int? OptionalConstantSerializedLength { get { return SubParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength); } }
+    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+        return null;
+    }
 }

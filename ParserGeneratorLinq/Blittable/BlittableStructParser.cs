@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
 namespace ParserGenerator.Blittable {
     public sealed class BlittableStructParser<T> : IParser<T> {
         private readonly int _length;
         private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
-        public BlittableStructParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
-            if (!IsBlitParsableBy(fieldParsers)) throw new ArgumentException("!IsBlitParsableBy(fieldParsers)", "fieldParsers");
+        private BlittableStructParser(IEnumerable<IFieldParserOfUnknownType> fieldParsers) {
             _parser = UnsafeBlitUtil.MakeUnsafeValueBlitParser<T>();
             _length = fieldParsers.Aggregate(0, (a, e) => a + e.OptionalConstantSerializedLength.Value);
         }
@@ -21,7 +21,12 @@ namespace ParserGenerator.Blittable {
         public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
-        public static bool IsBlitParsableBy(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+        public static BlittableStructParser<T> TryMake(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+            if (!CanBlitParseWith(fieldParsers)) return null;
+            return new BlittableStructParser<T>(fieldParsers);
+        }
+
+        private static bool CanBlitParseWith(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
             if (fieldParsers == null) throw new ArgumentNullException("fieldParsers");
 
             // type has blittable representation?
@@ -54,6 +59,9 @@ namespace ParserGenerator.Blittable {
             if (!serialOffsets.HasSameKeyValuesAs(memoryOffsets)) return false;
 
             return true;
+        }
+        public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+            return null;
         }
     }
 }

@@ -1,17 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using ParserGenerator.Blittable;
 
 public sealed class ParseBuilder : ICollection<IFieldParserOfUnknownType> {
     private readonly List<IFieldParserOfUnknownType> _list = new List<IFieldParserOfUnknownType>();
 
     public IParser<T> BuildAsParserForType<T>() {
-        if (BlittableStructParser<T>.IsBlitParsableBy(_list)) {
-            return new BlittableStructParser<T>(_list);
-        }
-
-        return new ExpressionTreeParser<T>(_list);
+        return (IParser<T>)BlittableStructParser<T>.TryMake(_list) 
+            ?? new ExpressionTreeParser<T>(_list);
     }
 
     public void Add<T>(CanonicalizingMemberName name, IParser<T> parser) {

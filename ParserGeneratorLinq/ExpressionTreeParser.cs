@@ -5,17 +5,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using MoreLinq;
-using ParserGenerator.Blittable;
 
 public sealed class ExpressionTreeParser<T> : IParser<T> {
     private readonly IReadOnlyList<IFieldParserOfUnknownType> _fieldParsers;
     private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
-    private readonly Lazy<bool> _isBlittable;
 
     public ExpressionTreeParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
         _fieldParsers = fieldParsers;
         _parser = MakeParser(fieldParsers);
-        _isBlittable = new Lazy<bool>(() => BlittableStructParser<T>.IsBlitParsableBy(fieldParsers));
     }
 
     private static Dictionary<CanonicalizingMemberName, MemberInfo> GetMutableMemberMap() {
@@ -58,6 +55,9 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
             .KeyedBy(e => e.CanonicalName());
 
         var dataArg = Expression.Parameter(typeof (ArraySegment<byte>), "data");
+        var dataArgOffset = Expression.MakeMemberAccess(dataArg, typeof (ArraySegment<byte>).GetProperty("Offset"));
+        var dataArgCount = Expression.MakeMemberAccess(dataArg, typeof (ArraySegment<byte>).GetProperty("Count"));
+        var dataArgArray = Expression.MakeMemberAccess(dataArg, typeof (ArraySegment<byte>).GetProperty("Array"));
         var variableForResultValue = Expression.Variable(typeof(T), "result");
 
         var fieldParsings = (from fieldParser in fieldParsers
@@ -69,20 +69,21 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
                              ).ToArray();
 
         var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => {
-            var invokeParse = Expression.Call(
-                Expression.Constant(e.fieldParser.Parser),
-                typeof(IParser<>).MakeGenericType(e.fieldParser.ParserValueType).GetMethod("Parse"),
-                new Expression[] { dataArg });
+            var invokeParse = e.fieldParser.TryParseInline(dataArgArray, dataArgOffset, dataArgCount) 
+                ?? Expression.Call(
+                    Expression.Constant(e.fieldParser.Parser),
+                    typeof(IParser<>).MakeGenericType(e.fieldParser.ParserValueType).GetMethod("Parse"),
+                    new Expression[] { dataArg });
 
             var nextDataOffset = Expression.Add(
-                Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Offset")),
+                dataArgOffset,
                 e.parsingConsumed);
             var remainingDataCount = Expression.Subtract(
-                Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Count")),
+                dataArgCount,
                 e.parsingConsumed);
             var nextData = Expression.New(
                 typeof(ArraySegment<byte>).GetConstructor(new[] { typeof(byte[]), typeof(int), typeof(int) }),
-                Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Array")),
+                dataArgArray,
                 nextDataOffset,
                 remainingDataCount);
 
@@ -131,13 +132,10 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
     public ParsedValue<T> Parse(ArraySegment<byte> data) {
         return _parser(data);
     }
-
-    public bool IsBlittable { get { return _isBlittable.Value; } }
-    public int? OptionalConstantSerializedLength {
-        get {
-            return _isBlittable.Value
-                       ? (int?)Marshal.SizeOf(typeof (T))
-                       : null;
-        }
+    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+        return null;
     }
+
+    public bool IsBlittable { get { return false; } }
+    public int? OptionalConstantSerializedLength { get { return _fieldParsers.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength); } }
 }

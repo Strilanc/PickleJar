@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace ParserGenerator {
     public sealed class Int64Parser : IParser<Int64> {
@@ -7,6 +9,12 @@ namespace ParserGenerator {
         private readonly bool _needToReverseBytes;
         public bool IsBlittable { get { return !_needToReverseBytes; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
+        public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+            if (_needToReverseBytes) return null;
+            return Expression.New(typeof(ParsedValue<Int64>).GetConstructors().Single(),
+                Expression.Call(typeof(BitConverter).GetMethod("ToInt64"), array, offset),
+                Expression.Constant(SerializedLength));
+        }
 
         public Int64Parser(Endianess endianess) {
             if (endianess != Endianess.BigEndian && endianess != Endianess.LittleEndian)
