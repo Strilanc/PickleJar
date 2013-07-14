@@ -7,8 +7,8 @@ public sealed class ParseBuilder : ICollection<IFieldParserOfUnknownType> {
     private readonly List<IFieldParserOfUnknownType> _list = new List<IFieldParserOfUnknownType>();
 
     public IParser<T> BuildAsParserForType<T>() {
-        if (UnsafeBlittableStructParser<T>.IsBlitParsableBy(_list)) {
-            return new UnsafeBlittableStructParser<T>(_list);
+        if (BlittableStructParser<T>.IsBlitParsableBy(_list)) {
+            return new BlittableStructParser<T>(_list);
         }
 
         return new ExpressionTreeParser<T>(_list);

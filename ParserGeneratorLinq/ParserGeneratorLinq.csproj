@@ -49,9 +49,9 @@
     <Compile Include="API\Parse.cs" />
     <Compile Include="Blittable\ValueArrayParser.cs" />
     <Compile Include="Blittable\CountPrefixedRepeatParser.cs" />
-    <Compile Include="Blittable\UnsafeBlittableRepeatParser.cs" />
+    <Compile Include="Blittable\BlittableArrayParser.cs" />
     <Compile Include="Blittable\FixedRepeatParser.cs" />
-    <Compile Include="Blittable\UnsafeBlittableStructParser.cs" />
+    <Compile Include="Blittable\BlittableStructParser.cs" />
     <Compile Include="Blittable\UnsafeBlitUtil.cs" />
     <Compile Include="Blittable\UInt16Parser.cs" />
     <Compile Include="Blittable\UInt32Parser.cs" />

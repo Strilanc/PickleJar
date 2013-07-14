@@ -1,19 +1,21 @@
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 namespace ParserGenerator.Blittable {
     public static class UnsafeBlitUtil {
-        public delegate T UnsafeValueBlitParser<out T>(ArraySegment<byte> data);
-        public delegate T[] UnsafeArrayBlitParser<out T>(ArraySegment<byte> data, int count);
+        public delegate T UnsafeValueBlitParser<out T>(byte[] data, int offset, int length);
+        public delegate T[] UnsafeArrayBlitParser<out T>(byte[] data, int itemCount, int offset, int length);
 
         public static UnsafeValueBlitParser<T> MakeUnsafeValueBlitParser<T>() {
             var d = new DynamicMethod(
                 name: "BlitParseValue" + typeof(T),
                 returnType: typeof(T),
-                parameterTypes: new[] { typeof(ArraySegment<byte>) },
+                parameterTypes: new[] { typeof(byte[]), typeof(int), typeof(int) },
                 m: Assembly.GetExecutingAssembly().ManifestModule);
 
+            // ____(byte[] array, int offset, int length)
             var g = d.GetILGenerator();
 
             // T result = default(T);
@@ -21,12 +23,14 @@ namespace ParserGenerator.Blittable {
             g.Emit(OpCodes.Ldloca_S, (byte)0);
             g.Emit(OpCodes.Initobj, typeof(T));
 
-            // UnsafeCopyOver(data, (IntPtr)&result);
+            // Marshal.Copy(array, offset, (IntPtr)resultPtr, length);
             g.Emit(OpCodes.Ldarg_0);
+            g.Emit(OpCodes.Ldarg_1);
             g.Emit(OpCodes.Ldloca_S, (byte)0);
             g.Emit(OpCodes.Conv_U);
             g.EmitCall(OpCodes.Call, typeof(IntPtr).GetMethod("op_Explicit", new[] { typeof(void*) }), null);
-            g.EmitCall(OpCodes.Call, typeof(UnsafeBlitUtil).GetMethod("UnsafeCopyOver"), null);
+            g.Emit(OpCodes.Ldarg_2);
+            g.EmitCall(OpCodes.Call, typeof(Marshal).GetMethod("Copy", new[] { typeof(byte[]), typeof(int), typeof(IntPtr), typeof(int) }), null);
 
             // return result
             g.Emit(OpCodes.Ldloc_0);
@@ -39,9 +43,10 @@ namespace ParserGenerator.Blittable {
             var d = new DynamicMethod(
                 name: "BlitParseArray" + typeof(T),
                 returnType: typeof(T[]),
-                parameterTypes: new[] { typeof(ArraySegment<byte>), typeof(int) },
+                parameterTypes: new[] { typeof(byte[]), typeof(int), typeof(int), typeof(int) },
                 m: Assembly.GetExecutingAssembly().ManifestModule);
 
+            // ____(byte[] array, int count, int offset, int length)
             var g = d.GetILGenerator();
 
             // T[] result;
@@ -61,44 +66,20 @@ namespace ParserGenerator.Blittable {
             g.Emit(OpCodes.Ldelema, typeof(T));
             g.Emit(OpCodes.Stloc_1);
 
-            // UnsafeCopyOver((IntPtr)resultPtr);
+            // Marshal.Copy(array, offset, (IntPtr)resultPtr, length);
             g.Emit(OpCodes.Ldarg_0);
+            g.Emit(OpCodes.Ldarg_2);
             g.Emit(OpCodes.Ldloc_1);
             g.Emit(OpCodes.Conv_I);
             g.EmitCall(OpCodes.Call, typeof(IntPtr).GetMethod("op_Explicit", new[] { typeof(void*) }), null);
-            g.EmitCall(OpCodes.Call, typeof(UnsafeBlitUtil).GetMethod("UnsafeCopyOver"), null);
+            g.Emit(OpCodes.Ldarg_3);
+            g.EmitCall(OpCodes.Call, typeof(Marshal).GetMethod("Copy", new[] { typeof(byte[]), typeof(int), typeof(IntPtr), typeof(int) }), null);
 
             // return result
             g.Emit(OpCodes.Ldloc_0);
             g.Emit(OpCodes.Ret);
 
             return (UnsafeArrayBlitParser<T>)d.CreateDelegate(typeof(UnsafeArrayBlitParser<T>));
-        }
-
-        public static void UnsafeCopyOver(ArraySegment<byte> src, IntPtr dest) {
-            unsafe {
-                fixed (byte* dataArrayPtr = src.Array) {
-                    var resultPtr8 = (ulong*)dest;
-                    var dataPtr8 = (ulong*)(dataArrayPtr + src.Offset);
-
-                    var i = 0;
-                    while (i + 7 < src.Count) {
-                        *resultPtr8 = *dataPtr8;
-                        resultPtr8 += 1;
-                        dataPtr8 += 1;
-                        i += 8;
-                    }
-
-                    var dataPtr1 = (byte*)dataPtr8;
-                    var resultPtr1 = (byte*)resultPtr8;
-                    while (i < src.Count) {
-                        *resultPtr1 = *dataPtr1;
-                        resultPtr1 += 1;
-                        dataPtr1 += 1;
-                        i += 1;
-                    }
-                }
-            }
         }
     }
 }

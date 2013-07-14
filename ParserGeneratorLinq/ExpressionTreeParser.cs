@@ -15,7 +15,7 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
     public ExpressionTreeParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
         _fieldParsers = fieldParsers;
         _parser = MakeParser(fieldParsers);
-        _isBlittable = new Lazy<bool>(() => UnsafeBlittableStructParser<T>.IsBlitParsableBy(fieldParsers));
+        _isBlittable = new Lazy<bool>(() => BlittableStructParser<T>.IsBlitParsableBy(fieldParsers));
     }
 
     private static Dictionary<CanonicalizingMemberName, MemberInfo> GetMutableMemberMap() {

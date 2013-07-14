@@ -51,7 +51,7 @@ public class Program {
             {"y", Parse.Int32LittleEndian},
             {"m", Parse.Int32LittleEndian}
         }.BuildAsParserForType<Pointy>();
-        var repeatBlitParser = new UnsafeBlittableRepeatParser<Pointy>(blitParser);
+        var repeatBlitParser = new BlittableArrayParser<Pointy>(blitParser);
 
         var m = Enumerable.Repeat(new byte[] { 1, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 }, 5000).SelectMany(e => e).ToArray();
         var m2 = new ArraySegment<byte>(m, 0, m.Length);

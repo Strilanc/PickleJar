@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Reflection;
 
 namespace ParserGenerator.Blittable {
-    public sealed class UnsafeBlittableStructParser<T> : IParser<T> {
+    public sealed class BlittableStructParser<T> : IParser<T> {
         private readonly int _length;
         private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
-        public UnsafeBlittableStructParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+        public BlittableStructParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
             if (!IsBlitParsableBy(fieldParsers)) throw new ArgumentException("!IsBlitParsableBy(fieldParsers)", "fieldParsers");
             _parser = UnsafeBlitUtil.MakeUnsafeValueBlitParser<T>();
             _length = fieldParsers.Aggregate(0, (a, e) => a + e.OptionalConstantSerializedLength.Value);
@@ -16,8 +15,7 @@ namespace ParserGenerator.Blittable {
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
             if (data.Count < _length) throw new InvalidOperationException("Fragment");
-            var relevantData = new ArraySegment<byte>(data.Array, data.Offset, _length);
-            var value = _parser(relevantData);
+            var value = _parser(data.Array, data.Offset, _length);
             return new ParsedValue<T>(value, _length);
         }
         public bool IsBlittable { get { return true; } }
