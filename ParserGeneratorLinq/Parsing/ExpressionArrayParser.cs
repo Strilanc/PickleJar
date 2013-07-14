@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace ParserGenerator {
-    public sealed class ExpressionArrayParser<T> : IArrayParser<T> {
+    internal sealed class ExpressionArrayParser<T> : IArrayParser<T> {
         private readonly IParser<T> _itemParser;
         private readonly Func<byte[], int, int, int, ParsedValue<T[]>> _parser;
         public ExpressionArrayParser(IParser<T> itemParser) {

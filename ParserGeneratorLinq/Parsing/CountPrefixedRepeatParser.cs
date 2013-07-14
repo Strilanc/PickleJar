@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace ParserGenerator {
-    public struct CountPrefixedRepeatParser<T> : IParser<T[]> {
+    internal struct CountPrefixedRepeatParser<T> : IParser<T[]> {
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return null; } }
 

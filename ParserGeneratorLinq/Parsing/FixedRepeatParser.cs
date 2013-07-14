@@ -2,17 +2,20 @@
 using System.Linq.Expressions;
 
 namespace ParserGenerator {
-    public sealed class AnonymousParser<T> : IParser<T> {
-        private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parse;
+    internal sealed class FixedRepeatParser<T> : IParser<T[]> {
         public bool IsBlittable { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return null; } }
+        public int? OptionalConstantSerializedLength { get { return _subParser.OptionalConstantSerializedValueLength * _count; } }
 
-        public AnonymousParser(Func<ArraySegment<byte>, ParsedValue<T>> parse) {
-            _parse = parse;
+        private readonly int _count;
+        private readonly IArrayParser<T> _subParser;
+
+        public FixedRepeatParser(IArrayParser<T> arrayParser, int count) {
+            this._count = count;
+            _subParser = arrayParser;
         }
 
-        public ParsedValue<T> Parse(ArraySegment<byte> data) {
-            return _parse(data);
+        public ParsedValue<T[]> Parse(ArraySegment<byte> data) {
+            return _subParser.Parse(data, _count);
         }
         public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
             return null;

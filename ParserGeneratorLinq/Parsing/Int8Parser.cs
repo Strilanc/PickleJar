@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace ParserGenerator {
-    public struct Int8Parser : IParser<sbyte> {
+    internal struct Int8Parser : IParser<sbyte> {
         public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return 1; } }
 

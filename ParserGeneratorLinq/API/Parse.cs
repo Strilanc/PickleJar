@@ -3,29 +3,29 @@ using ParserGenerator;
 using ParserGenerator.Blittable;
 
 public static class Parse {
-    public static readonly Int8Parser Int8 = new Int8Parser();
+    public static readonly IParser<sbyte> Int8 = new Int8Parser();
 
-    public static readonly Int16Parser Int16LittleEndian = new Int16Parser(Endianess.LittleEndian);
-    public static readonly Int16Parser Int16BigEndian = new Int16Parser(Endianess.BigEndian);
+    public static readonly IParser<Int16> Int16LittleEndian = new Int16Parser(Endianess.LittleEndian);
+    public static readonly IParser<Int16> Int16BigEndian = new Int16Parser(Endianess.BigEndian);
 
-    public static readonly Int32Parser Int32LittleEndian = new Int32Parser(Endianess.LittleEndian);
-    public static readonly Int32Parser Int32BigEndian = new Int32Parser(Endianess.BigEndian);
+    public static readonly IParser<Int32> Int32LittleEndian = new Int32Parser(Endianess.LittleEndian);
+    public static readonly IParser<Int32> Int32BigEndian = new Int32Parser(Endianess.BigEndian);
 
-    public static readonly Int64Parser Int64LittleEndian = new Int64Parser(Endianess.LittleEndian);
-    public static readonly Int64Parser Int64BigEndian = new Int64Parser(Endianess.BigEndian);
+    public static readonly IParser<Int64> Int64LittleEndian = new Int64Parser(Endianess.LittleEndian);
+    public static readonly IParser<Int64> Int64BigEndian = new Int64Parser(Endianess.BigEndian);
 
-    public static readonly UInt8Parser UInt8 = new UInt8Parser();
+    public static readonly IParser<byte> UInt8 = new UInt8Parser();
 
-    public static readonly UInt16Parser UInt16LittleEndian = new UInt16Parser(Endianess.LittleEndian);
-    public static readonly UInt16Parser UInt16BigEndian = new UInt16Parser(Endianess.BigEndian);
+    public static readonly IParser<UInt16> UInt16LittleEndian = new UInt16Parser(Endianess.LittleEndian);
+    public static readonly IParser<UInt16> UInt16BigEndian = new UInt16Parser(Endianess.BigEndian);
 
-    public static readonly UInt32Parser UInt32LittleEndian = new UInt32Parser(Endianess.LittleEndian);
-    public static readonly UInt32Parser UInt32BigEndian = new UInt32Parser(Endianess.BigEndian);
+    public static readonly IParser<UInt32> UInt32LittleEndian = new UInt32Parser(Endianess.LittleEndian);
+    public static readonly IParser<UInt32> UInt32BigEndian = new UInt32Parser(Endianess.BigEndian);
 
-    public static readonly UInt64Parser UInt64LittleEndian = new UInt64Parser(Endianess.LittleEndian);
-    public static readonly UInt64Parser UInt64BigEndian = new UInt64Parser(Endianess.BigEndian);
+    public static readonly IParser<UInt64> UInt64LittleEndian = new UInt64Parser(Endianess.LittleEndian);
+    public static readonly IParser<UInt64> UInt64BigEndian = new UInt64Parser(Endianess.BigEndian);
 
-    public static IArrayParser<T> Array<T>(this IParser<T> itemParser) {
+    private static IArrayParser<T> Array<T>(this IParser<T> itemParser) {
         if (itemParser == null) throw new ArgumentNullException("itemParser");
 
         return (IArrayParser<T>)BlittableArrayParser<T>.TryMake(itemParser)

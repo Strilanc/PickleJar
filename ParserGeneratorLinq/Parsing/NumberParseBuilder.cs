@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
 namespace ParserGenerator {
-    public static class NumberParseBuilderUtil {
+    internal static class NumberParseBuilderUtil {
         public static Expression MakeParseFromDataExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var numberTypes = new[] {
                 typeof (byte), typeof (short), typeof (int), typeof (long),

@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
 namespace ParserGenerator.Blittable {
-    public sealed class BlittableStructParser<T> : IParser<T> {
+    internal sealed class BlittableStructParser<T> : IParser<T> {
         private readonly int _length;
         private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
         private BlittableStructParser(IEnumerable<IFieldParserOfUnknownType> fieldParsers) {

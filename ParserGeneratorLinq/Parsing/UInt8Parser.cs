@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 
 namespace ParserGenerator {
-    public struct UInt8Parser : IParser<byte> {
+    internal struct UInt8Parser : IParser<byte> {
         public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return 1; } }
         public ParsedValue<byte> Parse(ArraySegment<byte> data) {

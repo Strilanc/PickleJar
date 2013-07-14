@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 namespace ParserGenerator.Blittable {
-    public static class UnsafeBlitUtil {
+    internal static class UnsafeBlitUtil {
         public delegate T UnsafeValueBlitParser<out T>(byte[] data, int offset, int length);
         public delegate T[] UnsafeArrayBlitParser<out T>(byte[] data, int itemCount, int offset, int length);
 

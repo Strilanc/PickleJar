@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace ParserGenerator.Blittable {
-    public sealed class BlittableArrayParser<T> : IArrayParser<T> {
+    internal sealed class BlittableArrayParser<T> : IArrayParser<T> {
         private readonly UnsafeBlitUtil.UnsafeArrayBlitParser<T> _parser;
         private readonly int _itemLength; 
         private BlittableArrayParser(IParser<T> itemParser) {

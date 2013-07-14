@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace ParserGenerator {
-    public sealed class ValueArrayParser<T> : IArrayParser<T> {
+    internal sealed class ValueArrayParser<T> : IArrayParser<T> {
         private readonly IParser<T> _itemParser;
         public ValueArrayParser(IParser<T> itemParser)  {
             _itemParser = itemParser;

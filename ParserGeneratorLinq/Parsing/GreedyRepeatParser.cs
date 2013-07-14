@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ParserGenerator {
-    public sealed class GreedyRepeatParser<T> : IParser<T[]> {
+    internal sealed class GreedyRepeatParser<T> : IParser<T[]> {
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return null; } }
 

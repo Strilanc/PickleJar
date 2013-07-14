@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using MoreLinq;
 
-public sealed class ExpressionTreeParser<T> : IParser<T> {
+internal sealed class ExpressionTreeParser<T> : IParser<T> {
     private readonly IReadOnlyList<IFieldParserOfUnknownType> _fieldParsers;
     private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
 

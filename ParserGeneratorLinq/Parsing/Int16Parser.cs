@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Linq;
 
 namespace ParserGenerator {
-    public sealed class Int16Parser : IParser<Int16> {
+    internal sealed class Int16Parser : IParser<Int16> {
         private const int SerializedLength = 16/8;
 
         private readonly bool _needToReverseBytes;
