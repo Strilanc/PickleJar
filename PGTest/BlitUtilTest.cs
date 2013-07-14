@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ParserGenerator.Blittable;
+using Strilanc.Parsing.UnsafeParsers;
 
 [TestClass]
 public class BlitUtilTest {

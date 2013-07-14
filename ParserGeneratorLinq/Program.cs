@@ -5,6 +5,9 @@ using System.Linq.Expressions;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Strilanc.Parsing;
+using Strilanc.Parsing.Misc;
+using Strilanc.Parsing.StructuredParsers;
 
 public class Program {
     public struct Pointy2 {

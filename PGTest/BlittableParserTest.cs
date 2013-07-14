@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ParserGenerator;
-using ParserGenerator.Blittable;
+using Strilanc.Parsing;
+using Strilanc.Parsing.Misc;
+using Strilanc.Parsing.NumberParsers;
+using Strilanc.Parsing.UnsafeParsers;
 
 [TestClass]
 public class BlittableParserTest {

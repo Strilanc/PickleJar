@@ -1,6 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ParserGenerator;
+using Strilanc.Parsing;
+using Strilanc.Parsing.Misc;
+using Strilanc.Parsing.NumberParsers;
+using Strilanc.Parsing.RepetitionParsers;
 
 [TestClass]
 public class ExpressionArrayParserTest {
