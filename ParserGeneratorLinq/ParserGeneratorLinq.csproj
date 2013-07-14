@@ -49,6 +49,7 @@
     <Compile Include="API\Parse.cs" />
     <Compile Include="Blittable\AnonymousParser.cs" />
     <Compile Include="Blittable\GreedyRepeatParser.cs" />
+    <Compile Include="Blittable\NumberParseBuilder.cs" />
     <Compile Include="Blittable\ValueArrayParser.cs" />
     <Compile Include="Blittable\CountPrefixedRepeatParser.cs" />
     <Compile Include="Blittable\BlittableArrayParser.cs" />

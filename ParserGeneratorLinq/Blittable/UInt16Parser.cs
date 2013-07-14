@@ -9,12 +9,6 @@ namespace ParserGenerator {
         private readonly bool _needToReverseBytes;
         public bool IsBlittable { get { return !_needToReverseBytes; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
-        public Expression TryParseInline(Expression array, Expression offset, Expression count) {
-            if (_needToReverseBytes) return null;
-            return Expression.New(typeof(ParsedValue<UInt16>).GetConstructors().Single(),
-                Expression.Call(typeof(BitConverter).GetMethod("ToUInt16"), array, offset),
-                Expression.Constant(SerializedLength));
-        }
 
         public UInt16Parser(Endianess endianess) {
             if (endianess != Endianess.BigEndian && endianess != Endianess.LittleEndian)
@@ -28,6 +22,16 @@ namespace ParserGenerator {
             var value = BitConverter.ToUInt16(data.Array, data.Offset);
             if (_needToReverseBytes) value = value.ReverseBytes();
             return new ParsedValue<UInt16>(value, SerializedLength);
+        }
+
+        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+            return NumberParseBuilderUtil.MakeParseFromDataExpression<UInt16>(!_needToReverseBytes, array, offset, count);
+        }
+        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
+            return NumberParseBuilderUtil.MakeGetValueFromParsedExpression(parsed);
+        }
+        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+            return NumberParseBuilderUtil.MakeGetCountFromParsedExpression<UInt16>(parsed);
         }
     }
 }

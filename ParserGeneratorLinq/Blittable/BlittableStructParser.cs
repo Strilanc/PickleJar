@@ -60,7 +60,14 @@ namespace ParserGenerator.Blittable {
 
             return true;
         }
-        public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+
+        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+            return null;
+        }
+        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
+            return null;
+        }
+        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
             return null;
         }
     }

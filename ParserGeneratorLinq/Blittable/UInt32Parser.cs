@@ -9,13 +9,6 @@ namespace ParserGenerator {
         private readonly bool _needToReverseBytes;
         public bool IsBlittable { get { return !_needToReverseBytes; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
-        public Expression TryParseInline(Expression array, Expression offset, Expression count) {
-            if (_needToReverseBytes) return null;
-            return Expression.New(typeof(ParsedValue<UInt32>).GetConstructors().Single(),
-                Expression.Call(typeof(BitConverter).GetMethod("ToUInt32"), array, offset),
-                Expression.Constant(SerializedLength));
-        }
-
         public UInt32Parser(Endianess endianess) {
             if (endianess != Endianess.BigEndian && endianess != Endianess.LittleEndian)
                 throw new ArgumentException("Unrecognized endianess", "endianess");
@@ -28,6 +21,16 @@ namespace ParserGenerator {
             var value = BitConverter.ToUInt32(data.Array, data.Offset);
             if (_needToReverseBytes) value = value.ReverseBytes();
             return new ParsedValue<UInt32>(value, SerializedLength);
+        }
+
+        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+            return NumberParseBuilderUtil.MakeParseFromDataExpression<UInt32>(!_needToReverseBytes, array, offset, count);
+        }
+        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
+            return NumberParseBuilderUtil.MakeGetValueFromParsedExpression(parsed);
+        }
+        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+            return NumberParseBuilderUtil.MakeGetCountFromParsedExpression<UInt32>(parsed);
         }
     }
 }

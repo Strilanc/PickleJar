@@ -55,42 +55,28 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
             .KeyedBy(e => e.CanonicalName());
 
         var dataArg = Expression.Parameter(typeof (ArraySegment<byte>), "data");
-        var dataArgOffset = Expression.MakeMemberAccess(dataArg, typeof (ArraySegment<byte>).GetProperty("Offset"));
-        var dataArgCount = Expression.MakeMemberAccess(dataArg, typeof (ArraySegment<byte>).GetProperty("Count"));
-        var dataArgArray = Expression.MakeMemberAccess(dataArg, typeof (ArraySegment<byte>).GetProperty("Array"));
+        var dataArgArray = Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Array"));
+        var dataArgOffset = Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Offset"));
+        var dataArgCount = Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Count"));
+        var varTotal = Expression.Variable(typeof(int), "total");
         var variableForResultValue = Expression.Variable(typeof(T), "result");
 
+        var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
+
         var fieldParsings = (from fieldParser in fieldParsers
-                             let parsedValueType = typeof(ParsedValue<>).MakeGenericType(fieldParser.ParserValueType)
-                             let variableForResultOfParsing = Expression.Variable(parsedValueType, fieldParser.Name)
-                             let parsingValue = Expression.MakeMemberAccess(variableForResultOfParsing, parsedValueType.GetField("Value"))
-                             let parsingConsumed = Expression.MakeMemberAccess(variableForResultOfParsing, parsedValueType.GetField("Consumed"))
-                             select new { fieldParser, parsingValue, parsingConsumed, variableForResultOfParsing }
+                             let invokeParse = fieldParser.MakeParseFromDataExpression(
+                                 dataArgArray, 
+                                 Expression.Add(dataArgOffset, varTotal), 
+                                 Expression.Subtract(dataArgCount, varTotal))
+                             let variableForResultOfParsing = Expression.Variable(invokeParse.Type, fieldParser.Name)
+                             let parsingValue = fieldParser.MakeGetValueFromParsedExpression(variableForResultOfParsing)
+                             let parsingConsumed = fieldParser.MakeGetCountFromParsedExpression(variableForResultOfParsing)
+                             select new { fieldParser, parsingValue, parsingConsumed, variableForResultOfParsing, invokeParse }
                              ).ToArray();
 
-        var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => {
-            var invokeParse = e.fieldParser.TryParseInline(dataArgArray, dataArgOffset, dataArgCount) 
-                ?? Expression.Call(
-                    Expression.Constant(e.fieldParser.Parser),
-                    typeof(IParser<>).MakeGenericType(e.fieldParser.ParserValueType).GetMethod("Parse"),
-                    new Expression[] { dataArg });
-
-            var nextDataOffset = Expression.Add(
-                dataArgOffset,
-                e.parsingConsumed);
-            var remainingDataCount = Expression.Subtract(
-                dataArgCount,
-                e.parsingConsumed);
-            var nextData = Expression.New(
-                typeof(ArraySegment<byte>).GetConstructor(new[] { typeof(byte[]), typeof(int), typeof(int) }),
-                dataArgArray,
-                nextDataOffset,
-                remainingDataCount);
-
-            return Expression.Block(
-                Expression.Assign(e.variableForResultOfParsing, invokeParse),
-                Expression.Assign(dataArg, nextData));
-        }).Block();
+        var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => Expression.Block(
+            Expression.Assign(e.variableForResultOfParsing, e.invokeParse),
+            Expression.AddAssign(varTotal, e.parsingConsumed))).Block();
 
         var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName());
         var valueConstructedFromParsedValues = chosenConstructor == null
@@ -107,14 +93,15 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
                 parseValMap[e.Key].parsingValue))
             .Block();
 
-        var totalConsumed = fieldParsings.Select(e => (Expression)e.parsingConsumed).Aggregate(Expression.Add);
         var returned = Expression.New(
             typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }),
             variableForResultValue,
-            totalConsumed);
+            varTotal);
 
-        var locals = fieldParsings.Select(e => e.variableForResultOfParsing).Concat(new[] { variableForResultValue });
+        var locals = fieldParsings.Select(e => e.variableForResultOfParsing)
+            .Concat(new[] { varTotal, variableForResultValue });
         var statements = new[] {
+            initLocals,
             parseFieldsAndStoreResultsBlock,
             Expression.Assign(variableForResultValue, valueConstructedFromParsedValues),
             assignMutableMembersBlock,
@@ -132,7 +119,13 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
     public ParsedValue<T> Parse(ArraySegment<byte> data) {
         return _parser(data);
     }
-    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
+    public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        return null;
+    }
+    public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
+        return null;
+    }
+    public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
         return null;
     }
 

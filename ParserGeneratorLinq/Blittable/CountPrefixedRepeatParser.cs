@@ -5,9 +5,6 @@ namespace ParserGenerator {
     public struct CountPrefixedRepeatParser<T> : IParser<T[]> {
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return null; } }
-        public Expression TryParseInline(Expression array, Expression offset, Expression count) {
-            return null;
-        }
 
         private readonly IParser<int> _counter; 
         private readonly IArrayParser<T> _repeatParser;
@@ -21,6 +18,15 @@ namespace ParserGenerator {
             var count = _counter.Parse(data);
             var array = _repeatParser.Parse(data.Skip(count.Consumed), count.Value);
             return new ParsedValue<T[]>(array.Value, count.Consumed + array.Consumed);
+        }
+        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+            return null;
+        }
+        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
+            return null;
+        }
+        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+            return null;
         }
     }
 }

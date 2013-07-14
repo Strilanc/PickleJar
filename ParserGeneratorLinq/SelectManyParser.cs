@@ -7,9 +7,6 @@ public sealed class SelectManyParser<T, M, R> : IParser<R> {
     public readonly Expression<Func<T, M, R>> Proj2;
     public bool IsBlittable { get { return false; } }
     public int? OptionalConstantSerializedLength { get { return null; } }
-    public Expression TryParseInline(Expression array, Expression offset, Expression count) {
-        return null;
-    }
 
     public SelectManyParser(IParser<T> subParser, Expression<Func<T, IParser<M>>> proj1, Expression<Func<T, M, R>> proj2) {
         this.SubParser = subParser;
@@ -21,5 +18,14 @@ public sealed class SelectManyParser<T, M, R> : IParser<R> {
         var p = Proj1.Compile()(sub.Value);
         var sub2 = p.Parse(new ArraySegment<byte>(data.Array, data.Offset + sub.Consumed, data.Count - sub.Consumed));
         return new ParsedValue<R>(Proj2.Compile()(sub.Value, sub2.Value), sub.Consumed + sub2.Consumed);
+    }
+    public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        return null;
+    }
+    public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
+        return null;
+    }
+    public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+        return null;
     }
 }
