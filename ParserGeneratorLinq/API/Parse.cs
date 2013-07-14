@@ -29,7 +29,7 @@ public static class Parse {
         if (itemParser == null) throw new ArgumentNullException("itemParser");
 
         return (IArrayParser<T>)BlittableArrayParser<T>.TryMake(itemParser)
-            ?? new ValueArrayParser<T>(itemParser);
+            ?? new ExpressionArrayParser<T>(itemParser);
     }
 
     public static IParser<T[]> ConstantRepeat<T>(this IParser<T> itemParser, int constantRepeatCount) {

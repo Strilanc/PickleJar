@@ -12,7 +12,7 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
 
     public ExpressionTreeParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
         _fieldParsers = fieldParsers;
-        _parser = MakeParser(fieldParsers);
+        _parser = MakeParser();
     }
 
     private static Dictionary<CanonicalizingMemberName, MemberInfo> GetMutableMemberMap() {
@@ -42,32 +42,46 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
         return possibleConstructors.MaxBy(e => e.GetParameters().Count());
     }
 
-    private static Func<ArraySegment<byte>, ParsedValue<T>> MakeParser(IEnumerable<IFieldParserOfUnknownType> fieldParsers) {
-        var parserMap = fieldParsers.KeyedBy(e => e.CanonicalName());
+    private static readonly ParameterExpression VariableForResultValue = Expression.Variable(typeof(T), "result");
+    private static readonly ParameterExpression VarTotal = Expression.Variable(typeof(int), "total");
+    private static readonly ParameterExpression ParamData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
+
+    private Func<ArraySegment<byte>, ParsedValue<T>> MakeParser() {
+        var paramDataArray = Expression.MakeMemberAccess(ParamData, typeof(ArraySegment<byte>).GetProperty("Array"));
+        var paramDataOffset = Expression.MakeMemberAccess(ParamData, typeof(ArraySegment<byte>).GetProperty("Offset"));
+        var paramDataCount = Expression.MakeMemberAccess(ParamData, typeof(ArraySegment<byte>).GetProperty("Count"));
+
+        var body = TryMakeParseFromDataExpression(paramDataArray, paramDataOffset, paramDataCount);
+    
+        var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
+            body,
+            new[] {ParamData});
+
+        return method.Compile();
+    }
+
+    public ParsedValue<T> Parse(ArraySegment<byte> data) {
+        return _parser(data);
+    }
+    public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        var parserMap = _fieldParsers.KeyedBy(e => e.CanonicalName());
         var mutableMemberMap = GetMutableMemberMap();
 
-        var unmatchedReadOnlyField = typeof (T).GetFields().FirstOrDefault(e => e.IsInitOnly && !parserMap.ContainsKey(e.CanonicalName()));
-        if (unmatchedReadOnlyField != null) 
+        var unmatchedReadOnlyField = typeof(T).GetFields().FirstOrDefault(e => e.IsInitOnly && !parserMap.ContainsKey(e.CanonicalName()));
+        if (unmatchedReadOnlyField != null)
             throw new ArgumentException(string.Format("A readonly field named '{0}' of type {1} doesn't have a corresponding parser.", unmatchedReadOnlyField.Name, typeof(T)));
 
         var chosenConstructor = ChooseCompatibleConstructor(mutableMemberMap.Keys, parserMap.Keys);
         var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
             .KeyedBy(e => e.CanonicalName());
 
-        var dataArg = Expression.Parameter(typeof (ArraySegment<byte>), "data");
-        var dataArgArray = Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Array"));
-        var dataArgOffset = Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Offset"));
-        var dataArgCount = Expression.MakeMemberAccess(dataArg, typeof(ArraySegment<byte>).GetProperty("Count"));
-        var varTotal = Expression.Variable(typeof(int), "total");
-        var variableForResultValue = Expression.Variable(typeof(T), "result");
+        var initLocals = Expression.Assign(VarTotal, Expression.Constant(0));
 
-        var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
-
-        var fieldParsings = (from fieldParser in fieldParsers
+        var fieldParsings = (from fieldParser in _fieldParsers
                              let invokeParse = fieldParser.MakeParseFromDataExpression(
-                                 dataArgArray, 
-                                 Expression.Add(dataArgOffset, varTotal), 
-                                 Expression.Subtract(dataArgCount, varTotal))
+                                 array,
+                                 Expression.Add(offset, VarTotal),
+                                 Expression.Subtract(count, VarTotal))
                              let variableForResultOfParsing = Expression.Variable(invokeParse.Type, fieldParser.Name)
                              let parsingValue = fieldParser.MakeGetValueFromParsedExpression(variableForResultOfParsing)
                              let parsingConsumed = fieldParser.MakeGetCountFromParsedExpression(variableForResultOfParsing)
@@ -76,57 +90,47 @@ public sealed class ExpressionTreeParser<T> : IParser<T> {
 
         var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => Expression.Block(
             Expression.Assign(e.variableForResultOfParsing, e.invokeParse),
-            Expression.AddAssign(varTotal, e.parsingConsumed))).Block();
+            Expression.AddAssign(VarTotal, e.parsingConsumed))).Block();
 
         var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName());
         var valueConstructedFromParsedValues = chosenConstructor == null
-            ? (Expression)Expression.Default(typeof(T)) 
+            ? (Expression)Expression.Default(typeof(T))
             : Expression.New(
-                chosenConstructor, 
+                chosenConstructor,
                 chosenConstructor.GetParameters().Select(e => parseValMap[e.CanonicalName()].parsingValue));
 
         var assignMutableMembersBlock =
             parserMap
             .Where(e => !parameterMap.ContainsKey(e.Key))
             .Select(e => Expression.Assign(
-                Expression.MakeMemberAccess(variableForResultValue, mutableMemberMap[e.Key]),
+                Expression.MakeMemberAccess(VariableForResultValue, mutableMemberMap[e.Key]),
                 parseValMap[e.Key].parsingValue))
             .Block();
 
         var returned = Expression.New(
             typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }),
-            variableForResultValue,
-            varTotal);
+            VariableForResultValue,
+            VarTotal);
 
         var locals = fieldParsings.Select(e => e.variableForResultOfParsing)
-            .Concat(new[] { varTotal, variableForResultValue });
+            .Concat(new[] { VarTotal, VariableForResultValue });
         var statements = new[] {
             initLocals,
             parseFieldsAndStoreResultsBlock,
-            Expression.Assign(variableForResultValue, valueConstructedFromParsedValues),
+            Expression.Assign(VariableForResultValue, valueConstructedFromParsedValues),
             assignMutableMembersBlock,
             returned
         };
 
-        var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
-            Expression.Block(
-                locals, 
-                statements),
-            new[] {dataArg});
-
-        return method.Compile();
-    }
-    public ParsedValue<T> Parse(ArraySegment<byte> data) {
-        return _parser(data);
-    }
-    public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-        return null;
+        return Expression.Block(
+            locals,
+            statements);
     }
     public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-        return null;
+        return Expression.MakeMemberAccess(parsed, typeof(ParsedValue<T>).GetMember("Value").Single());
     }
     public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
-        return null;
+        return Expression.MakeMemberAccess(parsed, typeof(ParsedValue<T>).GetMember("Consumed").Single());
     }
 
     public bool IsBlittable { get { return false; } }

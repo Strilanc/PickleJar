@@ -31,23 +31,23 @@ public class Program {
         var j = data.Offset;
         for (var i = 0; i < 5000; i += 4) {
             r[i] = new Pointy(
-                BitConverter.ToInt32(data.Array, j+0),
                 BitConverter.ToInt32(data.Array, j + 4),
+                BitConverter.ToInt32(data.Array, j + 0),
                 BitConverter.ToInt16(data.Array, j + 8),
                 BitConverter.ToInt16(data.Array, j + 10));
             r[i+1] = new Pointy(
-                BitConverter.ToInt32(data.Array, j+12),
                 BitConverter.ToInt32(data.Array, j + 16),
+                BitConverter.ToInt32(data.Array, j + 12),
                 BitConverter.ToInt16(data.Array, j + 20),
                 BitConverter.ToInt16(data.Array, j + 22));
             r[i + 2] = new Pointy(
-                BitConverter.ToInt32(data.Array, j+24),
                 BitConverter.ToInt32(data.Array, j + 28),
+                BitConverter.ToInt32(data.Array, j + 24),
                 BitConverter.ToInt16(data.Array, j + 32),
                 BitConverter.ToInt16(data.Array, j + 34));
             r[i + 3] = new Pointy(
-                BitConverter.ToInt32(data.Array, j+36),
                 BitConverter.ToInt32(data.Array, j + 40),
+                BitConverter.ToInt32(data.Array, j + 36),
                 BitConverter.ToInt16(data.Array, j + 44),
                 BitConverter.ToInt16(data.Array, j + 46));
             j += 48;

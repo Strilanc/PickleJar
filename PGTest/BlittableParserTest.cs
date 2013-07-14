@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ParserGenerator;
@@ -65,5 +66,36 @@ public class BlittableParserTest {
 
         new UInt64Parser(Endianess.LittleEndian).Parse(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF }).AssertEquals(new ParsedValue<ulong>(0x0807060504030201, 8));
         new UInt64Parser(Endianess.BigEndian).Parse(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF }).AssertEquals(new ParsedValue<ulong>(0x0102030405060708, 8));
+    }
+
+    [TestMethod]
+    public void TestNumberParserExpressions() {
+        TestNumberParserExpression(Parse.Int16LittleEndian);
+        TestNumberParserExpression(Parse.Int16BigEndian);
+        TestNumberParserExpression(Parse.Int32LittleEndian);
+        TestNumberParserExpression(Parse.Int32BigEndian);
+        TestNumberParserExpression(Parse.Int64LittleEndian);
+        TestNumberParserExpression(Parse.Int64BigEndian);
+        TestNumberParserExpression(Parse.UInt16LittleEndian);
+        TestNumberParserExpression(Parse.UInt16BigEndian);
+        TestNumberParserExpression(Parse.UInt32LittleEndian);
+        TestNumberParserExpression(Parse.UInt32BigEndian);
+        TestNumberParserExpression(Parse.UInt64LittleEndian);
+        TestNumberParserExpression(Parse.UInt64BigEndian);
+        TestNumberParserExpression(Parse.UInt8);
+        TestNumberParserExpression(Parse.Int8);
+    }
+    private static void TestNumberParserExpression<T>(IParser<T> parser) {
+        var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
+        var d = new ArraySegment<byte>(array, 0, array.Length);
+        var e1 = parser.TryMakeParseFromDataExpression(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
+        var e2 = parser.TryMakeGetValueFromParsedExpression(e1);
+        var e3 = parser.TryMakeGetCountFromParsedExpression(e1);
+
+        var body = Expression.New(typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }), e2, e3);
+        var method = Expression.Lambda<Func<ParsedValue<T>>>(body);
+        var result = method.Compile()();
+        var normal = parser.Parse(d);
+        result.AssertEquals(normal);
     }
 }

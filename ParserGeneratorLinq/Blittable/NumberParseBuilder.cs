@@ -12,14 +12,16 @@ namespace ParserGenerator {
             };
             if (!numberTypes.Contains(typeof(T))) throw new ArgumentException("Unrecognized number type.");
 
-            var byteSize = Marshal.SizeOf(typeof(T));
-            if (byteSize == 1) {
+            if (typeof (T) == typeof (byte)) {
                 return Expression.ArrayIndex(array, offset);
+            }
+            if (typeof (T) == typeof (sbyte)) {
+                return Expression.Convert(Expression.ArrayIndex(array, offset), typeof(sbyte));
             }
 
             var value = Expression.Call(typeof(BitConverter).GetMethod("To" + typeof(T).Name), array, offset);
             if (isSystemEndian) return value;
-            return Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }));
+            return Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
         }
         public static Expression MakeGetValueFromParsedExpression(Expression parsed) {
             return parsed;

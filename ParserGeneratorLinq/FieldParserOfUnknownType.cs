@@ -12,6 +12,27 @@ public interface IFieldParserOfUnknownType {
     Expression MakeGetValueFromParsedExpression(Expression parsed);
     Expression MakeGetCountFromParsedExpression(Expression parsed);
 }
+public static class ParserUtil {
+    public static Expression MakeParseFromDataExpression<T>(this IParser<T> parser, Expression array, Expression offset, Expression count) {
+        return parser.TryMakeParseFromDataExpression(array, offset, count)
+            ?? Expression.Call(
+                    Expression.Constant(parser),
+                    typeof(IParser<T>).GetMethod("Parse"),
+                    new Expression[] { 
+                        Expression.New(
+                            typeof(ArraySegment<byte>).GetConstructor(new[] {typeof(byte[]), typeof(int), typeof(int)}), 
+                            new[] {array, offset, count}) });
+    }
+
+    public static Expression MakeGetValueFromParsedExpression<T>(this IParser<T> parser, Expression parsed) {
+        return parser.TryMakeGetValueFromParsedExpression(parsed)
+            ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Value"));
+    }
+    public static Expression MakeGetCountFromParsedExpression<T>(this IParser<T> parser, Expression parsed) {
+        return parser.TryMakeGetCountFromParsedExpression(parsed)
+            ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Consumed"));
+    }    
+}
 public sealed class FieldParserOfUnknownType<T> : IFieldParserOfUnknownType {
     public readonly IParser<T> Parser;
     public string Name { get; private set; }
@@ -21,22 +42,13 @@ public sealed class FieldParserOfUnknownType<T> : IFieldParserOfUnknownType {
     public bool IsBlittable { get { return Parser.IsBlittable; } }
     public int? OptionalConstantSerializedLength { get { return Parser.OptionalConstantSerializedLength; } }
     public Expression MakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-        return Parser.TryMakeParseFromDataExpression(array, offset, count)
-            ?? Expression.Call(
-                    Expression.Constant(Parser),
-                    Parser.GetType().GetMethod("Parse"),
-                    new Expression[] { 
-                        Expression.New(
-                            typeof(ArraySegment<byte>).GetConstructor(new[] {typeof(byte[]), typeof(int), typeof(int)}), 
-                            new[] {array, offset, count}) });
+        return Parser.MakeParseFromDataExpression(array, offset, count);
     }
     public Expression MakeGetValueFromParsedExpression(Expression parsed) {
-        return Parser.TryMakeGetValueFromParsedExpression(parsed)
-            ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Value"));
+        return Parser.MakeGetValueFromParsedExpression(parsed);
     }
     public Expression MakeGetCountFromParsedExpression(Expression parsed) {
-        return Parser.TryMakeGetCountFromParsedExpression(parsed)
-            ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Consumed"));
+        return Parser.MakeGetCountFromParsedExpression(parsed);
     }
 
     public FieldParserOfUnknownType(IParser<T> parser, string name) {

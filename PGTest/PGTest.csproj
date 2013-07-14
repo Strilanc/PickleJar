@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -52,6 +53,7 @@
   <ItemGroup>
     <Compile Include="BlittableParserTest.cs" />
     <Compile Include="BlitUtilTest.cs" />
+    <Compile Include="ExpressionArrayParserTest.cs" />
     <Compile Include="ExpressionTreeParserTest.cs" />
     <Compile Include="TestingUtilities.cs" />
     <Compile Include="TwiddleUtilTest.cs" />
