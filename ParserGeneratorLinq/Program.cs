@@ -56,13 +56,7 @@ public class Program {
     static void Main() {
         const int DataRepeatCount = 10000;
 
-        var dynamicParser = 
-            (from y in Parse.Int32LittleEndian
-             from x in Parse.Int32LittleEndian
-             from m in Parse.Int16LittleEndian
-             from n in Parse.Int16LittleEndian
-             select new Pointy(x, y, m, n)
-            ).RepeatNTimes(DataRepeatCount);
+        var handrolledParser = new AnonymousParser<Pointy[]>(e => new ParsedValue<Pointy[]>(ParseFrom(e, DataRepeatCount), DataRepeatCount * 12));
 
         var blitParser =
             new Parse.Builder<Pointy> {
@@ -72,6 +66,14 @@ public class Program {
                 {"n", Parse.Int16LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
+        var dynamicParser =
+            (from y in Parse.Int32LittleEndian
+             from x in (y == 0 ? Parse.Int32LittleEndian : Parse.Int32BigEndian)
+             from m in Parse.Int16LittleEndian
+             from n in Parse.Int16LittleEndian
+             select new Pointy(x, y, m, n)
+            ).RepeatNTimes(DataRepeatCount);
+
         var compiledParser =
             new Parse.Builder<Pointy> {
                 {"y", Parse.Int32LittleEndian},
@@ -79,8 +81,6 @@ public class Program {
                 {"m", Parse.Int16LittleEndian},
                 {"n", Parse.Int16LittleEndian}}.Build()
             .RepeatUntilEndOfData();
-
-        var handrolledParser = new AnonymousParser<Pointy[]>(e => new ParsedValue<Pointy[]>(ParseFrom(e, DataRepeatCount), DataRepeatCount*12));
 
         var data = new ArraySegment<byte>(Enumerable.Repeat(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, DataRepeatCount).SelectMany(e => e).ToArray());
 
@@ -91,8 +91,9 @@ public class Program {
             {"dynamic", dynamicParser}
         };
         var s = new Stopwatch();
-        const int Repetitions = 1000;
+        const long Repetitions = 1000;
         for (var j = 0; j < 10; j++) {
+            Console.WriteLine("Parsing {0} {1}-byte items {2} times", DataRepeatCount, Marshal.SizeOf(typeof(Pointy)), Repetitions);
             foreach (var parser in parsers) {
                 var p = parser.Value;
                 s.Reset();
@@ -101,10 +102,21 @@ public class Program {
                     p.Parse(data);
                 }
                 s.Stop();
-                Console.WriteLine("{0}: {1}", parser.Key.PadLeft(10), s.Elapsed.TotalSeconds);
+
+                Console.WriteLine("{0}: {1:0.00}s, ~{2:0}", parser.Key.PadLeft(10), s.Elapsed.TotalSeconds, AsNiceBps(Repetitions * data.LongCount() / s.Elapsed.TotalSeconds));
             }
             Console.WriteLine();
         }
         Console.ReadLine();
+    }
+    private static string AsNiceBps(double d) {
+        var prefixes = new[] {"B/s", "KB/s", "MB/s", "GB/s"};
+        var i = 0;
+        while (d > 100) {
+            d /= 1000;
+            i += 1;
+        }
+        if (d < 1) return String.Format("{0:0.0}{1}", d, prefixes[i]);
+        return String.Format("{0:0}{1}", d, prefixes[i]);
     }
 }
