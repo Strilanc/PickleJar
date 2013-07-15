@@ -65,22 +65,20 @@ public class Program {
              select new Pointy(x, y, m, n)
             ).RepeatNTimes(DataRepeatCount);
 
-        var blitParser = 
-            new ParseBuilder {
+        var blitParser =
+            new Parse.Builder<Pointy> {
                 {"x", Parse.Int32LittleEndian},
                 {"y", Parse.Int32LittleEndian},
                 {"m", Parse.Int16LittleEndian},
-                {"n", Parse.Int16LittleEndian},
-            }.BuildAsParserForType<Pointy>()
+                {"n", Parse.Int16LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
         var compiledParser =
-            new ParseBuilder {
+            new Parse.Builder<Pointy> {
                 {"y", Parse.Int32LittleEndian},
                 {"x", Parse.Int32LittleEndian},
                 {"m", Parse.Int16LittleEndian},
-                {"n", Parse.Int16LittleEndian},
-            }.BuildAsParserForType<Pointy>()
+                {"n", Parse.Int16LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
         var handrolledParser = new AnonymousParser<Pointy[]>(e => new ParsedValue<Pointy[]>(ParseFrom(e, DataRepeatCount), DataRepeatCount*12));

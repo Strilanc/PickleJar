@@ -15,10 +15,9 @@ public class ExpressionArrayParserTest {
     [TestMethod]
     public void TestArrayParse() {
         var r = new ExpressionArrayParser<TestValidClass>(
-            new ParseBuilder {
+            new Parse.Builder<TestValidClass> {
                 {"A", new Int16Parser(Endianess.BigEndian)},
-                {"B", new Int16Parser(Endianess.LittleEndian)}
-            }.BuildAsParserForType<TestValidClass>());
+                {"B", new Int16Parser(Endianess.LittleEndian)}}.Build());
         var d = new ArraySegment<byte>(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 0xFF}, 0, 9);
         var x0 = r.Parse(d, 0);
         x0.Consumed.AssertEquals(0);

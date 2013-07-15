@@ -1,8 +1,17 @@
 using System;
 using System.Linq.Expressions;
+using Strilanc.Parsing.Internal.RepetitionParsers;
+using Strilanc.Parsing.Internal.UnsafeParsers;
 
 namespace Strilanc.Parsing.Internal.Misc {
     internal static class ParserUtil {
+        public static IArrayParser<T> Array<T>(this IParser<T> itemParser) {
+            if (itemParser == null) throw new ArgumentNullException("itemParser");
+
+            return (IArrayParser<T>)BlittableArrayParser<T>.TryMake(itemParser)
+                   ?? new ExpressionArrayParser<T>(itemParser);
+        }
+
         public static bool IsBlittable<T>(this IParser<T> parser) {
             var r = parser as IParserInternal<T>;
             return r != null && r.IsBlittable;

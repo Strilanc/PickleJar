@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Linq.Expressions;
 using Strilanc.Parsing.Internal.Misc;
 using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.RepetitionParsers;
-using Strilanc.Parsing.Internal.UnsafeParsers;
 
 namespace Strilanc.Parsing {
-    public static class Parse {
+    public static partial class Parse {
         public static readonly IParser<sbyte> Int8 = new Int8Parser();
 
         public static readonly IParser<Int16> Int16LittleEndian = new Int16Parser(Endianess.LittleEndian);
@@ -28,13 +26,6 @@ namespace Strilanc.Parsing {
 
         public static readonly IParser<UInt64> UInt64LittleEndian = new UInt64Parser(Endianess.LittleEndian);
         public static readonly IParser<UInt64> UInt64BigEndian = new UInt64Parser(Endianess.BigEndian);
-
-        private static IArrayParser<T> Array<T>(this IParser<T> itemParser) {
-            if (itemParser == null) throw new ArgumentNullException("itemParser");
-
-            return (IArrayParser<T>)BlittableArrayParser<T>.TryMake(itemParser)
-                   ?? new ExpressionArrayParser<T>(itemParser);
-        }
 
         public static IParser<T[]> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {
             return new FixedRepeatParser<T>(itemParser.Array(), constantRepeatCount);
