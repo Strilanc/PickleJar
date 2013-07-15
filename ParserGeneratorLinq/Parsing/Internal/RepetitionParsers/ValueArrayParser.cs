@@ -1,5 +1,4 @@
 ﻿using System;
-using Strilanc.Parsing.Internal.Misc;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
     internal sealed class ValueArrayParser<T> : IArrayParser<T> {

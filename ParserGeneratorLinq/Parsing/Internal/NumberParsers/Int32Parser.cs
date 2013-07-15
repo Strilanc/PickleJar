@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Strilanc.Parsing.Internal.Misc;
 
 namespace Strilanc.Parsing.Internal.NumberParsers {
     internal sealed class Int32Parser : IParserInternal<Int32> {

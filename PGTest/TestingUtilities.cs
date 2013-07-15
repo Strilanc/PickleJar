@@ -12,7 +12,7 @@ public static class TestingUtilities {
         try {
             action();
             Assert.Fail();
-        } catch (Exception ex) {
+        } catch (Exception) {
         }
     }
     public static void AssertDoesNotThrow(Action action) {

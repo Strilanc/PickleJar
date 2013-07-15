@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Strilanc.Parsing.Internal.Misc {
+namespace Strilanc.Parsing.Internal {
     public enum Endianess {
         BigEndian,
         LittleEndian

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Strilanc.Parsing;
-using Strilanc.Parsing.Internal.Misc;
 
 public class Program {
     public struct Pointy2 {
@@ -99,10 +98,10 @@ public class Program {
                 s.Reset();
                 s.Start();
                 for (var i = 0; i < Repetitions; i++) {
-                    var _ = p.Parse(data);
+                    p.Parse(data);
                 }
                 s.Stop();
-                Console.WriteLine("{0}: {1}", parser.Key.ToString().PadLeft(10), s.Elapsed.TotalSeconds);
+                Console.WriteLine("{0}: {1}", parser.Key.PadLeft(10), s.Elapsed.TotalSeconds);
             }
             Console.WriteLine();
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.Parsing;
-using Strilanc.Parsing.Internal.Misc;
+using Strilanc.Parsing.Internal;
 using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.StructuredParsers;
 
@@ -22,6 +22,12 @@ public class ExpressionTreeParserTest {
     }
     public class TestUnsureClass1 {
         private readonly Int32 _inaccessibleValue;
+        public TestUnsureClass1() {
+            _inaccessibleValue = 1;
+        }
+        public Int32 Get() {
+            return _inaccessibleValue;
+        }
     }
 
     [TestMethod]

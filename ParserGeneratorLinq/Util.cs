@@ -5,11 +5,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Strilanc.Parsing;
-using Strilanc.Parsing.Internal.Misc;
 using Strilanc.Parsing.Internal.StructuredParsers;
 
 public static class Util {
-    public static Dictionary<K, V> KeyedBy<K, V>(this IEnumerable<V> sequence, Func<V, K> keySelector) {
+    public static Dictionary<TKey, TValue> KeyedBy<TKey, TValue>(this IEnumerable<TValue> sequence, Func<TValue, TKey> keySelector) {
         return sequence.ToDictionary(keySelector, e => e);
     }
     public static Dictionary<T, int> ToIndexMap<T>(this IEnumerable<T> sequence) {
@@ -64,18 +63,18 @@ public static class Util {
     public static CanonicalizingMemberName CanonicalName(this ParameterInfo parameter) {
         return new CanonicalizingMemberName(parameter.Name);
     }
-    public static IEnumerable<C> Stream<T, C>(this IEnumerable<T> sequence, C seed, Func<C, T, C> acc) {
+    public static IEnumerable<TOut> Stream<TIn, TOut>(this IEnumerable<TIn> sequence, TOut seed, Func<TOut, TIn, TOut> acc) {
         return sequence.Select(e => seed = acc(seed, e));
     }
-    public static IEnumerable<Tuple<T, C>> StreamZip<T, C>(this IEnumerable<T> sequence, C seed, Func<C, T, C> acc) {
-        return sequence.Stream(Tuple.Create(default(T), seed), (a,e) => Tuple.Create(e, acc(a.Item2, e)));
+    public static IEnumerable<Tuple<TIn, TStream>> StreamZip<TIn, TStream>(this IEnumerable<TIn> sequence, TStream seed, Func<TStream, TIn, TStream> acc) {
+        return sequence.Stream(Tuple.Create(default(TIn), seed), (a,e) => Tuple.Create(e, acc(a.Item2, e)));
     }
     public static Expression Block(this IEnumerable<Expression> expressions) {
         var exp = expressions.ToArray();
         if (exp.Length == 0) return Expression.Empty();
         return Expression.Block(exp);
     }
-    public static bool HasSameKeyValuesAs<K, V>(this IReadOnlyDictionary<K, V> dictionary, IReadOnlyDictionary<K, V> other) {
+    public static bool HasSameKeyValuesAs<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, IReadOnlyDictionary<TKey, TValue> other) {
         return dictionary.Count == other.Count
                && dictionary.All(other.Contains);
     }

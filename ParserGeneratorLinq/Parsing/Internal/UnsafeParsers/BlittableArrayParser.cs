@@ -1,5 +1,4 @@
 ﻿using System;
-using Strilanc.Parsing.Internal.Misc;
 
 namespace Strilanc.Parsing.Internal.UnsafeParsers {
     internal sealed class BlittableArrayParser<T> : IArrayParser<T> {

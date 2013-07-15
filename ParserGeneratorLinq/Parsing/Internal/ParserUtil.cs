@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using Strilanc.Parsing.Internal.RepetitionParsers;
 using Strilanc.Parsing.Internal.UnsafeParsers;
 
-namespace Strilanc.Parsing.Internal.Misc {
+namespace Strilanc.Parsing.Internal {
     internal static class ParserUtil {
         public static IArrayParser<T> Array<T>(this IParser<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
@@ -45,8 +45,8 @@ namespace Strilanc.Parsing.Internal.Misc {
         public static ParsedValue<T> AsParsed<T>(this T value, int consumed) {
             return new ParsedValue<T>(value, consumed);
         }
-        public static ParsedValue<R> Select<T, R>(this ParsedValue<T> value, Func<T, R> projection) {
-            return new ParsedValue<R>(projection(value.Value), value.Consumed);
+        public static ParsedValue<TOut> Select<TIn, TOut>(this ParsedValue<TIn> value, Func<TIn, TOut> projection) {
+            return new ParsedValue<TOut>(projection(value.Value), value.Consumed);
         }
     }
 }

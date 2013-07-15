@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
-using Strilanc.Parsing.Internal.Misc;
 
 namespace Strilanc.Parsing.Internal.NumberParsers {
     internal static class NumberParseBuilderUtil {

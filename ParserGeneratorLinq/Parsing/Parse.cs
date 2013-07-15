@@ -1,5 +1,5 @@
 ﻿using System;
-using Strilanc.Parsing.Internal.Misc;
+using Strilanc.Parsing.Internal;
 using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.RepetitionParsers;
 

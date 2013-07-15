@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Strilanc.Parsing;
-using Strilanc.Parsing.Internal.Misc;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Strilanc.Parsing.Internal;
 
 [TestClass]
 public class TwiddleUtilTest {

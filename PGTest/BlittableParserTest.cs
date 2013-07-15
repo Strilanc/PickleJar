@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.Parsing;
-using Strilanc.Parsing.Internal.Misc;
+using Strilanc.Parsing.Internal;
 using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.UnsafeParsers;
 

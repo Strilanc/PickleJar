@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Strilanc.Parsing.Internal.Misc;
 
 namespace Strilanc.Parsing.Internal.StructuredParsers {
     sealed class SequencedParser<T1, T2> : IParserInternal<Tuple<T1, T2>> {
@@ -37,8 +36,7 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data) {
             var values = new List<T>();
             var total = 0;
-            foreach (var p in SubParsers) {
-                var r = p.Parse(data.Skip(total));
+            foreach (var r in SubParsers.Select(p => p.Parse(data.Skip(total)))) {
                 total += r.Consumed;
                 values.Add(r.Value);
             }
