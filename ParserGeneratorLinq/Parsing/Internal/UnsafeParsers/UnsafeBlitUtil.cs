@@ -4,10 +4,16 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 namespace Strilanc.Parsing.Internal.UnsafeParsers {
+    /// <summary>
+    /// UnsafeBlitUtil contains utility methods used when 'parsing' with a memcpy.
+    /// </summary>
     internal static class UnsafeBlitUtil {
         public delegate T UnsafeValueBlitParser<out T>(byte[] data, int offset, int length);
         public delegate T[] UnsafeArrayBlitParser<out T>(byte[] data, int itemCount, int offset, int length);
 
+        /// <summary>
+        /// Emits a method that copies the contents of an array segment over the memory representation of a value.
+        /// </summary>
         public static UnsafeValueBlitParser<T> MakeUnsafeValueBlitParser<T>() {
             var d = new DynamicMethod(
                 name: "BlitParseValue" + typeof(T),
@@ -39,6 +45,9 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
             return (UnsafeValueBlitParser<T>)d.CreateDelegate(typeof(UnsafeValueBlitParser<T>));
         }
 
+        /// <summary>
+        /// Emits a method that copies the contents of an array segment over the memory representation of anew  returned array of values.
+        /// </summary>
         public static UnsafeArrayBlitParser<T> MakeUnsafeArrayBlitParser<T>() {
             var d = new DynamicMethod(
                 name: "BlitParseArray" + typeof(T),

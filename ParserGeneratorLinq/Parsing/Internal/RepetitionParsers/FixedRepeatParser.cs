@@ -2,16 +2,19 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
+    /// <summary>
+    /// FixedRepeatParser parses contiguous values that are repeated the same number of times every time.
+    /// </summary>
     internal sealed class FixedRepeatParser<T> : IParserInternal<T[]> {
-        public bool IsBlittable { get { return false; } }
+        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _subParser.OptionalConstantSerializedValueLength * _count; } }
 
         private readonly int _count;
-        private readonly IArrayParser<T> _subParser;
+        private readonly IBulkParser<T> _subParser;
 
-        public FixedRepeatParser(IArrayParser<T> arrayParser, int count) {
+        public FixedRepeatParser(IBulkParser<T> bulkParser, int count) {
             this._count = count;
-            _subParser = arrayParser;
+            _subParser = bulkParser;
         }
 
         public ParsedValue<T[]> Parse(ArraySegment<byte> data) {
@@ -23,7 +26,7 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
             return null;
         }
-        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
             return null;
         }
     }

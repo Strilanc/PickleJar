@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Linq.Expressions;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
-    internal struct CountPrefixedRepeatParser<T> : IParserInternal<T[]> {
-        public bool IsBlittable { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return null; } }
-
+    /// <summary>
+    /// CountPrefixedRepeatParser parses contiguous values that are repeated and prefixed by some sort of serialized repetition count.
+    /// </summary>
+    internal struct CountPrefixedRepeatParser<T> : IParser<T[]> {
         private readonly IParser<int> _counter; 
-        private readonly IArrayParser<T> _repeatParser;
+        private readonly IBulkParser<T> _repeatParser;
 
-        public CountPrefixedRepeatParser(IParser<int> counter, IArrayParser<T> subParser) {
+        public CountPrefixedRepeatParser(IParser<int> counter, IBulkParser<T> subParser) {
             this._counter = counter;
             this._repeatParser = subParser;
         }
@@ -18,15 +17,6 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             var count = _counter.Parse(data);
             var array = _repeatParser.Parse(data.Skip(count.Consumed), count.Value);
             return new ParsedValue<T[]>(array.Value, count.Consumed + array.Consumed);
-        }
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return null;
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return null;
-        }
-        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
-            return null;
         }
     }
 }

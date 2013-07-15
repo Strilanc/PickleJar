@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
-    internal sealed class GreedyRepeatParser<T> : IParserInternal<T[]> {
-        public bool IsBlittable { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return null; } }
-
+    /// <summary>
+    /// GreedyRepeatParser parses contiguous values that are repeated until the last one ends at the end of the data.
+    /// </summary>
+    internal sealed class GreedyRepeatParser<T> : IParser<T[]> {
         private readonly IParser<T> _itemParser;
 
         public GreedyRepeatParser(IParser<T> itemParser) {
@@ -22,15 +21,6 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
                 t += data.Count;
             }
             return new ParsedValue<T[]>(result.ToArray(), t);
-        }
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return null;
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return null;
-        }
-        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
-            return null;
         }
     }
 }

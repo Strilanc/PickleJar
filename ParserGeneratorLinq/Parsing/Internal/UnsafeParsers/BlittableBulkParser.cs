@@ -1,22 +1,27 @@
 ﻿using System;
 
 namespace Strilanc.Parsing.Internal.UnsafeParsers {
-    internal sealed class BlittableArrayParser<T> : IArrayParser<T> {
+    /// <summary>
+    /// BlittableBulkParser is used to parse arrays of values when memcpy'ing them is valid.
+    /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
+    /// BlittableBulkParser uses unsafe code, but is an order of magnitude (or two!) faster than other parsers.
+    /// </summary>
+    internal sealed class BlittableBulkParser<T> : IBulkParser<T> {
         private readonly UnsafeBlitUtil.UnsafeArrayBlitParser<T> _parser;
         private readonly int _itemLength;
-        private BlittableArrayParser(IParserInternal<T> itemParser) {
+        private BlittableBulkParser(IParserInternal<T> itemParser) {
             if (!itemParser.OptionalConstantSerializedLength.HasValue) throw new ArgumentException();
             _itemLength = itemParser.OptionalConstantSerializedLength.Value;
             _parser = UnsafeBlitUtil.MakeUnsafeArrayBlitParser<T>();
         }
 
-        public static BlittableArrayParser<T> TryMake(IParser<T> itemParser) {
+        public static BlittableBulkParser<T> TryMake(IParser<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
             var r = itemParser as IParserInternal<T>;
             if (r == null) return null;
-            if (!r.IsBlittable) return null;
+            if (!r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch) return null;
             if (!r.OptionalConstantSerializedLength.HasValue) return null;
-            return new BlittableArrayParser<T>(r);
+            return new BlittableBulkParser<T>(r);
         }
 
         public ParsedValue<T[]> Parse(ArraySegment<byte> data, int count) {
@@ -25,7 +30,6 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
             var value = _parser(data.Array, count, data.Offset, length);
             return new ParsedValue<T[]>(value, length);
         }
-        public bool IsValueBlittable { get { return true; } }
         public int? OptionalConstantSerializedValueLength { get { return _itemLength; } }
     }
 }

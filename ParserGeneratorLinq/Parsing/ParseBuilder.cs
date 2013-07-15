@@ -10,7 +10,7 @@ namespace Strilanc.Parsing {
 
             public IParser<T> Build() {
                 return (IParser<T>)BlittableStructParser<T>.TryMake(_list)
-                       ?? new ExpressionTreeParser<T>(_list);
+                       ?? new CompiledReflectionParser<T>(_list);
             }
 
             public void Add<TItem>(CanonicalizingMemberName name, IParser<TItem> parser) {

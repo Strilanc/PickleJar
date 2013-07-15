@@ -6,11 +6,16 @@ using System.Reflection;
 using MoreLinq;
 
 namespace Strilanc.Parsing.Internal.StructuredParsers {
-    internal sealed class ExpressionTreeParser<T> : IParserInternal<T> {
+    /// <summary>
+    /// CompiledReflectionParser parses a value by using reflection to match up named parsers with fields/properties/constructor-parameters of that type.
+    /// Creates a method, dynamically optimized at runtime, that runs the field parsers and initializes the type with their results.
+    /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
+    /// </summary>
+    internal sealed class CompiledReflectionParser<T> : IParserInternal<T> {
         private readonly IReadOnlyList<IFieldParserOfUnknownType> _fieldParsers;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
 
-        public ExpressionTreeParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+        public CompiledReflectionParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
             _fieldParsers = fieldParsers;
             _parser = MakeParser();
         }
@@ -42,20 +47,18 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
             return possibleConstructors.MaxBy(e => e.GetParameters().Count());
         }
 
-        private static readonly ParameterExpression VariableForResultValue = Expression.Variable(typeof(T), "result");
-        private static readonly ParameterExpression VarTotal = Expression.Variable(typeof(int), "total");
-        private static readonly ParameterExpression ParamData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
 
         private Func<ArraySegment<byte>, ParsedValue<T>> MakeParser() {
-            var paramDataArray = Expression.MakeMemberAccess(ParamData, typeof(ArraySegment<byte>).GetProperty("Array"));
-            var paramDataOffset = Expression.MakeMemberAccess(ParamData, typeof(ArraySegment<byte>).GetProperty("Offset"));
-            var paramDataCount = Expression.MakeMemberAccess(ParamData, typeof(ArraySegment<byte>).GetProperty("Count"));
+            var paramData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
+            var paramDataArray = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Array"));
+            var paramDataOffset = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Offset"));
+            var paramDataCount = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Count"));
 
             var body = TryMakeParseFromDataExpression(paramDataArray, paramDataOffset, paramDataCount);
     
             var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
                 body,
-                new[] {ParamData});
+                new[] {paramData});
 
             return method.Compile();
         }
@@ -75,13 +78,15 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
             var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
                 .KeyedBy(e => e.CanonicalName());
 
-            var initLocals = Expression.Assign(VarTotal, Expression.Constant(0));
+            var varResultValue = Expression.Variable(typeof(T), "result");
+            var varTotal = Expression.Variable(typeof(int), "total");
+            var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
 
             var fieldParsings = (from fieldParser in _fieldParsers
                                  let invokeParse = fieldParser.MakeParseFromDataExpression(
                                      array,
-                                     Expression.Add(offset, VarTotal),
-                                     Expression.Subtract(count, VarTotal))
+                                     Expression.Add(offset, varTotal),
+                                     Expression.Subtract(count, varTotal))
                                  let variableForResultOfParsing = Expression.Variable(invokeParse.Type, fieldParser.Name)
                                  let parsingValue = fieldParser.MakeGetValueFromParsedExpression(variableForResultOfParsing)
                                  let parsingConsumed = fieldParser.MakeGetCountFromParsedExpression(variableForResultOfParsing)
@@ -90,34 +95,34 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
 
             var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => Expression.Block(
                 Expression.Assign(e.variableForResultOfParsing, e.invokeParse),
-                Expression.AddAssign(VarTotal, e.parsingConsumed))).Block();
+                Expression.AddAssign(varTotal, e.parsingConsumed))).Block();
 
             var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName());
-            var valueConstructedFromParsedValues = chosenConstructor == null
-                                                       ? (Expression)Expression.Default(typeof(T))
-                                                       : Expression.New(
-                                                           chosenConstructor,
-                                                           chosenConstructor.GetParameters().Select(e => parseValMap[e.CanonicalName()].parsingValue));
+            var valueConstructedFromParsedValues = 
+                chosenConstructor == null 
+                ? (Expression)Expression.Default(typeof(T))
+                : Expression.New(chosenConstructor,
+                                 chosenConstructor.GetParameters().Select(e => parseValMap[e.CanonicalName()].parsingValue));
 
             var assignMutableMembersBlock =
                 parserMap
                     .Where(e => !parameterMap.ContainsKey(e.Key))
                     .Select(e => Expression.Assign(
-                        Expression.MakeMemberAccess(VariableForResultValue, mutableMemberMap[e.Key]),
+                        Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
                         parseValMap[e.Key].parsingValue))
                     .Block();
 
             var returned = Expression.New(
                 typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }).NotNull(),
-                VariableForResultValue,
-                VarTotal);
+                varResultValue,
+                varTotal);
 
             var locals = fieldParsings.Select(e => e.variableForResultOfParsing)
-                                      .Concat(new[] { VarTotal, VariableForResultValue });
+                                      .Concat(new[] { varTotal, varResultValue });
             var statements = new[] {
                 initLocals,
                 parseFieldsAndStoreResultsBlock,
-                Expression.Assign(VariableForResultValue, valueConstructedFromParsedValues),
+                Expression.Assign(varResultValue, valueConstructedFromParsedValues),
                 assignMutableMembersBlock,
                 returned
             };
@@ -129,11 +134,11 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
             return Expression.MakeMemberAccess(parsed, typeof(ParsedValue<T>).GetMember("Value").Single());
         }
-        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
             return Expression.MakeMemberAccess(parsed, typeof(ParsedValue<T>).GetMember("Consumed").Single());
         }
 
-        public bool IsBlittable { get { return false; } }
+        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _fieldParsers.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength); } }
     }
 }

@@ -1,9 +1,14 @@
 ﻿using System;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
-    internal sealed class ValueArrayParser<T> : IArrayParser<T> {
+    /// <summary>
+    /// BulkParser is the simplest implementation of IBulkParser.
+    /// BulkParser works in the most obvious way: applying the item parser again and again.
+    /// The other array parsers are generally prefered because they perform dynamic optimizations.
+    /// </summary>
+    internal sealed class BulkParser<T> : IBulkParser<T> {
         private readonly IParser<T> _itemParser;
-        public ValueArrayParser(IParser<T> itemParser)  {
+        public BulkParser(IParser<T> itemParser)  {
             _itemParser = itemParser;
         }
         public ParsedValue<T[]> Parse(ArraySegment<byte> data, int count) {
@@ -16,7 +21,6 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             }
             return new ParsedValue<T[]>(r, t);
         }
-        public bool IsValueBlittable { get { return _itemParser.IsBlittable(); } }
         public int? OptionalConstantSerializedValueLength { get { return _itemParser.OptionalConstantSerializedLength(); } }
     }
 }

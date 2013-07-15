@@ -48,16 +48,17 @@
   <ItemGroup>
     <Compile Include="Parsing\CanonicalizingMemberName.cs" />
     <Compile Include="Parsing\Internal\IParserInternal.cs" />
+    <Compile Include="Parsing\Internal\StructuredParsers\SequenceParser.cs" />
     <Compile Include="Parsing\Parse.cs" />
     <Compile Include="Parsing\AnonymousParser.cs" />
-    <Compile Include="Parsing\Internal\RepetitionParsers\ExpressionArrayParser.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\CompiledBulkParser.cs" />
     <Compile Include="Parsing\Internal\RepetitionParsers\GreedyRepeatParser.cs" />
     <Compile Include="Parsing\IFieldParserOfUnknownType.cs" />
     <Compile Include="Parsing\Internal\NumberParsers\NumberParseBuilder.cs" />
     <Compile Include="Parsing\Internal\ParserUtil.cs" />
-    <Compile Include="Parsing\Internal\RepetitionParsers\ValueArrayParser.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\BulkParser.cs" />
     <Compile Include="Parsing\Internal\RepetitionParsers\CountPrefixedRepeatParser.cs" />
-    <Compile Include="Parsing\Internal\UnsafeParsers\BlittableArrayParser.cs" />
+    <Compile Include="Parsing\Internal\UnsafeParsers\BlittableBulkParser.cs" />
     <Compile Include="Parsing\Internal\RepetitionParsers\FixedRepeatParser.cs" />
     <Compile Include="Parsing\Internal\UnsafeParsers\BlittableStructParser.cs" />
     <Compile Include="Parsing\Internal\UnsafeParsers\UnsafeBlitUtil.cs" />
@@ -67,9 +68,9 @@
     <Compile Include="Parsing\Internal\NumberParsers\Int8Parser.cs" />
     <Compile Include="Parsing\ParseBuilder.cs" />
     <Compile Include="Parsing\Internal\StructuredParsers\FieldParserOfUnknownType.cs" />
-    <Compile Include="Parsing\Internal\StructuredParsers\ExpressionTreeParser.cs" />
+    <Compile Include="Parsing\Internal\StructuredParsers\CompiledReflectionParser.cs" />
     <Compile Include="Parsing\Internal\NumberParsers\UInt8Parser.cs" />
-    <Compile Include="Parsing\Internal\IArrayParser.cs" />
+    <Compile Include="Parsing\Internal\IBulkParser.cs" />
     <Compile Include="Parsing\Internal\TwiddleUtil.cs" />
     <Compile Include="Parsing\Internal\NumberParsers\Int16Parser.cs" />
     <Compile Include="Parsing\Internal\NumberParsers\Int32Parser.cs" />
@@ -78,7 +79,7 @@
     <Compile Include="Parsing\ParsedValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Parsing\Internal\StructuredParsers\SequencedParser.cs" />
+    <Compile Include="Parsing\Internal\StructuredParsers\TupleParser.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>

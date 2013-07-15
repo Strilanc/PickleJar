@@ -4,17 +4,23 @@ using Strilanc.Parsing.Internal.RepetitionParsers;
 using Strilanc.Parsing.Internal.UnsafeParsers;
 
 namespace Strilanc.Parsing.Internal {
+    /// <summary>
+    /// ParserUtil contains internal utility and convenience methods related to parsing and optimizing parsers.
+    /// </summary>
     internal static class ParserUtil {
-        public static IArrayParser<T> Array<T>(this IParser<T> itemParser) {
+        /// <summary>
+        /// Returns an appropriate parser capable of bulk parsing operations, based on the given item parser.
+        /// </summary>
+        public static IBulkParser<T> Bulk<T>(this IParser<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
 
-            return (IArrayParser<T>)BlittableArrayParser<T>.TryMake(itemParser)
-                   ?? new ExpressionArrayParser<T>(itemParser);
+            return (IBulkParser<T>)BlittableBulkParser<T>.TryMake(itemParser)
+                   ?? new CompiledBulkParser<T>(itemParser);
         }
 
-        public static bool IsBlittable<T>(this IParser<T> parser) {
+        public static bool IsMemoryRepresentationGuaranteedToMatch<T>(this IParser<T> parser) {
             var r = parser as IParserInternal<T>;
-            return r != null && r.IsBlittable;
+            return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
         public static int? OptionalConstantSerializedLength<T>(this IParser<T> parser) {
             var r = parser as IParserInternal<T>;
@@ -37,11 +43,12 @@ namespace Strilanc.Parsing.Internal {
             return (r == null ? null : r.TryMakeGetValueFromParsedExpression(parsed))
                    ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Value"));
         }
-        public static Expression MakeGetCountFromParsedExpression<T>(this IParser<T> parser, Expression parsed) {
+        public static Expression MakeGetConsumedFromParsedExpression<T>(this IParser<T> parser, Expression parsed) {
             var r = parser as IParserInternal<T>;
-            return (r == null ? null : r.TryMakeGetCountFromParsedExpression(parsed))
+            return (r == null ? null : r.TryMakeGetConsumedFromParsedExpression(parsed))
                    ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Consumed"));
         }
+
         public static ParsedValue<T> AsParsed<T>(this T value, int consumed) {
             return new ParsedValue<T>(value, consumed);
         }

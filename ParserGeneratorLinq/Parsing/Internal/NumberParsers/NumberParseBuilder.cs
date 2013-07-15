@@ -4,6 +4,10 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
 namespace Strilanc.Parsing.Internal.NumberParsers {
+    /// <summary>
+    /// NumberParseBuilderUtil exists to avoid repeating code in all the number parsers.
+    /// It knows how to make the inlined expressions used to parse raw numbers more quickly.
+    /// </summary>
     internal static class NumberParseBuilderUtil {
         public static Expression MakeParseFromDataExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var numberTypes = new[] {
@@ -26,7 +30,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
         public static Expression MakeGetValueFromParsedExpression(Expression parsed) {
             return parsed;
         }
-        public static Expression MakeGetCountFromParsedExpression<T>(Expression parsed) {
+        public static Expression MakeGetConsumedFromParsedExpression<T>(Expression parsed) {
             return Expression.Constant(Marshal.SizeOf(typeof(T)));
         }
     }

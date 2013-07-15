@@ -5,6 +5,11 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
 namespace Strilanc.Parsing.Internal.UnsafeParsers {
+    /// <summary>
+    /// BlittableStructParser is used to parse values when memcpy'ing them is valid.
+    /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
+    /// BlittableStructParser uses unsafe code, but is slightly faster than other parsers.
+    /// </summary>
     internal sealed class BlittableStructParser<T> : IParserInternal<T> {
         private readonly int _length;
         private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
@@ -20,7 +25,7 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
             var value = _parser(data.Array, data.Offset, _length);
             return new ParsedValue<T>(value, _length);
         }
-        public bool IsBlittable { get { return true; } }
+        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
         public static BlittableStructParser<T> TryMake(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
@@ -69,7 +74,7 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
             return null;
         }
-        public Expression TryMakeGetCountFromParsedExpression(Expression parsed) {
+        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
             return null;
         }
     }

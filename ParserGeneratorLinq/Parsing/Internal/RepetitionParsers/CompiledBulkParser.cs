@@ -2,10 +2,14 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
-    internal sealed class ExpressionArrayParser<T> : IArrayParser<T> {
+    /// <summary>
+    /// CompiledBulkParser is an IBulkParser that performes dynamic optimization at runtime.
+    /// In particular, CompiledBulkParser will attempt to inline the item parsing in order to avoid virtual calls.
+    /// </summary>
+    internal sealed class CompiledBulkParser<T> : IBulkParser<T> {
         private readonly IParser<T> _itemParser;
         private readonly Func<byte[], int, int, int, ParsedValue<T[]>> _parser;
-        public ExpressionArrayParser(IParser<T> itemParser) {
+        public CompiledBulkParser(IParser<T> itemParser) {
             _itemParser = itemParser;
             _parser = MakeParser();
         }
@@ -33,7 +37,7 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             var invokeParse = _itemParser.MakeParseFromDataExpression(dataArray, Expression.Add(dataOffset, total), Expression.Subtract(dataCount, total));
             var parsed = Expression.Variable(invokeParse.Type, "parsed");
             var parsedValue = _itemParser.MakeGetValueFromParsedExpression(parsed);
-            var parsedConsumed = _itemParser.MakeGetCountFromParsedExpression(parsed);
+            var parsedConsumed = _itemParser.MakeGetConsumedFromParsedExpression(parsed);
 
             var b = Expression.Label();
             return Expression.Block(
@@ -52,7 +56,6 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
                     Expression.New(typeof (ParsedValue<T[]>).GetConstructor(new[] {typeof (T[]), typeof (int)}).NotNull(), result, total)
                 });
         }
-        public bool IsValueBlittable { get { return _itemParser.IsBlittable(); } }
         public int? OptionalConstantSerializedValueLength { get { return _itemParser.OptionalConstantSerializedLength(); } }
     }
 }

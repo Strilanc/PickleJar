@@ -4,34 +4,37 @@ using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.RepetitionParsers;
 
 namespace Strilanc.Parsing {
+    /// <summary>
+    /// The Parse class exposes utilities for accessing, creating, and combining parsers.
+    /// </summary>
     public static partial class Parse {
-        public static readonly IParser<sbyte> Int8 = new Int8Parser();
+        public static IParser<sbyte> Int8 { get { return new Int8Parser(); } }
 
-        public static readonly IParser<Int16> Int16LittleEndian = new Int16Parser(Endianess.LittleEndian);
-        public static readonly IParser<Int16> Int16BigEndian = new Int16Parser(Endianess.BigEndian);
+        public static IParser<Int16> Int16LittleEndian { get { return new Int16Parser(Endianess.LittleEndian); } }
+        public static IParser<Int16> Int16BigEndian { get { return new Int16Parser(Endianess.BigEndian); } }
 
-        public static readonly IParser<Int32> Int32LittleEndian = new Int32Parser(Endianess.LittleEndian);
-        public static readonly IParser<Int32> Int32BigEndian = new Int32Parser(Endianess.BigEndian);
+        public static IParser<Int32> Int32LittleEndian { get { return new Int32Parser(Endianess.LittleEndian); } }
+        public static IParser<Int32> Int32BigEndian { get { return new Int32Parser(Endianess.BigEndian); } }
 
-        public static readonly IParser<Int64> Int64LittleEndian = new Int64Parser(Endianess.LittleEndian);
-        public static readonly IParser<Int64> Int64BigEndian = new Int64Parser(Endianess.BigEndian);
+        public static IParser<Int64> Int64LittleEndian { get { return new Int64Parser(Endianess.LittleEndian); } }
+        public static IParser<Int64> Int64BigEndian { get { return new Int64Parser(Endianess.BigEndian); } }
 
-        public static readonly IParser<byte> UInt8 = new UInt8Parser();
+        public static IParser<byte> UInt8 { get { return new UInt8Parser(); } }
 
-        public static readonly IParser<UInt16> UInt16LittleEndian = new UInt16Parser(Endianess.LittleEndian);
-        public static readonly IParser<UInt16> UInt16BigEndian = new UInt16Parser(Endianess.BigEndian);
+        public static IParser<UInt16> UInt16LittleEndian { get { return new UInt16Parser(Endianess.LittleEndian); } }
+        public static IParser<UInt16> UInt16BigEndian { get { return new UInt16Parser(Endianess.BigEndian); } }
 
-        public static readonly IParser<UInt32> UInt32LittleEndian = new UInt32Parser(Endianess.LittleEndian);
-        public static readonly IParser<UInt32> UInt32BigEndian = new UInt32Parser(Endianess.BigEndian);
+        public static IParser<UInt32> UInt32LittleEndian { get { return new UInt32Parser(Endianess.LittleEndian); } }
+        public static IParser<UInt32> UInt32BigEndian { get { return new UInt32Parser(Endianess.BigEndian); } }
 
-        public static readonly IParser<UInt64> UInt64LittleEndian = new UInt64Parser(Endianess.LittleEndian);
-        public static readonly IParser<UInt64> UInt64BigEndian = new UInt64Parser(Endianess.BigEndian);
+        public static IParser<UInt64> UInt64LittleEndian { get { return new UInt64Parser(Endianess.LittleEndian); } }
+        public static IParser<UInt64> UInt64BigEndian { get { return new UInt64Parser(Endianess.BigEndian); } }
 
         public static IParser<T[]> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {
-            return new FixedRepeatParser<T>(itemParser.Array(), constantRepeatCount);
+            return new FixedRepeatParser<T>(itemParser.Bulk(), constantRepeatCount);
         }
         public static IParser<T[]> RepeatCountPrefixTimes<T>(this IParser<T> itemParser, IParser<int> countPrefixParser) {
-            return new CountPrefixedRepeatParser<T>(countPrefixParser, itemParser.Array());
+            return new CountPrefixedRepeatParser<T>(countPrefixParser, itemParser.Bulk());
         }
         public static IParser<T[]> RepeatUntilEndOfData<T>(this IParser<T> itemParser) {
             var n = itemParser.OptionalConstantSerializedLength();
@@ -46,7 +49,7 @@ namespace Strilanc.Parsing {
             });
             return new CountPrefixedRepeatParser<T>(
                 counter,
-                itemParser.Array());
+                itemParser.Bulk());
         }
 
         public static IParser<TOut> Select<TIn, TOut>(this IParser<TIn> parser, Func<TIn, TOut> projection) {
