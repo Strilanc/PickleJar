@@ -7,7 +7,7 @@
     <ProjectGuid>{BD87EACB-E90F-460A-977D-5E693035BC0F}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Strilanc.Parsing</RootNamespace>
+    <RootNamespace>Strilanc</RootNamespace>
     <AssemblyName>ParserGeneratorLinq</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -46,39 +46,41 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Parse.cs" />
-    <Compile Include="Misc\AnonymousParser.cs" />
-    <Compile Include="RepetitionParsers\ExpressionArrayParser.cs" />
-    <Compile Include="RepetitionParsers\GreedyRepeatParser.cs" />
-    <Compile Include="IFieldParserOfUnknownType.cs" />
-    <Compile Include="NumberParsers\NumberParseBuilder.cs" />
-    <Compile Include="Misc\ParserUtil.cs" />
-    <Compile Include="RepetitionParsers\ValueArrayParser.cs" />
-    <Compile Include="RepetitionParsers\CountPrefixedRepeatParser.cs" />
-    <Compile Include="UnsafeParsers\BlittableArrayParser.cs" />
-    <Compile Include="RepetitionParsers\FixedRepeatParser.cs" />
-    <Compile Include="UnsafeParsers\BlittableStructParser.cs" />
-    <Compile Include="UnsafeParsers\UnsafeBlitUtil.cs" />
-    <Compile Include="NumberParsers\UInt16Parser.cs" />
-    <Compile Include="NumberParsers\UInt32Parser.cs" />
-    <Compile Include="NumberParsers\UInt64Parser.cs" />
-    <Compile Include="NumberParsers\Int8Parser.cs" />
-    <Compile Include="ParseBuilder.cs" />
-    <Compile Include="StructuredParsers\FieldParserOfUnknownType.cs" />
-    <Compile Include="StructuredParsers\ExpressionTreeParser.cs" />
-    <Compile Include="NumberParsers\UInt8Parser.cs" />
-    <Compile Include="Misc\IArrayParser.cs" />
-    <Compile Include="Misc\TwiddleUtil.cs" />
-    <Compile Include="NumberParsers\Int16Parser.cs" />
-    <Compile Include="NumberParsers\Int32Parser.cs" />
-    <Compile Include="NumberParsers\Int64Parser.cs" />
-    <Compile Include="IParser.cs" />
-    <Compile Include="ParsedValue.cs" />
+    <Compile Include="Parsing\CanonicalizingMemberName.cs" />
+    <Compile Include="Parsing\Parse.cs" />
+    <Compile Include="Parsing\AnonymousParser.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\ExpressionArrayParser.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\GreedyRepeatParser.cs" />
+    <Compile Include="Parsing\IFieldParserOfUnknownType.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\NumberParseBuilder.cs" />
+    <Compile Include="Parsing\Internal\Misc\ParserUtil.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\ValueArrayParser.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\CountPrefixedRepeatParser.cs" />
+    <Compile Include="Parsing\Internal\UnsafeParsers\BlittableArrayParser.cs" />
+    <Compile Include="Parsing\Internal\RepetitionParsers\FixedRepeatParser.cs" />
+    <Compile Include="Parsing\Internal\UnsafeParsers\BlittableStructParser.cs" />
+    <Compile Include="Parsing\Internal\UnsafeParsers\UnsafeBlitUtil.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\UInt16Parser.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\UInt32Parser.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\UInt64Parser.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\Int8Parser.cs" />
+    <Compile Include="Parsing\ParseBuilder.cs" />
+    <Compile Include="Parsing\Internal\StructuredParsers\FieldParserOfUnknownType.cs" />
+    <Compile Include="Parsing\Internal\StructuredParsers\ExpressionTreeParser.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\UInt8Parser.cs" />
+    <Compile Include="Parsing\Internal\Misc\IArrayParser.cs" />
+    <Compile Include="Parsing\Internal\Misc\TwiddleUtil.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\Int16Parser.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\Int32Parser.cs" />
+    <Compile Include="Parsing\Internal\NumberParsers\Int64Parser.cs" />
+    <Compile Include="Parsing\IParser.cs" />
+    <Compile Include="Parsing\ParsedValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Misc\SelectManyParser.cs" />
-    <Compile Include="Misc\SelectParser.cs" />
-    <Compile Include="StructuredParsers\SequencedParser.cs" />
+    <Compile Include="Parsing\Internal\Misc\SelectManyParser.cs" />
+    <Compile Include="Parsing\Internal\Misc\SelectParser.cs" />
+    <Compile Include="Parsing\Internal\StructuredParsers\SequencedParser.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

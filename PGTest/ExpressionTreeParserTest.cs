@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.Parsing;
-using Strilanc.Parsing.Misc;
-using Strilanc.Parsing.NumberParsers;
-using Strilanc.Parsing.StructuredParsers;
+using Strilanc.Parsing.Internal.Misc;
+using Strilanc.Parsing.Internal.NumberParsers;
+using Strilanc.Parsing.Internal.StructuredParsers;
 
 [TestClass]
 public class ExpressionTreeParserTest {

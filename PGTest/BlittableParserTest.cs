@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.Parsing;
-using Strilanc.Parsing.Misc;
-using Strilanc.Parsing.NumberParsers;
-using Strilanc.Parsing.UnsafeParsers;
+using Strilanc.Parsing.Internal.Misc;
+using Strilanc.Parsing.Internal.NumberParsers;
+using Strilanc.Parsing.Internal.UnsafeParsers;
 
 [TestClass]
 public class BlittableParserTest {
@@ -87,7 +87,8 @@ public class BlittableParserTest {
         TestNumberParserExpression(Parse.UInt8);
         TestNumberParserExpression(Parse.Int8);
     }
-    private static void TestNumberParserExpression<T>(IParser<T> parser) {
+    private static void TestNumberParserExpression<T>(IParser<T> exposedParser) {
+        var parser = (IParserInternal<T>)exposedParser;
         var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
         var d = new ArraySegment<byte>(array, 0, array.Length);
         var e1 = parser.TryMakeParseFromDataExpression(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
