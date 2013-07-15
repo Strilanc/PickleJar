@@ -108,7 +108,7 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
                     .Block();
 
             var returned = Expression.New(
-                typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }),
+                typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }).NotNull(),
                 VariableForResultValue,
                 VarTotal);
 

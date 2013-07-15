@@ -9,8 +9,10 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
         private readonly int _length;
         private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
         private BlittableStructParser(IEnumerable<IFieldParserOfUnknownType> fieldParsers) {
+            var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength);
+            if (!len.HasValue) throw new ArgumentException();
             _parser = UnsafeBlitUtil.MakeUnsafeValueBlitParser<T>();
-            _length = fieldParsers.Aggregate(0, (a, e) => a + e.OptionalConstantSerializedLength.Value);
+            _length = len.Value;
         }
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
@@ -51,11 +53,11 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
             var memoryOffsets =
                 typeof(T).GetFields().ToDictionary(
                     e => e.CanonicalName(),
-                    e => typeof(T).FieldOffsetOf(e));
+                    e => (int?)typeof(T).FieldOffsetOf(e));
             var serialOffsets =
                 fieldParsers
-                    .StreamZip(0, (a, e) => a + e.OptionalConstantSerializedLength.Value)
-                    .ToDictionary(e => e.Item1.CanonicalName(), e => e.Item2 - e.Item1.OptionalConstantSerializedLength.Value);
+                    .StreamZip((int?)0, (a, e) => a + e.OptionalConstantSerializedLength)
+                    .ToDictionary(e => e.Item1.CanonicalName(), e => e.Item2 - e.Item1.OptionalConstantSerializedLength);
             if (!serialOffsets.HasSameKeyValuesAs(memoryOffsets)) return false;
 
             return true;

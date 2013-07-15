@@ -28,7 +28,7 @@ namespace Strilanc.Parsing.Internal {
                        typeof(IParser<T>).GetMethod("Parse"),
                        new Expression[] { 
                            Expression.New(
-                               typeof(ArraySegment<byte>).GetConstructor(new[] {typeof(byte[]), typeof(int), typeof(int)}), 
+                               typeof(ArraySegment<byte>).GetConstructor(new[] {typeof(byte[]), typeof(int), typeof(int)}).NotNull(), 
                                new[] {array, offset, count}) });
         }
 

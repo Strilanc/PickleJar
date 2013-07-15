@@ -5,6 +5,7 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
         private readonly UnsafeBlitUtil.UnsafeArrayBlitParser<T> _parser;
         private readonly int _itemLength;
         private BlittableArrayParser(IParserInternal<T> itemParser) {
+            if (!itemParser.OptionalConstantSerializedLength.HasValue) throw new ArgumentException();
             _itemLength = itemParser.OptionalConstantSerializedLength.Value;
             _parser = UnsafeBlitUtil.MakeUnsafeArrayBlitParser<T>();
         }

@@ -49,7 +49,7 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
                             Expression.AddAssign(total, parsedConsumed),
                             Expression.Assign(Expression.ArrayAccess(result, Expression.PostIncrementAssign(index)), parsedValue)),
                         b),
-                    Expression.New(typeof (ParsedValue<T[]>).GetConstructor(new[] {typeof (T[]), typeof (int)}), result, total)
+                    Expression.New(typeof (ParsedValue<T[]>).GetConstructor(new[] {typeof (T[]), typeof (int)}).NotNull(), result, total)
                 });
         }
         public bool IsValueBlittable { get { return _itemParser.IsBlittable(); } }

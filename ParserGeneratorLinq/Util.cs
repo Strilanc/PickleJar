@@ -19,6 +19,10 @@ public static class Util {
     public static ParsedValue<T> Parse<T>(this IParser<T> parser, byte[] data) {
         return parser.Parse(new ArraySegment<byte>(data, 0, data.Length));
     }
+    public static T NotNull<T>(this T value) where T : class {
+        if (value == null) throw new NullReferenceException();
+        return value;
+    }
     public static ArraySegment<T> Skip<T>(this ArraySegment<T> segment, int count) {
         return new ArraySegment<T>(segment.Array, segment.Offset + count, segment.Count - count);
     }
