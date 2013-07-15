@@ -13,8 +13,8 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
     internal sealed class BlittableStructParser<T> : IParserInternal<T> {
         private readonly int _length;
         private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
-        private BlittableStructParser(IEnumerable<IFieldParserOfUnknownType> fieldParsers) {
-            var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength);
+        private BlittableStructParser(IEnumerable<IFieldParser> fieldParsers) {
+            var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength());
             if (!len.HasValue) throw new ArgumentException();
             _parser = UnsafeBlitUtil.MakeUnsafeValueBlitParser<T>();
             _length = len.Value;
@@ -28,20 +28,20 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
-        public static BlittableStructParser<T> TryMake(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+        public static BlittableStructParser<T> TryMake(IReadOnlyList<IFieldParser> fieldParsers) {
             if (!CanBlitParseWith(fieldParsers)) return null;
             return new BlittableStructParser<T>(fieldParsers);
         }
 
-        private static bool CanBlitParseWith(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+        private static bool CanBlitParseWith(IReadOnlyList<IFieldParser> fieldParsers) {
             if (fieldParsers == null) throw new ArgumentNullException("fieldParsers");
 
             // type has blittable representation?
             if (!Util.IsBlittable<T>()) return false;
 
             // all parsers have same constant length representation as value in memory?
-            if (fieldParsers.Any(e => !e.IsBlittable)) return false;
-            if (fieldParsers.Any(e => !e.OptionalConstantSerializedLength.HasValue)) return false;
+            if (fieldParsers.Any(e => !e.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch())) return false;
+            if (fieldParsers.Any(e => !e.OptionalConstantSerializedLength().HasValue)) return false;
 
             // type has no padding?
             var structLayout = typeof(T).StructLayoutAttribute;
@@ -50,7 +50,7 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
             if (structLayout.Pack != 1) return false;
 
             // parsers and struct fields have matching canonical names?
-            var serialNames = fieldParsers.Select(e => e.CanonicalName());
+            var serialNames = fieldParsers.Select(e => e.CanonicalName);
             var fieldNames = typeof(T).GetFields().Select(e => e.CanonicalName());
             if (!serialNames.HasSameSetOfItemsAs(fieldNames)) return false;
 
@@ -61,8 +61,8 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
                     e => (int?)typeof(T).FieldOffsetOf(e));
             var serialOffsets =
                 fieldParsers
-                    .StreamZip((int?)0, (a, e) => a + e.OptionalConstantSerializedLength)
-                    .ToDictionary(e => e.Item1.CanonicalName(), e => e.Item2 - e.Item1.OptionalConstantSerializedLength);
+                    .StreamZip((int?)0, (a, e) => a + e.OptionalConstantSerializedLength())
+                    .ToDictionary(e => e.Item1.CanonicalName, e => e.Item2 - e.Item1.OptionalConstantSerializedLength());
             if (!serialOffsets.HasSameKeyValuesAs(memoryOffsets)) return false;
 
             return true;

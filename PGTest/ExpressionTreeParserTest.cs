@@ -36,7 +36,7 @@ public class ExpressionTreeParserTest {
         TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestUnsureClass1>(new[] {
             new Int16Parser(Endianess.LittleEndian).ForField("InaccessibleValue")
         }));
-        TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestUnsureClass1>(new IFieldParserOfUnknownType[0]));
+        TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestUnsureClass1>(new IFieldParser[0]));
 
         // types must match
         TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestValidClass>(new[] {

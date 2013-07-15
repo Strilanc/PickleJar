@@ -5,40 +5,46 @@ using Strilanc.Parsing.Internal.UnsafeParsers;
 
 namespace Strilanc.Parsing {
     public static partial class Parse {
-        public sealed class Builder<T> : ICollection<IFieldParserOfUnknownType> {
-            private readonly List<IFieldParserOfUnknownType> _list = new List<IFieldParserOfUnknownType>();
+        /// <summary>
+        /// Parse.Builder is used to build up a type parser by adding parsers to be matched against that type's required fields.
+        /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
+        /// Use the Build method to produce a dynamically optimized parser for the type.
+        /// </summary>
+        public sealed class Builder<T> : ICollection<IFieldParser> {
+            private readonly List<IFieldParser> _list = new List<IFieldParser>();
 
+            ///<summary>Returns a dynamically optimized parser based on the field parsers that have been added so far.</summary>
             public IParser<T> Build() {
                 return (IParser<T>)BlittableStructParser<T>.TryMake(_list)
                        ?? new CompiledReflectionParser<T>(_list);
             }
 
             public void Add<TItem>(CanonicalizingMemberName name, IParser<TItem> parser) {
-                Add(new FieldParserOfUnknownType<TItem>(parser, name.ToString()));
+                Add(new FieldParser<TItem>(parser, name));
             }
-            public IEnumerator<IFieldParserOfUnknownType> GetEnumerator() {
+            IEnumerator<IFieldParser> IEnumerable<IFieldParser>.GetEnumerator() {
                 return _list.GetEnumerator();
             }
             IEnumerator IEnumerable.GetEnumerator() {
-                return GetEnumerator();
+                return _list.GetEnumerator();
             }
-            public void Add(IFieldParserOfUnknownType item) {
+            public void Add(IFieldParser item) {
                 _list.Add(item);
             }
-            public void Clear() {
+            void ICollection<IFieldParser>.Clear() {
                 _list.Clear();
             }
-            public bool Contains(IFieldParserOfUnknownType item) {
+            bool ICollection<IFieldParser>.Contains(IFieldParser item) {
                 return _list.Contains(item);
             }
-            public void CopyTo(IFieldParserOfUnknownType[] array, int arrayIndex) {
+            void ICollection<IFieldParser>.CopyTo(IFieldParser[] array, int arrayIndex) {
                 _list.CopyTo(array, arrayIndex);
             }
-            public bool Remove(IFieldParserOfUnknownType item) {
+            bool ICollection<IFieldParser>.Remove(IFieldParser item) {
                 return _list.Remove(item);
             }
-            public int Count { get { return _list.Count; } }
-            public bool IsReadOnly { get { return ((ICollection<IFieldParserOfUnknownType>)_list).IsReadOnly; } }
+            int ICollection<IFieldParser>.Count { get { return _list.Count; } }
+            bool ICollection<IFieldParser>.IsReadOnly { get { return ((ICollection<IFieldParser>)_list).IsReadOnly; } }
         }
     }
 }

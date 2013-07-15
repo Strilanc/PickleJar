@@ -61,9 +61,6 @@ public static class Util {
     public static CanonicalizingMemberName CanonicalName(this MemberInfo member) {
         return new CanonicalizingMemberName(member.Name);
     }
-    public static CanonicalizingMemberName CanonicalName(this IFieldParserOfUnknownType parser) {
-        return new CanonicalizingMemberName(parser.Name);
-    }
     public static CanonicalizingMemberName CanonicalName(this ParameterInfo parameter) {
         return new CanonicalizingMemberName(parameter.Name);
     }
@@ -82,7 +79,7 @@ public static class Util {
         return dictionary.Count == other.Count
                && dictionary.All(other.Contains);
     }
-    public static IFieldParserOfUnknownType ForField<T>(this IParser<T> parser, string fieldName) {
-        return new FieldParserOfUnknownType<T>(parser, fieldName);
+    public static IFieldParser ForField<T>(this IParser<T> parser, string fieldName) {
+        return new FieldParser<T>(parser, fieldName);
     } 
 }

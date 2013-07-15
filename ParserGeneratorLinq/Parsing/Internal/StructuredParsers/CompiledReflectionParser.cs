@@ -12,10 +12,10 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
     /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
     /// </summary>
     internal sealed class CompiledReflectionParser<T> : IParserInternal<T> {
-        private readonly IReadOnlyList<IFieldParserOfUnknownType> _fieldParsers;
+        private readonly IReadOnlyList<IFieldParser> _fieldParsers;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
 
-        public CompiledReflectionParser(IReadOnlyList<IFieldParserOfUnknownType> fieldParsers) {
+        public CompiledReflectionParser(IReadOnlyList<IFieldParser> fieldParsers) {
             _fieldParsers = fieldParsers;
             _parser = MakeParser();
         }
@@ -67,12 +67,12 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
             return _parser(data);
         }
         public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            var parserMap = _fieldParsers.KeyedBy(e => e.CanonicalName());
+            var parserMap = _fieldParsers.KeyedBy(e => e.CanonicalName);
             var mutableMemberMap = GetMutableMemberMap();
 
             var unmatchedReadOnlyField = typeof(T).GetFields().FirstOrDefault(e => e.IsInitOnly && !parserMap.ContainsKey(e.CanonicalName()));
             if (unmatchedReadOnlyField != null)
-                throw new ArgumentException(string.Format("A readonly field named '{0}' of type {1} doesn't have a corresponding parser.", unmatchedReadOnlyField.Name, typeof(T)));
+                throw new ArgumentException(string.Format("A readonly field named '{0}' of type {1} doesn't have a corresponding fieldParser.", unmatchedReadOnlyField.Name, typeof(T)));
 
             var chosenConstructor = ChooseCompatibleConstructor(mutableMemberMap.Keys, parserMap.Keys);
             var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
@@ -87,9 +87,9 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
                                      array,
                                      Expression.Add(offset, varTotal),
                                      Expression.Subtract(count, varTotal))
-                                 let variableForResultOfParsing = Expression.Variable(invokeParse.Type, fieldParser.Name)
+                                 let variableForResultOfParsing = Expression.Variable(invokeParse.Type, fieldParser.CanonicalName.ToString())
                                  let parsingValue = fieldParser.MakeGetValueFromParsedExpression(variableForResultOfParsing)
-                                 let parsingConsumed = fieldParser.MakeGetCountFromParsedExpression(variableForResultOfParsing)
+                                 let parsingConsumed = fieldParser.MakeGetConsumedFromParsedExpression(variableForResultOfParsing)
                                  select new { fieldParser, parsingValue, parsingConsumed, variableForResultOfParsing, invokeParse }
                                 ).ToArray();
 
@@ -97,7 +97,7 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
                 Expression.Assign(e.variableForResultOfParsing, e.invokeParse),
                 Expression.AddAssign(varTotal, e.parsingConsumed))).Block();
 
-            var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName());
+            var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName);
             var valueConstructedFromParsedValues = 
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
@@ -139,6 +139,6 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
         }
 
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return _fieldParsers.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength); } }
+        public int? OptionalConstantSerializedLength { get { return _fieldParsers.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength()); } }
     }
 }

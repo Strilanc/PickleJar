@@ -27,7 +27,7 @@ public class BlittableParserTest {
 
     [TestMethod]
     public void TestValueParser() {
-        var r = BlittableStructParser<TestStruct>.TryMake(new List<IFieldParserOfUnknownType> {
+        var r = BlittableStructParser<TestStruct>.TryMake(new List<IFieldParser> {
             Parse.Int16LittleEndian.ForField("v01"),
             Parse.Int32LittleEndian.ForField("v2345")
         });
@@ -37,7 +37,7 @@ public class BlittableParserTest {
     }
     [TestMethod]
     public void TestValueParser2() {
-        var r = BlittableStructParser<TestStruct2>.TryMake(new List<IFieldParserOfUnknownType> {
+        var r = BlittableStructParser<TestStruct2>.TryMake(new List<IFieldParser> {
             Parse.Int16LittleEndian.ForField("v01"),
             Parse.Int32LittleEndian.ForField("v2345")
         });
