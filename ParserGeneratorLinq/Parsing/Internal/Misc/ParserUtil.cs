@@ -32,6 +32,12 @@ namespace Strilanc.Parsing.Internal.Misc {
             var r = parser as IParserInternal<T>;
             return (r == null ? null : r.TryMakeGetCountFromParsedExpression(parsed))
                    ?? Expression.MakeMemberAccess(parsed, typeof(ParsedValue<>).MakeGenericType(typeof(T)).GetField("Consumed"));
-        }    
+        }
+        public static ParsedValue<T> AsParsed<T>(this T value, int consumed) {
+            return new ParsedValue<T>(value, consumed);
+        }
+        public static ParsedValue<R> Select<T, R>(this ParsedValue<T> value, Func<T, R> projection) {
+            return new ParsedValue<R>(projection(value.Value), value.Consumed);
+        }
     }
 }

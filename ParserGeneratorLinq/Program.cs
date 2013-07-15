@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -25,10 +26,10 @@ public class Program {
         }
 
     }
-    private static Pointy[] ParseFrom(ArraySegment<byte> data) {
-        var r = new Pointy[5000];
+    private static Pointy[] ParseFrom(ArraySegment<byte> data, int n) {
+        var r = new Pointy[n];
         var j = data.Offset;
-        for (var i = 0; i < 5000; i += 4) {
+        for (var i = 0; i < n; i += 4) {
             r[i] = new Pointy(
                 BitConverter.ToInt32(data.Array, j + 4),
                 BitConverter.ToInt32(data.Array, j + 0),
@@ -54,7 +55,26 @@ public class Program {
         return r;
     }
     static void Main() {
-        var repeatBlitParser = 
+        const int DataRepeatCount = 10000;
+
+        var dynamicParser = 
+            (from y in Parse.Int32LittleEndian
+             from x in Parse.Int32LittleEndian
+             from m in Parse.Int16LittleEndian
+             from n in Parse.Int16LittleEndian
+             select new Pointy(x, y, m, n)
+            ).RepeatNTimes(DataRepeatCount);
+
+        var blitParser = 
+            new ParseBuilder {
+                {"x", Parse.Int32LittleEndian},
+                {"y", Parse.Int32LittleEndian},
+                {"m", Parse.Int16LittleEndian},
+                {"n", Parse.Int16LittleEndian},
+            }.BuildAsParserForType<Pointy>()
+            .RepeatUntilEndOfData();
+
+        var compiledParser =
             new ParseBuilder {
                 {"y", Parse.Int32LittleEndian},
                 {"x", Parse.Int32LittleEndian},
@@ -63,44 +83,31 @@ public class Program {
             }.BuildAsParserForType<Pointy>()
             .RepeatUntilEndOfData();
 
-        var m = Enumerable.Repeat(new byte[] { 1, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0 }, 5000).SelectMany(e => e).ToArray();
-        var m2 = new ArraySegment<byte>(m, 0, m.Length);
+        var handrolledParser = new AnonymousParser<Pointy[]>(e => new ParsedValue<Pointy[]>(ParseFrom(e, DataRepeatCount), DataRepeatCount*12));
 
+        var data = new ArraySegment<byte>(Enumerable.Repeat(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, DataRepeatCount).SelectMany(e => e).ToArray());
+
+        var parsers = new Dictionary<string, IParser<Pointy[]>> {
+            {"handrolled", handrolledParser},
+            {"compiled", compiledParser},
+            {"blit", blitParser},
+            {"dynamic", dynamicParser}
+        };
+        var s = new Stopwatch();
+        const int Repetitions = 1000;
         for (var j = 0; j < 10; j++) {
-            var s = new Stopwatch();
-            s.Start();
-            for (var i = 0; i < 20000; i++) {
-                var y = ParseFrom(m2);
+            foreach (var parser in parsers) {
+                var p = parser.Value;
+                s.Reset();
+                s.Start();
+                for (var i = 0; i < Repetitions; i++) {
+                    var _ = p.Parse(data);
+                }
+                s.Stop();
+                Console.WriteLine("{0}: {1}", parser.Key.ToString().PadLeft(10), s.Elapsed.TotalSeconds);
             }
-            s.Stop();
-            var t = s.Elapsed;
-            s.Reset();
-            s.Start();
-            for (var i = 0; i < 20000; i++) {
-                var z = repeatBlitParser.Parse(m2);
-            }
-            s.Stop();
-            var t2 = s.Elapsed;
-            var b = ParseFrom(m2).SequenceEqual(repeatBlitParser.Parse(m2).Value);
-            Console.WriteLine(t.TotalSeconds);
-            Console.WriteLine(t2.TotalSeconds);
-            Console.WriteLine(b);
+            Console.WriteLine();
         }
         Console.ReadLine();
-    }
-    static string[] GetVarNames<T>(IParser<T> parser) {
-        dynamic d = parser;
-        if (parser.GetType().GetGenericTypeDefinition() == typeof (SelectManyParser<,,>)) {
-            string lastName = d.Proj2.Parameters[1].Name;
-            string firstName = d.Proj2.Parameters[0].Name;
-            if (firstName.StartsWith("<>")) {
-                return ((string[])GetVarNames(d.SubParser)).Concat(new[] {lastName}).ToArray();
-            }
-            return new[] {firstName, lastName};
-        } else if (parser.GetType().GetGenericTypeDefinition() == typeof(SelectParser<,>)) {
-            throw new NotImplementedException();
-        } else {
-            throw new NotImplementedException();
-        }
     }
 }

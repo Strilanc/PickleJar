@@ -20,12 +20,6 @@ public static class Util {
     public static ParsedValue<T> Parse<T>(this IParser<T> parser, byte[] data) {
         return parser.Parse(new ArraySegment<byte>(data, 0, data.Length));
     }
-    public static SelectParser<T, R> Select<T, R>(this IParser<T> parser, Expression<Func<T, R>> proj) {
-        return new SelectParser<T, R>(parser, proj);
-    }
-    public static SelectManyParser<T, M, R> SelectMany<T, M, R>(this IParser<T> parser, Expression<Func<T, IParser<M>>> proj1, Expression<Func<T, M, R>> proj2) {
-        return new SelectManyParser<T, M, R>(parser, proj1, proj2);
-    }
     public static ArraySegment<T> Skip<T>(this ArraySegment<T> segment, int count) {
         return new ArraySegment<T>(segment.Array, segment.Offset + count, segment.Count - count);
     }

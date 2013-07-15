@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using Strilanc.Parsing.Internal.Misc;
 using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.RepetitionParsers;
@@ -55,6 +56,31 @@ namespace Strilanc.Parsing {
             return new CountPrefixedRepeatParser<T>(
                 counter,
                 itemParser.Array());
+        }
+
+        public static IParser<TOut> Select<TIn, TOut>(this IParser<TIn> parser, Func<TIn, TOut> projection) {
+            if (parser == null) throw new ArgumentNullException("parser");
+            if (projection == null) throw new ArgumentNullException("projection");
+            return new AnonymousParser<TOut>(data => parser.Parse(data).Select(projection));
+        }
+
+        public static IParser<T> Where<T>(this IParser<T> parser, Func<T, bool> constraint) {
+            return new AnonymousParser<T>(data => {
+                var v = parser.Parse(data);
+                if (!constraint(v.Value)) throw new InvalidOperationException("Data did not match Where constraint");
+                return v;
+            });
+        }
+
+        public static IParser<TOut> SelectMany<TIn, TMid, TOut>(this IParser<TIn> parser, Func<TIn, IParser<TMid>> midProjection, Func<TIn, TMid, TOut> resultProjection) {
+            if (parser == null) throw new ArgumentNullException("parser");
+            if (midProjection == null) throw new ArgumentNullException("midProjection");
+            if (resultProjection == null) throw new ArgumentNullException("resultProjection");
+            return new AnonymousParser<TOut>(data => {
+                var parsedIn = parser.Parse(data);
+                var parsedMid = midProjection(parsedIn.Value).Parse(data.Skip(parsedIn.Consumed));
+                return resultProjection(parsedIn.Value, parsedMid.Value).AsParsed(parsedIn.Consumed + parsedMid.Consumed);
+            });
         }
     }
 }

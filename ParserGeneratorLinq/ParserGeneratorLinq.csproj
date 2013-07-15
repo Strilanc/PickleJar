@@ -77,8 +77,6 @@
     <Compile Include="Parsing\ParsedValue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Parsing\Internal\Misc\SelectManyParser.cs" />
-    <Compile Include="Parsing\Internal\Misc\SelectParser.cs" />
     <Compile Include="Parsing\Internal\StructuredParsers\SequencedParser.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
