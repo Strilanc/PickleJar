@@ -28,8 +28,10 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             var resultConsumed = Expression.Variable(typeof(int), "totalConsumed");
             var loopIndex = Expression.Variable(typeof(int), "i");
 
-            var invokeParse = _itemParser.MakeParseFromDataExpression(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
-            var parsedItem = Expression.Variable(invokeParse.Item1.Type, "parsed");
+            var inlinedParseInfo = _itemParser.MakeParseFromDataExpression(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
+            var inlinedParsePerform = inlinedParseInfo.Item1;
+            var inlinedParseResultVariables = inlinedParseInfo.Item2;
+            var parsedItem = Expression.Variable(inlinedParsePerform.Type, "parsed");
             var parsedItemValue = _itemParser.MakeGetValueFromParsedExpression(parsedItem);
             var parsedItemConsumed = _itemParser.MakeGetConsumedFromParsedExpression(parsedItem);
 
@@ -42,9 +44,9 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             var loopExit = Expression.Label();
             var loopStatements = Expression.Loop(
                 Expression.Block(
-                    invokeParse.Item2,
+                    inlinedParseResultVariables,
                     Expression.IfThen(Expression.GreaterThanOrEqual(loopIndex, itemCount), Expression.Break(loopExit)),
-                    Expression.Assign(parsedItem, invokeParse.Item1),
+                    Expression.Assign(parsedItem, inlinedParsePerform),
                     Expression.AddAssign(resultConsumed, parsedItemConsumed),
                     Expression.Assign(
                         Expression.ArrayAccess(

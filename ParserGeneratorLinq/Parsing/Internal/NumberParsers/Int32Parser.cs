@@ -31,12 +31,4 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             return NumberParseBuilderUtil.MakeGetConsumedFromParsedExpression<Int32>(parsed);
         }
     }
-    struct Int32Parser2 : IParser<Int32> {
-        public ParsedValue<Int32> Parse(ArraySegment<byte> data) {
-            if (data.Count < 4) throw new ArgumentException();
-            // warning: we're not dealing with endian-ness, but this is just an example
-            var value = BitConverter.ToInt32(data.Array, data.Offset);
-            return new ParsedValue<Int32>(value, 4);
-        }
-    }
 }
