@@ -10,7 +10,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             return new ParsedValue<byte>(value, 1);
         }
 
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
             return NumberParseBuilderUtil.MakeParseFromDataExpression<byte>(true, array, offset, count);
         }
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {

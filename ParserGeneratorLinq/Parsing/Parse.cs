@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Strilanc.Parsing.Internal;
 using Strilanc.Parsing.Internal.NumberParsers;
 using Strilanc.Parsing.Internal.RepetitionParsers;
@@ -41,13 +42,13 @@ namespace Strilanc.Parsing {
         public static IParser<UInt64> UInt64BigEndian { get { return new UInt64Parser(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that repeatedly uses an item parser a fixed number of times and puts the resulting item values into an array.</summary>
-        public static IParser<T[]> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {
+        public static IParser<IReadOnlyList<T>> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
             if (constantRepeatCount < 0) throw new ArgumentOutOfRangeException("constantRepeatCount");
             return new FixedRepeatParser<T>(itemParser.Bulk(), constantRepeatCount);
         }
         /// <summary>Returns a parser that first parses a count then repeatedly uses an item parser that number of times and puts the resulting item values into an array.</summary>
-        public static IParser<T[]> RepeatCountPrefixTimes<T>(this IParser<T> itemParser, IParser<int> countPrefixParser) {
+        public static IParser<IReadOnlyList<T>> RepeatCountPrefixTimes<T>(this IParser<T> itemParser, IParser<int> countPrefixParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
             if (countPrefixParser == null) throw new ArgumentNullException("countPrefixParser");
             return new CountPrefixedRepeatParser<T>(countPrefixParser, itemParser.Bulk());
@@ -56,7 +57,7 @@ namespace Strilanc.Parsing {
         /// Returns a parser that repeatedly uses an item parser until there's no data left and puts the resulting items into an array.
         /// If the parser encounters a partial value at the end of the data, the entire parse fails.
         /// </summary>
-        public static IParser<T[]> RepeatUntilEndOfData<T>(this IParser<T> itemParser) {
+        public static IParser<IReadOnlyList<T>> RepeatUntilEndOfData<T>(this IParser<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
             var n = itemParser.OptionalConstantSerializedLength();
             if (!n.HasValue) {

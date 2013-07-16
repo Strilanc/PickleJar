@@ -21,7 +21,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             if (!_isSystemEndian) value = value.ReverseBytes();
             return new ParsedValue<Int32>(value, SerializedLength);
         }
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
             return NumberParseBuilderUtil.MakeParseFromDataExpression<Int32>(_isSystemEndian, array, offset, count);
         }
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
@@ -29,6 +29,14 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
         }
         public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
             return NumberParseBuilderUtil.MakeGetConsumedFromParsedExpression<Int32>(parsed);
+        }
+    }
+    struct Int32Parser2 : IParser<Int32> {
+        public ParsedValue<Int32> Parse(ArraySegment<byte> data) {
+            if (data.Count < 4) throw new ArgumentException();
+            // warning: we're not dealing with endian-ness, but this is just an example
+            var value = BitConverter.ToInt32(data.Array, data.Offset);
+            return new ParsedValue<Int32>(value, 4);
         }
     }
 }

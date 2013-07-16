@@ -43,8 +43,8 @@ namespace Strilanc.Parsing.Internal {
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
 
-        private static Expression MakeParseFromDataExpression(object parser, Type valueType, Expression array, Expression offset, Expression count) {
-            return Expression.Call(
+        private static Tuple<Expression, ParameterExpression[]> MakeParseFromDataExpression(object parser, Type valueType, Expression array, Expression offset, Expression count) {
+            var parseValue = Expression.Call(
                 Expression.Constant(parser),
                 typeof (IParser<>).MakeGenericType(valueType).GetMethod("Parse"),
                 new Expression[] {
@@ -52,13 +52,14 @@ namespace Strilanc.Parsing.Internal {
                         typeof (ArraySegment<byte>).GetConstructor(new[] {typeof (byte[]), typeof (int), typeof (int)}).NotNull(),
                         new[] {array, offset, count})
                 });
+            return Tuple.Create((Expression)parseValue, new ParameterExpression[0]);
         }
-        public static Expression MakeParseFromDataExpression<T>(this IParser<T> parser, Expression array, Expression offset, Expression count) {
+        public static Tuple<Expression, ParameterExpression[]> MakeParseFromDataExpression<T>(this IParser<T> parser, Expression array, Expression offset, Expression count) {
             var r = parser as IParserInternal<T>;
             return (r == null ? null : r.TryMakeParseFromDataExpression(array, offset, count))
                    ?? MakeParseFromDataExpression(parser, typeof(T), array, offset, count);
         }
-        public static Expression MakeParseFromDataExpression(this IFieldParser fieldParser, Expression array, Expression offset, Expression count) {
+        public static Tuple<Expression, ParameterExpression[]> MakeParseFromDataExpression(this IFieldParser fieldParser, Expression array, Expression offset, Expression count) {
             var r = fieldParser as IFieldParserInternal;
             return (r == null ? null : r.TryMakeParseFromDataExpression(array, offset, count))
                    ?? MakeParseFromDataExpression(fieldParser.Parser, fieldParser.ParserValueType, array, offset, count);

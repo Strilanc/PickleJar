@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
     /// <summary>
@@ -11,7 +12,7 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
         public BulkParser(IParser<T> itemParser)  {
             _itemParser = itemParser;
         }
-        public ParsedValue<T[]> Parse(ArraySegment<byte> data, int count) {
+        public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count) {
             var r = new T[count];
             var t = 0;
             for (var i = 0; i < count; i++) {
@@ -19,7 +20,7 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
                 t += e.Consumed;
                 r[i] = e.Value;
             }
-            return new ParsedValue<T[]>(r, t);
+            return new ParsedValue<IReadOnlyList<T>>(r, t);
         }
         public int? OptionalConstantSerializedValueLength { get { return _itemParser.OptionalConstantSerializedLength(); } }
     }

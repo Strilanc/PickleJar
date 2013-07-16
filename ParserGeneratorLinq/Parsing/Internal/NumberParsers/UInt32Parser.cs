@@ -22,7 +22,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             return new ParsedValue<UInt32>(value, SerializedLength);
         }
 
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
             return NumberParseBuilderUtil.MakeParseFromDataExpression<UInt32>(_isSystemEndian, array, offset, count);
         }
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {

@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Strilanc.Parsing.Internal.RepetitionParsers {
     /// <summary>
     /// FixedRepeatParser parses contiguous values that are repeated the same number of times every time.
     /// </summary>
-    internal sealed class FixedRepeatParser<T> : IParserInternal<T[]> {
+    internal sealed class FixedRepeatParser<T> : IParserInternal<IReadOnlyList<T>> {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _subParser.OptionalConstantSerializedValueLength * _count; } }
 
@@ -17,10 +18,10 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             _subParser = bulkParser;
         }
 
-        public ParsedValue<T[]> Parse(ArraySegment<byte> data) {
+        public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data) {
             return _subParser.Parse(data, _count);
         }
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
             return null;
         }
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {

@@ -92,8 +92,8 @@ public class BlittableParserTest {
         var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
         var d = new ArraySegment<byte>(array, 0, array.Length);
         var e1 = parser.TryMakeParseFromDataExpression(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
-        var e2 = parser.TryMakeGetValueFromParsedExpression(e1);
-        var e3 = parser.TryMakeGetConsumedFromParsedExpression(e1);
+        var e2 = parser.TryMakeGetValueFromParsedExpression(e1.Item1);
+        var e3 = parser.TryMakeGetConsumedFromParsedExpression(e1.Item1);
 
         var body = Expression.New(typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }), e2, e3);
         var method = Expression.Lambda<Func<ParsedValue<T>>>(body);

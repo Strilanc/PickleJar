@@ -13,7 +13,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             }
         }
 
-        public Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
             return NumberParseBuilderUtil.MakeParseFromDataExpression<sbyte>(true, array, offset, count);
         }
         public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {

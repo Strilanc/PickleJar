@@ -9,17 +9,20 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
     /// It knows how to make the inlined expressions used to parse raw numbers more quickly.
     /// </summary>
     internal static class NumberParseBuilderUtil {
-        public static Expression MakeParseFromDataExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
+        public static Tuple<Expression, ParameterExpression[]> MakeParseFromDataExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
+            return Tuple.Create(MakeParseFromDataExpressionHelper<T>(isSystemEndian, array, offset, count), new ParameterExpression[0]);
+        }
+        private static Expression MakeParseFromDataExpressionHelper<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var numberTypes = new[] {
                 typeof (byte), typeof (short), typeof (int), typeof (long),
                 typeof (sbyte), typeof (ushort), typeof (uint), typeof (ulong)
             };
             if (!numberTypes.Contains(typeof(T))) throw new ArgumentException("Unrecognized number type.");
 
-            if (typeof (T) == typeof (byte)) {
+            if (typeof(T) == typeof(byte)) {
                 return Expression.ArrayIndex(array, offset);
             }
-            if (typeof (T) == typeof (sbyte)) {
+            if (typeof(T) == typeof(sbyte)) {
                 return Expression.Convert(Expression.ArrayIndex(array, offset), typeof(sbyte));
             }
 

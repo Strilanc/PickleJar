@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 
 namespace Strilanc.Parsing.Internal {
     /// <summary>
@@ -24,7 +25,7 @@ namespace Strilanc.Parsing.Internal {
         /// For example, the expression may have type ParsedResult(int) and use the Value and Consumed members to get the components.
         /// Alternatively, the expression may have type Int32 and directly use that value and a constant 4 as the components.
         /// </summary>
-        Expression TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count);
+        Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count);
         /// <summary>
         /// Extracts the Value component of what was parsed by TryMakeParseFromDataExpression.
         /// </summary>

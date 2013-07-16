@@ -6,85 +6,61 @@ using System.Runtime.InteropServices;
 using Strilanc.Parsing;
 
 public class Program {
-    public struct Pointy2 {
-        public Pointy P1;
-        public Pointy P2;
-    }
-
     [StructLayoutAttribute(LayoutKind.Sequential, Pack = 1)]
-    public struct Pointy {
+    public struct Point3 {
         public readonly int X;
         public readonly int Y;
-        public readonly Int16 M;
-        public readonly Int16 N;
-        public Pointy(int x, int y, Int16 m, Int16 n) {
+        public readonly int Z;
+        public Point3(int x, int y, int z) {
             X = x;
             Y = y;
-            M = m;
-            N = n;
+            Z = z;
         }
-
     }
-    private static Pointy[] ParseFrom(ArraySegment<byte> data, int n) {
-        var r = new Pointy[n];
+    private static ParsedValue<IReadOnlyList<Point3>> HandrolledParse(ArraySegment<byte> data) {
+        if (data.Count % 12 != 0) throw new ArgumentException();
+        var count = data.Count/12;
+        var r = new Point3[count];
         var j = data.Offset;
-        for (var i = 0; i < n; i += 4) {
-            r[i] = new Pointy(
-                BitConverter.ToInt32(data.Array, j + 4),
-                BitConverter.ToInt32(data.Array, j + 0),
-                BitConverter.ToInt16(data.Array, j + 8),
-                BitConverter.ToInt16(data.Array, j + 10));
-            r[i+1] = new Pointy(
-                BitConverter.ToInt32(data.Array, j + 16),
-                BitConverter.ToInt32(data.Array, j + 12),
-                BitConverter.ToInt16(data.Array, j + 20),
-                BitConverter.ToInt16(data.Array, j + 22));
-            r[i + 2] = new Pointy(
-                BitConverter.ToInt32(data.Array, j + 28),
-                BitConverter.ToInt32(data.Array, j + 24),
-                BitConverter.ToInt16(data.Array, j + 32),
-                BitConverter.ToInt16(data.Array, j + 34));
-            r[i + 3] = new Pointy(
-                BitConverter.ToInt32(data.Array, j + 40),
-                BitConverter.ToInt32(data.Array, j + 36),
-                BitConverter.ToInt16(data.Array, j + 44),
-                BitConverter.ToInt16(data.Array, j + 46));
-            j += 48;
+        var a = data.Array;
+        for (var i = 0; i < count; i++) {
+            r[i] = new Point3(
+                BitConverter.ToInt32(a, j + 0),
+                BitConverter.ToInt32(a, j + 4),
+                BitConverter.ToInt32(a, j + 8));
+            j += 12;
         }
-        return r;
+        return new ParsedValue<IReadOnlyList<Point3>>(r, data.Count);
     }
     static void Main() {
         const int DataRepeatCount = 10000;
 
-        var handrolledParser = new AnonymousParser<Pointy[]>(e => new ParsedValue<Pointy[]>(ParseFrom(e, DataRepeatCount), DataRepeatCount * 12));
+        var handrolledParser = new AnonymousParser<IReadOnlyList<Point3>>(HandrolledParse);
 
         var blitParser =
-            new Parse.Builder<Pointy> {
+            new Parse.Builder<Point3> {
                 {"x", Parse.Int32LittleEndian},
                 {"y", Parse.Int32LittleEndian},
-                {"m", Parse.Int16LittleEndian},
-                {"n", Parse.Int16LittleEndian}}.Build()
+                {"z", Parse.Int32LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
         var dynamicParser =
             (from y in Parse.Int32LittleEndian
              from x in (y == 0 ? Parse.Int32LittleEndian : Parse.Int32BigEndian)
-             from m in Parse.Int16LittleEndian
-             from n in Parse.Int16LittleEndian
-             select new Pointy(x, y, m, n)
-            ).RepeatNTimes(DataRepeatCount);
+             from z in Parse.Int32LittleEndian
+             select new Point3(x, y, z)
+            ).RepeatUntilEndOfData();
 
         var compiledParser =
-            new Parse.Builder<Pointy> {
+            new Parse.Builder<Point3> {
                 {"y", Parse.Int32LittleEndian},
                 {"x", Parse.Int32LittleEndian},
-                {"m", Parse.Int16LittleEndian},
-                {"n", Parse.Int16LittleEndian}}.Build()
+                {"z", Parse.Int32LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
         var data = new ArraySegment<byte>(Enumerable.Repeat(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, DataRepeatCount).SelectMany(e => e).ToArray());
 
-        var parsers = new Dictionary<string, IParser<Pointy[]>> {
+        var parsers = new Dictionary<string, IParser<IReadOnlyList<Point3>>> {
             {"handrolled", handrolledParser},
             {"compiled", compiledParser},
             {"blit", blitParser},
@@ -93,7 +69,7 @@ public class Program {
         var s = new Stopwatch();
         const long Repetitions = 1000;
         for (var j = 0; j < 10; j++) {
-            Console.WriteLine("Parsing {0} {1}-byte items {2} times", DataRepeatCount, Marshal.SizeOf(typeof(Pointy)), Repetitions);
+            Console.WriteLine("Parsing {0} {1}-byte items {2} times", DataRepeatCount, Marshal.SizeOf(typeof(Point3)), Repetitions);
             foreach (var parser in parsers) {
                 var p = parser.Value;
                 s.Reset();
@@ -110,7 +86,7 @@ public class Program {
         Console.ReadLine();
     }
     private static string AsNiceBps(double d) {
-        var prefixes = new[] {"B/s", "KB/s", "MB/s", "GB/s"};
+        var prefixes = new[] {"B/s", "KB/s", "MB/s", "GB/s", "TB/s"};
         var i = 0;
         while (d > 100) {
             d /= 1000;
