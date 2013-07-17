@@ -79,7 +79,7 @@ public class Program {
                 }
                 s.Stop();
 
-                Console.WriteLine("{0}: {1:0.00}s, ~{2:0}", parser.Key.PadLeft(10), s.Elapsed.TotalSeconds, AsNiceBps(Repetitions * data.LongCount() / s.Elapsed.TotalSeconds));
+                Console.WriteLine("{0}: {1:0.00}s, ~{2}", parser.Key.PadLeft(10), s.Elapsed.TotalSeconds, AsNiceBps(Repetitions * data.LongCount() / s.Elapsed.TotalSeconds));
             }
             Console.WriteLine();
         }

@@ -95,9 +95,10 @@ namespace Strilanc.Parsing.Internal {
                 return Expression.Convert(Expression.ArrayIndex(array, offset), typeof(sbyte));
             }
 
+            var boundsCheck = Expression.IfThen(Expression.LessThan(count, Expression.Constant(Marshal.SizeOf(typeof(T)))), DataFragmentException.CachedThrowExpression);
             var value = Expression.Call(typeof(BitConverter).GetMethod("To" + typeof(T).Name), array, offset);
-            if (isSystemEndian) return value;
-            return Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
+            var result = isSystemEndian ? value : Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
+            return Expression.Block(boundsCheck, result);
         }
     }
 }

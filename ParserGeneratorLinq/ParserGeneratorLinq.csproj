@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parsing\CanonicalizingMemberName.cs" />
+    <Compile Include="Parsing\DataFragmentException.cs" />
     <Compile Include="Parsing\Internal\InlinedParserComponents.cs" />
     <Compile Include="Parsing\Internal\StructuredParsers\IFieldParserInternal.cs" />
     <Compile Include="Parsing\Internal\IParserInternal.cs" />
