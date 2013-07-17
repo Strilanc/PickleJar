@@ -28,14 +28,9 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             var resultConsumed = Expression.Variable(typeof(int), "totalConsumed");
             var loopIndex = Expression.Variable(typeof(int), "i");
 
-            var inlinedParseInfo = _itemParser.MakeParseFromDataExpression(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
-            var inlinedParsePerform = inlinedParseInfo.Item1;
-            var inlinedParseResultVariables = inlinedParseInfo.Item2;
-            var parsedItem = Expression.Variable(inlinedParsePerform.Type, "parsed");
-            var parsedItemValue = _itemParser.MakeGetValueFromParsedExpression(parsedItem);
-            var parsedItemConsumed = _itemParser.MakeGetConsumedFromParsedExpression(parsedItem);
+            var inlinedParseComponents = _itemParser.MakeInlinedParserComponents(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
 
-            var locals = new[] { resultArray, resultConsumed, loopIndex, parsedItem };
+            var locals = new[] { resultArray, resultConsumed, loopIndex };
             var initStatements = Expression.Block(
                 Expression.Assign(resultArray, Expression.NewArrayBounds(typeof (T), itemCount)),
                 Expression.Assign(resultConsumed, Expression.Constant(0)),
@@ -44,15 +39,15 @@ namespace Strilanc.Parsing.Internal.RepetitionParsers {
             var loopExit = Expression.Label();
             var loopStatements = Expression.Loop(
                 Expression.Block(
-                    inlinedParseResultVariables,
+                    inlinedParseComponents.ResultStorage,
                     Expression.IfThen(Expression.GreaterThanOrEqual(loopIndex, itemCount), Expression.Break(loopExit)),
-                    Expression.Assign(parsedItem, inlinedParsePerform),
-                    Expression.AddAssign(resultConsumed, parsedItemConsumed),
+                    inlinedParseComponents.PerformParse,
+                    Expression.AddAssign(resultConsumed, inlinedParseComponents.AfterParseConsumedGetter),
                     Expression.Assign(
                         Expression.ArrayAccess(
                             resultArray, 
-                            Expression.PostIncrementAssign(loopIndex)), 
-                        parsedItemValue)),
+                            Expression.PostIncrementAssign(loopIndex)),
+                        inlinedParseComponents.AfterParseValueGetter)),
                 loopExit);
 
             var result = Expression.New(

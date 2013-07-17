@@ -14,14 +14,8 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
         object IFieldParser.Parser { get { return Parser; } }
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return Parser.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(); } }
         public int? OptionalConstantSerializedLength { get { return Parser.OptionalConstantSerializedLength(); } }
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return Parser.MakeParseFromDataExpression(array, offset, count);
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return Parser.MakeGetValueFromParsedExpression(parsed);
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
-            return Parser.MakeGetConsumedFromParsedExpression(parsed);
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return Parser.MakeInlinedParserComponents(array, offset, count);
         }
 
         public FieldParser(IParser<T> parser, CanonicalizingMemberName name) {

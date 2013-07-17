@@ -23,13 +23,7 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
         }
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return SubParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength()); } }
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return null;
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return null;
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
         }
     }

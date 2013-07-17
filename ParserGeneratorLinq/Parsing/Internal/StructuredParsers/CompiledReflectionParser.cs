@@ -54,28 +54,28 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
             var paramDataOffset = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Offset"));
             var paramDataCount = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Count"));
 
-            var bodyAndVars = TryMakeParseFromDataExpression(paramDataArray, paramDataOffset, paramDataCount);
+            var bodyAndVars = TryMakeInlinedParserComponents(paramDataArray, paramDataOffset, paramDataCount);
     
             var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
                 Expression.Block(
-                    bodyAndVars.Item2,
+                    bodyAndVars.ResultStorage,
                     new[] {
-                        bodyAndVars.Item1,
+                        bodyAndVars.PerformParse,
                         Expression.New(typeof (ParsedValue<T>).GetConstructor(new[] {typeof (T), typeof (int)}).NotNull(),
-                                       _varResultValue,
-                                       _varTotal)
+                                       bodyAndVars.AfterParseValueGetter,
+                                       bodyAndVars.AfterParseConsumedGetter)
                     }),
                 new[] {paramData});
 
             return method.Compile();
         }
 
-        private readonly ParameterExpression _varResultValue = Expression.Variable(typeof(T), "result");
-        private readonly ParameterExpression _varTotal = Expression.Variable(typeof(int), "total");
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
             return _parser(data);
         }
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            var varResultValue = Expression.Variable(typeof(T));
+            var varTotal = Expression.Variable(typeof(int));
             var parserMap = _fieldParsers.KeyedBy(e => e.CanonicalName);
             var mutableMemberMap = GetMutableMemberMap();
 
@@ -87,54 +87,48 @@ namespace Strilanc.Parsing.Internal.StructuredParsers {
             var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
                 .KeyedBy(e => e.CanonicalName());
 
-            var initLocals = Expression.Assign(_varTotal, Expression.Constant(0));
+            var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
 
             var fieldParsings = (from fieldParser in _fieldParsers
-                                 let invokeParse = fieldParser.MakeParseFromDataExpression(
+                                 let inlinedParseComponents = fieldParser.MakeInlinedParserComponents(
                                      array,
-                                     Expression.Add(offset, _varTotal),
-                                     Expression.Subtract(count, _varTotal))
-                                 let variableForResultOfParsing = Expression.Variable(invokeParse.Item1.Type, fieldParser.CanonicalName.ToString())
-                                 let parsingValue = fieldParser.MakeGetValueFromParsedExpression(variableForResultOfParsing)
-                                 let parsingConsumed = fieldParser.MakeGetConsumedFromParsedExpression(variableForResultOfParsing)
-                                 select new { fieldParser, parsingValue, parsingConsumed, variableForResultOfParsing, invokeParse }
-                                ).ToArray();
+                                     Expression.Add(offset, varTotal),
+                                     Expression.Subtract(count, varTotal))
+                                 select new { fieldParser, inlinedParseComponents }
+                                 ).ToArray();
 
             var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => Expression.Block(
-                Expression.Assign(e.variableForResultOfParsing, e.invokeParse.Item1),
-                Expression.AddAssign(_varTotal, e.parsingConsumed))).Block();
+                e.inlinedParseComponents.PerformParse,
+                Expression.AddAssign(varTotal, e.inlinedParseComponents.AfterParseConsumedGetter))).Block();
 
             var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName);
             var valueConstructedFromParsedValues = 
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
                 : Expression.New(chosenConstructor,
-                                 chosenConstructor.GetParameters().Select(e => parseValMap[e.CanonicalName()].parsingValue));
+                                 chosenConstructor.GetParameters().Select(e => parseValMap[e.CanonicalName()].inlinedParseComponents.AfterParseValueGetter));
 
             var assignMutableMembersBlock =
                 parserMap
                     .Where(e => !parameterMap.ContainsKey(e.Key))
                     .Select(e => Expression.Assign(
-                        Expression.MakeMemberAccess(_varResultValue, mutableMemberMap[e.Key]),
-                        parseValMap[e.Key].parsingValue))
+                        Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
+                        parseValMap[e.Key].inlinedParseComponents.AfterParseValueGetter))
                     .Block();
 
-            var locals = fieldParsings.Select(e => e.variableForResultOfParsing).Concat(fieldParsings.SelectMany(e => e.invokeParse.Item2));
+            var locals = fieldParsings.SelectMany(e => e.inlinedParseComponents.ResultStorage);
             var statements = new[] {
                 initLocals,
                 parseFieldsAndStoreResultsBlock,
-                Expression.Assign(_varResultValue, valueConstructedFromParsedValues),
-                assignMutableMembersBlock,
-                _varResultValue
+                Expression.Assign(varResultValue, valueConstructedFromParsedValues),
+                assignMutableMembersBlock
             };
 
-            return Tuple.Create((Expression)Expression.Block(locals, statements), new[] {_varTotal, _varResultValue});
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return _varResultValue;
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
-            return _varTotal;
+            return new InlinedParserComponents(
+                performParse: Expression.Block(locals, statements),
+                afterParseValueGetter: varResultValue,
+                afterParseConsumedGetter: varTotal,
+                resultStorage: new[] {varTotal, varResultValue});
         }
 
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }

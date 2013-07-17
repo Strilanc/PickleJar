@@ -21,14 +21,8 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             if (!_isSystemEndian) value = value.ReverseBytes();
             return new ParsedValue<Int64>(value, SerializedLength);
         }
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return NumberParseBuilderUtil.MakeParseFromDataExpression<Int64>(_isSystemEndian, array, offset, count);
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetValueFromParsedExpression(parsed);
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetConsumedFromParsedExpression<Int64>(parsed);
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return ParserUtil.MakeInlinedNumberParserComponents<Int64>(_isSystemEndian, array, offset, count);
         }
     }
 }

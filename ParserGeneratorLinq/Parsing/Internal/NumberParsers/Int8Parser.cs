@@ -13,14 +13,8 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             }
         }
 
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return NumberParseBuilderUtil.MakeParseFromDataExpression<sbyte>(true, array, offset, count);
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetValueFromParsedExpression(parsed);
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetConsumedFromParsedExpression<sbyte>(parsed);
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return ParserUtil.MakeInlinedNumberParserComponents<sbyte>(true, array, offset, count);
         }
     }
 }

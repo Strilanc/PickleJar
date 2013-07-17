@@ -68,13 +68,7 @@ namespace Strilanc.Parsing.Internal.UnsafeParsers {
             return true;
         }
 
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return null;
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return null;
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
         }
     }

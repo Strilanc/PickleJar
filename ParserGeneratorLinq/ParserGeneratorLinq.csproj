@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parsing\CanonicalizingMemberName.cs" />
+    <Compile Include="Parsing\Internal\InlinedParserComponents.cs" />
     <Compile Include="Parsing\Internal\StructuredParsers\IFieldParserInternal.cs" />
     <Compile Include="Parsing\Internal\IParserInternal.cs" />
     <Compile Include="Parsing\Internal\StructuredParsers\SequenceParser.cs" />
@@ -55,7 +56,6 @@
     <Compile Include="Parsing\Internal\RepetitionParsers\CompiledBulkParser.cs" />
     <Compile Include="Parsing\Internal\RepetitionParsers\GreedyRepeatParser.cs" />
     <Compile Include="Parsing\IFieldParser.cs" />
-    <Compile Include="Parsing\Internal\NumberParsers\NumberParseBuilder.cs" />
     <Compile Include="Parsing\Internal\ParserUtil.cs" />
     <Compile Include="Parsing\Internal\RepetitionParsers\BulkParser.cs" />
     <Compile Include="Parsing\Internal\RepetitionParsers\CountPrefixedRepeatParser.cs" />

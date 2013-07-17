@@ -10,14 +10,8 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             return new ParsedValue<byte>(value, 1);
         }
 
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return NumberParseBuilderUtil.MakeParseFromDataExpression<byte>(true, array, offset, count);
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetValueFromParsedExpression(parsed);
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetConsumedFromParsedExpression<byte>(parsed);
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return ParserUtil.MakeInlinedNumberParserComponents<byte>(true, array, offset, count);
         }
     }
 }

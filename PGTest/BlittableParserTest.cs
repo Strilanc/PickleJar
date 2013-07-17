@@ -91,11 +91,15 @@ public class BlittableParserTest {
         var parser = (IParserInternal<T>)exposedParser;
         var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
         var d = new ArraySegment<byte>(array, 0, array.Length);
-        var e1 = parser.TryMakeParseFromDataExpression(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
-        var e2 = parser.TryMakeGetValueFromParsedExpression(e1.Item1);
-        var e3 = parser.TryMakeGetConsumedFromParsedExpression(e1.Item1);
+        var inlinedParseComponents = parser.TryMakeInlinedParserComponents(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
 
-        var body = Expression.New(typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }), e2, e3);
+        var body = Expression.Block(
+            inlinedParseComponents.ResultStorage,
+            inlinedParseComponents.PerformParse,
+            Expression.New(
+                typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }).NotNull(), 
+                inlinedParseComponents.AfterParseValueGetter, 
+                inlinedParseComponents.AfterParseConsumedGetter));
         var method = Expression.Lambda<Func<ParsedValue<T>>>(body);
         var result = method.Compile()();
         var normal = parser.Parse(d);

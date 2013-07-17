@@ -22,14 +22,8 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
             return new ParsedValue<UInt32>(value, SerializedLength);
         }
 
-        public Tuple<Expression, ParameterExpression[]> TryMakeParseFromDataExpression(Expression array, Expression offset, Expression count) {
-            return NumberParseBuilderUtil.MakeParseFromDataExpression<UInt32>(_isSystemEndian, array, offset, count);
-        }
-        public Expression TryMakeGetValueFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetValueFromParsedExpression(parsed);
-        }
-        public Expression TryMakeGetConsumedFromParsedExpression(Expression parsed) {
-            return NumberParseBuilderUtil.MakeGetConsumedFromParsedExpression<UInt32>(parsed);
+        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return ParserUtil.MakeInlinedNumberParserComponents<UInt32>(_isSystemEndian, array, offset, count);
         }
     }
 }
