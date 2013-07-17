@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BD87EACB-E90F-460A-977D-5E693035BC0F}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Strilanc</RootNamespace>
+    <AssemblyName>PickleJar</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MoreLinq">
+      <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\Microsoft.Bcl.Immutable.1.0.12-beta\lib\portable-net45+win8+wp8\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PickleJar\CanonicalizingMemberName.cs" />
+    <Compile Include="PickleJar\DataFragmentException.cs" />
+    <Compile Include="PickleJar\Internal\CollectionUtil.cs" />
+    <Compile Include="PickleJar\Internal\InlinedParserComponents.cs" />
+    <Compile Include="PickleJar\Internal\StructuredParsers\IFieldParserInternal.cs" />
+    <Compile Include="PickleJar\Internal\IParserInternal.cs" />
+    <Compile Include="PickleJar\Internal\StructuredParsers\SequenceParser.cs" />
+    <Compile Include="PickleJar\Parse.cs" />
+    <Compile Include="PickleJar\AnonymousParser.cs" />
+    <Compile Include="PickleJar\Internal\RepetitionParsers\CompiledBulkParser.cs" />
+    <Compile Include="PickleJar\Internal\RepetitionParsers\GreedyRepeatParser.cs" />
+    <Compile Include="PickleJar\IFieldParser.cs" />
+    <Compile Include="PickleJar\Internal\ParserUtil.cs" />
+    <Compile Include="PickleJar\Internal\RepetitionParsers\BulkParser.cs" />
+    <Compile Include="PickleJar\Internal\RepetitionParsers\CountPrefixedRepeatParser.cs" />
+    <Compile Include="PickleJar\Internal\UnsafeParsers\BlittableBulkParser.cs" />
+    <Compile Include="PickleJar\Internal\RepetitionParsers\FixedRepeatParser.cs" />
+    <Compile Include="PickleJar\Internal\UnsafeParsers\BlittableStructParser.cs" />
+    <Compile Include="PickleJar\Internal\UnsafeParsers\UnsafeBlitUtil.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\UInt16Parser.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\UInt32Parser.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\UInt64Parser.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\Int8Parser.cs" />
+    <Compile Include="PickleJar\ParseBuilder.cs" />
+    <Compile Include="PickleJar\Internal\StructuredParsers\FieldParser.cs" />
+    <Compile Include="PickleJar\Internal\StructuredParsers\CompiledReflectionParser.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\UInt8Parser.cs" />
+    <Compile Include="PickleJar\Internal\IBulkParser.cs" />
+    <Compile Include="PickleJar\Internal\TwiddleUtil.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\Int16Parser.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\Int32Parser.cs" />
+    <Compile Include="PickleJar\Internal\NumberParsers\Int64Parser.cs" />
+    <Compile Include="PickleJar\IParser.cs" />
+    <Compile Include="PickleJar\ParsedValue.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PickleJar\Internal\StructuredParsers\TupleParser.cs" />
+    <Compile Include="Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
