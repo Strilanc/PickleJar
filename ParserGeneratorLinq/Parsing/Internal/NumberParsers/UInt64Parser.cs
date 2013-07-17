@@ -17,6 +17,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
         }
 
         public ParsedValue<UInt64> Parse(ArraySegment<byte> data) {
+            if (data.Count < SerializedLength) throw new DataFragmentException();
             var value = BitConverter.ToUInt64(data.Array, data.Offset);
             if (!_isSystemEndian) value = value.ReverseBytes();
             return new ParsedValue<UInt64>(value, SerializedLength);

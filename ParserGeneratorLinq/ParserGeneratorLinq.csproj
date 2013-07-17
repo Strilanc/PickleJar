@@ -38,6 +38,9 @@
       <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\Microsoft.Bcl.Immutable.1.0.12-beta\lib\portable-net45+win8+wp8\System.Collections.Immutable.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Parsing\CanonicalizingMemberName.cs" />
     <Compile Include="Parsing\DataFragmentException.cs" />
+    <Compile Include="Parsing\Internal\CollectionUtil.cs" />
     <Compile Include="Parsing\Internal\InlinedParserComponents.cs" />
     <Compile Include="Parsing\Internal\StructuredParsers\IFieldParserInternal.cs" />
     <Compile Include="Parsing\Internal\IParserInternal.cs" />

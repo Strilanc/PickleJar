@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.Parsing.Internal.UnsafeParsers;
+using Strilanc.Parsing.Internal;
 
 [TestClass]
 public class BlitUtilTest {

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Strilanc.Parsing.Internal.RepetitionParsers;
 using Strilanc.Parsing.Internal.StructuredParsers;
 using Strilanc.Parsing.Internal.UnsafeParsers;
 using System.Linq;
+using MoreLinq;
 
 namespace Strilanc.Parsing.Internal {
     /// <summary>

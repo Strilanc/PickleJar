@@ -8,6 +8,7 @@ namespace Strilanc.Parsing.Internal.NumberParsers {
 
         public ParsedValue<sbyte> Parse(ArraySegment<byte> data) {
             unchecked {
+                if (data.Count < 1) throw new DataFragmentException();
                 var value = (sbyte)data.Array[data.Offset];
                 return new ParsedValue<sbyte>(value, 1);
             }
