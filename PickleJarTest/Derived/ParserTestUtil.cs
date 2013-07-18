@@ -9,7 +9,7 @@ using Strilanc.PickleJar.Internal;
 public class ParserTestUtil {
     [TestMethod]
     public void TestAllPublicParsersAndCombinatorsAreValid() {
-        var api = typeof(Parse);
+        var api = typeof(Jar);
         var parsers = api.GetProperties(BindingFlags.Static | BindingFlags.Public).Select(e => e.GetValue(null)).ToArray();
 
         var combinators = 
@@ -18,7 +18,7 @@ public class ParserTestUtil {
             .ToArray();
         Func<Type, object[]> getParams = t => {
             if (t == typeof(int)) return new object[] {int.MinValue, -1, 0, 1, 2, int.MaxValue};
-            if (t == typeof(IParser<int>)) return new object[] { Parse.Int32LittleEndian, Parse.Int32BigEndian };
+            if (t == typeof(IParser<int>)) return new object[] { Jar.Int32LittleEndian, Jar.Int32BigEndian };
             if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,>)) return new object[] { new Func<int, int>(e1 => e1 + 1) };
             if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,,>)) return new object[] { new Func<int, int, int>((e1, e2) => e1 + e2 + 1) };
             var p = parsers.Where(e => e.GetType().IsInstanceOfType(t)).ToArray();

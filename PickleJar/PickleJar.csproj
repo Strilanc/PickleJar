@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BD87EACB-E90F-460A-977D-5E693035BC0F}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Strilanc</RootNamespace>
     <AssemblyName>PickleJar</AssemblyName>
@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
@@ -50,13 +53,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PickleJar\CanonicalizingMemberName.cs" />
+    <Compile Include="PickleJar\JarUtil.cs" />
     <Compile Include="PickleJar\DataFragmentException.cs" />
     <Compile Include="PickleJar\Internal\CollectionUtil.cs" />
     <Compile Include="PickleJar\Internal\InlinedParserComponents.cs" />
     <Compile Include="PickleJar\Internal\StructuredParsers\IFieldParserInternal.cs" />
     <Compile Include="PickleJar\Internal\IParserInternal.cs" />
     <Compile Include="PickleJar\Internal\StructuredParsers\SequenceParser.cs" />
-    <Compile Include="PickleJar\Parse.cs" />
+    <Compile Include="PickleJar\Jar.cs" />
     <Compile Include="PickleJar\AnonymousParser.cs" />
     <Compile Include="PickleJar\Internal\RepetitionParsers\CompiledBulkParser.cs" />
     <Compile Include="PickleJar\Internal\RepetitionParsers\GreedyRepeatParser.cs" />
@@ -83,10 +87,8 @@
     <Compile Include="PickleJar\Internal\NumberParsers\Int64Parser.cs" />
     <Compile Include="PickleJar\IParser.cs" />
     <Compile Include="PickleJar\ParsedValue.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PickleJar\Internal\StructuredParsers\TupleParser.cs" />
-    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

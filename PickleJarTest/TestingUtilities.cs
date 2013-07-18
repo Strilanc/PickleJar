@@ -6,6 +6,9 @@ public static class TestingUtilities {
     public static void AssertTrue(this bool value) {
         Assert.IsTrue(value);
     }
+    public static void AssertFalse(this bool value) {
+        Assert.IsFalse(value);
+    }
     public static T InvokeWithDefaultOnFail<T>(Func<T> v) {
         try {
             var r = v();

@@ -4,9 +4,9 @@ using Strilanc.PickleJar.Internal.StructuredParsers;
 using Strilanc.PickleJar.Internal.UnsafeParsers;
 
 namespace Strilanc.PickleJar {
-    public static partial class Parse {
+    public static partial class Jar {
         /// <summary>
-        /// Parse.Builder is used to build up a type parser by adding parsers to be matched against that type's required fields.
+        /// Jar.Builder is used to build up a type parser by adding parsers to be matched against that type's required fields.
         /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
         /// Use the Build method to produce a dynamically optimized parser for the type.
         /// </summary>

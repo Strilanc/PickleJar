@@ -6,9 +6,9 @@ using Strilanc.PickleJar.Internal.RepetitionParsers;
 
 namespace Strilanc.PickleJar {
     /// <summary>
-    /// The Parse class exposes utilities for accessing, creating, and combining parsers.
+    /// The Jar class exposes utilities for accessing, creating, and combining parsers.
     /// </summary>
-    public static partial class Parse {
+    public static partial class Jar {
         /// <summary>Returns a parser that parses a single serialized byte into the congruent signed byte value.</summary>
         public static IParser<sbyte> Int8 { get { return new Int8Parser(); } }
         /// <summary>Returns a parser that parses a single serialized byte into that same byte value.</summary>

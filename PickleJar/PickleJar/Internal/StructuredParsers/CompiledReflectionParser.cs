@@ -20,7 +20,7 @@ namespace Strilanc.PickleJar.Internal.StructuredParsers {
             _parser = MakeParser();
         }
 
-        private static Dictionary<CanonicalizingMemberName, MemberInfo> GetMutableMemberMap() {
+        private static IReadOnlyDictionary<CanonicalizingMemberName, MemberInfo> GetMutableMemberMap() {
             var mutableFields = typeof(T).GetFields()
                                          .Where(e => e.IsPublic)
                                          .Where(e => !e.IsInitOnly);

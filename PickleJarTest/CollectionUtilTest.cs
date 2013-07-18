@@ -1,6 +1,7 @@
-﻿using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
 using Strilanc.PickleJar.Internal;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
 public class CollectionUtilTest {
@@ -120,5 +121,55 @@ public class CollectionUtilTest {
                  (e1, e2) => e1.SequenceEqual(e2))
             .All(e => e)
             .AssertTrue();
+    }
+    [TestMethod]
+    public void TestKeyedBy() {
+        var d = new[] { 1, 2, 3 }.KeyedBy(e => e * e);
+        d.Count.AssertEquals(3);
+        d[1].AssertEquals(1);
+        d[4].AssertEquals(2);
+        d[9].AssertEquals(3);
+    }
+    [TestMethod]
+    public void TestToIndexMap() {
+        var d = new[] { 'a', 'b', 'c' }.ToIndexMap();
+        d.Count.AssertEquals(3);
+        d['a'].AssertEquals(0);
+        d['b'].AssertEquals(1);
+        d['c'].AssertEquals(2);
+    }
+    [TestMethod]
+    public void TestSkip() {
+        var r = new ArraySegment<int>(new[] {1, 2, 3, 4, 5});
+        var r2 = r.Skip(2);
+        r2.Array.AssertEquals(r.Array);
+        r2.Offset.AssertEquals(2);
+        r2.Count.AssertEquals(3);
+        var r3 = r2.Skip(3);
+        r3.Count.AssertEquals(0);
+    }
+    [TestMethod]
+    public void TestHasSameSetOfItemsAs() {
+        new int[] { }.HasSameSetOfItemsAs(new int[] { }).AssertTrue();
+        new int[2].HasSameSetOfItemsAs(new int[5]).AssertTrue();
+        new[] { 1, 2, 3 }.HasSameSetOfItemsAs(new[] { 3, 1, 2 }).AssertTrue();
+        new[] { 1, 2, 3 }.HasSameSetOfItemsAs(new[] { 1, 2 }).AssertFalse();
+        new[] { 1, 3 }.HasSameSetOfItemsAs(new[] { 3, 1, 2 }).AssertFalse();
+        new[] { 1, 2, 3 }.HasSameSetOfItemsAs(new[] { 3, 1, 4 }).AssertFalse();
+        new[] { 1, 2, 3 }.HasSameSetOfItemsAs(new[] { 3, 1, 4 }).AssertFalse();
+        new[] { 1, 3, 3 }.HasSameSetOfItemsAs(new[] { 1, 2, 3 }).AssertFalse();
+        new[] { 1, 2, 3, 3 }.HasSameSetOfItemsAs(new[] { 1, 2, 3 }).AssertTrue();
+    }
+    [TestMethod]
+    public void TestIsSameOrSubSetOf() {
+        new int[] { }.IsSameOrSubsetOf(new int[] { }).AssertTrue();
+        new int[2].IsSameOrSubsetOf(new int[5]).AssertTrue();
+        new[] { 1, 2, 3 }.IsSameOrSubsetOf(new[] { 3, 1, 2 }).AssertTrue();
+        new[] { 1, 2, 3 }.IsSameOrSubsetOf(new[] { 1, 2 }).AssertFalse();
+        new[] { 1, 3 }.IsSameOrSubsetOf(new[] { 3, 1, 2 }).AssertTrue();
+        new[] { 1, 2, 3 }.IsSameOrSubsetOf(new[] { 3, 1, 4 }).AssertFalse();
+        new[] { 1, 2, 3 }.IsSameOrSubsetOf(new[] { 3, 1, 4 }).AssertFalse();
+        new[] { 1, 3, 3 }.IsSameOrSubsetOf(new[] { 1, 2, 3 }).AssertTrue();
+        new[] { 1, 2, 3, 3 }.IsSameOrSubsetOf(new[] { 1, 2, 3 }).AssertTrue();
     }
 }

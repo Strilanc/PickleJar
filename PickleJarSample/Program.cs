@@ -32,30 +32,30 @@ public class Program {
         }
         return new ParsedValue<IReadOnlyList<Point3>>(r, data.Count);
     }
-    static void Main() {
+    static void Main2() {
         const int DataRepeatCount = 10000;
 
         var handrolledParser = new AnonymousParser<IReadOnlyList<Point3>>(HandrolledParse);
 
         var blitParser =
-            new Parse.Builder<Point3> {
-                {"x", Parse.Int32LittleEndian},
-                {"y", Parse.Int32LittleEndian},
-                {"z", Parse.Int32LittleEndian}}.Build()
+            new Jar.Builder<Point3> {
+                {"x", Jar.Int32LittleEndian},
+                {"y", Jar.Int32LittleEndian},
+                {"z", Jar.Int32LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
         var dynamicParser =
-            (from y in Parse.Int32LittleEndian
-             from x in (y == 0 ? Parse.Int32LittleEndian : Parse.Int32BigEndian)
-             from z in Parse.Int32LittleEndian
+            (from y in Jar.Int32LittleEndian
+             from x in (y == 0 ? Jar.Int32LittleEndian : Jar.Int32BigEndian)
+             from z in Jar.Int32LittleEndian
              select new Point3(x, y, z)
             ).RepeatUntilEndOfData();
 
         var compiledParser =
-            new Parse.Builder<Point3> {
-                {"y", Parse.Int32LittleEndian},
-                {"x", Parse.Int32LittleEndian},
-                {"z", Parse.Int32LittleEndian}}.Build()
+            new Jar.Builder<Point3> {
+                {"y", Jar.Int32LittleEndian},
+                {"x", Jar.Int32LittleEndian},
+                {"z", Jar.Int32LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
         var data = new ArraySegment<byte>(Enumerable.Repeat(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, DataRepeatCount).SelectMany(e => e).ToArray());

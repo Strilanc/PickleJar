@@ -88,8 +88,8 @@ public class ExpressionTreeParserTest {
     [TestMethod]
     public void TestNoConstructor() {
         var r = new CompiledReflectionParser<TestNoConstructorStruct>(new[] {
-            Parse.Int32LittleEndian.ForField("X"),
-            Parse.Int32LittleEndian.ForField("Y")
+            Jar.Int32LittleEndian.ForField("X"),
+            Jar.Int32LittleEndian.ForField("Y")
         });
         var e = r.Parse(new byte[] {1, 0, 0, 0, 2, 0, 0, 0, 0xFF});
         e.Consumed.AssertEquals(8);

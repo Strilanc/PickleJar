@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Linq;
 using MoreLinq;
@@ -101,6 +102,48 @@ namespace Strilanc.PickleJar.Internal {
             var value = Expression.Call(typeof(BitConverter).GetMethod("To" + typeof(T).Name), array, offset);
             var result = isSystemEndian ? value : Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
             return Expression.Block(boundsCheck, result);
+        }
+
+        public static T NotNull<T>(this T value) where T : class {
+            if (value == null) throw new NullReferenceException();
+            return value;
+        }
+
+
+        public static int FieldOffsetOf(this Type type, FieldInfo field) {
+            return (int)Marshal.OffsetOf(type, field.Name);
+        }
+        public static bool IsBlittable<T>() {
+            return IsBlittable(typeof(T));
+        }
+        public static bool IsBlittable(this Type type) {
+            var blittablePrimitives = new[] {
+            typeof(byte),
+            typeof(sbyte),
+            typeof(short),
+            typeof(ushort),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong)
+        };
+            return blittablePrimitives.Contains(type)
+                   || (type.IsArray && type.GetElementType().IsValueType && type.GetElementType().IsBlittable())
+                   || type.GetFields().All(e => e.FieldType.IsBlittable());
+        }
+        public static Expression Block(this IEnumerable<Expression> expressions) {
+            var exp = expressions.ToArray();
+            if (exp.Length == 0) return Expression.Empty();
+            return Expression.Block(exp);
+        }
+        public static CanonicalizingMemberName CanonicalName(this MemberInfo member) {
+            return new CanonicalizingMemberName(member.Name);
+        }
+        public static CanonicalizingMemberName CanonicalName(this ParameterInfo parameter) {
+            return new CanonicalizingMemberName(parameter.Name);
+        }
+        public static IFieldParser ForField<T>(this IParser<T> parser, string fieldName) {
+            return new FieldParser<T>(parser, fieldName);
         }
     }
 }

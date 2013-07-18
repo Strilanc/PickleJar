@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PickleJar", "PickleJar\Pick
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PickleJarTest", "PickleJarTest\PickleJarTest.csproj", "{53D9EA53-8202-4317-8007-AF9EBCD050C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PickleJarSample", "PickleJarSample\PickleJarSample.csproj", "{93E4CF46-9C24-497A-8387-636C4F115D33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{53D9EA53-8202-4317-8007-AF9EBCD050C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53D9EA53-8202-4317-8007-AF9EBCD050C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53D9EA53-8202-4317-8007-AF9EBCD050C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93E4CF46-9C24-497A-8387-636C4F115D33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93E4CF46-9C24-497A-8387-636C4F115D33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93E4CF46-9C24-497A-8387-636C4F115D33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93E4CF46-9C24-497A-8387-636C4F115D33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

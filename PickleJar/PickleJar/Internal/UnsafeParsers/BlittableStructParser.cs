@@ -37,7 +37,7 @@ namespace Strilanc.PickleJar.Internal.UnsafeParsers {
             if (fieldParsers == null) throw new ArgumentNullException("fieldParsers");
 
             // type has blittable representation?
-            if (!Util.IsBlittable<T>()) return false;
+            if (!ParserUtil.IsBlittable<T>()) return false;
 
             // all parsers have same constant length representation as value in memory?
             if (fieldParsers.Any(e => !e.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch())) return false;

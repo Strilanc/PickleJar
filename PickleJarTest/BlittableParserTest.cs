@@ -28,8 +28,8 @@ public class BlittableParserTest {
     [TestMethod]
     public void TestValueParser() {
         var r = BlittableStructParser<TestStruct>.TryMake(new List<IFieldParser> {
-            Parse.Int16LittleEndian.ForField("v01"),
-            Parse.Int32LittleEndian.ForField("v2345")
+            Jar.Int16LittleEndian.ForField("v01"),
+            Jar.Int32LittleEndian.ForField("v2345")
         });
         var y = r.Parse(new byte[] { 0, 1, 2, 3, 4, 5, 0xFF });
         y.Consumed.AssertEquals(6);
@@ -38,8 +38,8 @@ public class BlittableParserTest {
     [TestMethod]
     public void TestValueParser2() {
         var r = BlittableStructParser<TestStruct2>.TryMake(new List<IFieldParser> {
-            Parse.Int16LittleEndian.ForField("v01"),
-            Parse.Int32LittleEndian.ForField("v2345")
+            Jar.Int16LittleEndian.ForField("v01"),
+            Jar.Int32LittleEndian.ForField("v2345")
         });
         var y = r.Parse(new byte[] { 0, 1, 2, 3, 4, 5, 0xFF });
         y.Consumed.AssertEquals(6);
@@ -72,20 +72,20 @@ public class BlittableParserTest {
 
     [TestMethod]
     public void TestNumberParserExpressions() {
-        TestNumberParserExpression(Parse.Int16LittleEndian);
-        TestNumberParserExpression(Parse.Int16BigEndian);
-        TestNumberParserExpression(Parse.Int32LittleEndian);
-        TestNumberParserExpression(Parse.Int32BigEndian);
-        TestNumberParserExpression(Parse.Int64LittleEndian);
-        TestNumberParserExpression(Parse.Int64BigEndian);
-        TestNumberParserExpression(Parse.UInt16LittleEndian);
-        TestNumberParserExpression(Parse.UInt16BigEndian);
-        TestNumberParserExpression(Parse.UInt32LittleEndian);
-        TestNumberParserExpression(Parse.UInt32BigEndian);
-        TestNumberParserExpression(Parse.UInt64LittleEndian);
-        TestNumberParserExpression(Parse.UInt64BigEndian);
-        TestNumberParserExpression(Parse.UInt8);
-        TestNumberParserExpression(Parse.Int8);
+        TestNumberParserExpression(Jar.Int16LittleEndian);
+        TestNumberParserExpression(Jar.Int16BigEndian);
+        TestNumberParserExpression(Jar.Int32LittleEndian);
+        TestNumberParserExpression(Jar.Int32BigEndian);
+        TestNumberParserExpression(Jar.Int64LittleEndian);
+        TestNumberParserExpression(Jar.Int64BigEndian);
+        TestNumberParserExpression(Jar.UInt16LittleEndian);
+        TestNumberParserExpression(Jar.UInt16BigEndian);
+        TestNumberParserExpression(Jar.UInt32LittleEndian);
+        TestNumberParserExpression(Jar.UInt32BigEndian);
+        TestNumberParserExpression(Jar.UInt64LittleEndian);
+        TestNumberParserExpression(Jar.UInt64BigEndian);
+        TestNumberParserExpression(Jar.UInt8);
+        TestNumberParserExpression(Jar.Int8);
     }
     private static void TestNumberParserExpression<T>(IParser<T> exposedParser) {
         var parser = (IParserInternal<T>)exposedParser;
