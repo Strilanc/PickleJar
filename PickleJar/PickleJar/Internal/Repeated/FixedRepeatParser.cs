@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.Bulk;
 
 namespace Strilanc.PickleJar.Internal.Repeated {
     /// <summary>

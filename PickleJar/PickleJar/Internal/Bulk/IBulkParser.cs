@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Strilanc.PickleJar.Internal {
+namespace Strilanc.PickleJar.Internal.Bulk {
     /// <summary>
     /// IBulkParser is implemented by types capable of efficiently parsing multiple contiguous values.
     /// </summary>

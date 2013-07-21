@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Strilanc.PickleJar.Internal.Repeated {
+namespace Strilanc.PickleJar.Internal.Bulk {
     /// <summary>
     /// BulkParser is the simplest implementation of IBulkParser.
     /// BulkParser works in the most obvious way: applying the item parser again and again.

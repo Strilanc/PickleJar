@@ -2,21 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
-namespace Strilanc.PickleJar.Internal.Unsafe {
+namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
     /// BlittableStructParser is used to parse values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
     /// BlittableStructParser uses unsafe code, but is slightly faster than other parsers.
     /// </summary>
     internal sealed class BlittableStructParser<T> : IParserInternal<T> {
+        private delegate T BlitParser(byte[] data, int offset, int length);
+
         private readonly int _length;
-        private readonly UnsafeBlitUtil.UnsafeValueBlitParser<T> _parser;
+        private readonly BlitParser _parser;
         private BlittableStructParser(IEnumerable<IFieldParser> fieldParsers) {
             var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength());
             if (!len.HasValue) throw new ArgumentException();
-            _parser = UnsafeBlitUtil.MakeUnsafeValueBlitParser<T>();
+            _parser = MakeUnsafeBlitParser();
             _length = len.Value;
         }
 
@@ -70,6 +74,40 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
 
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
+        }
+
+        /// <summary>
+        /// Emits a method that copies the contents of an array segment over the memory representation of a value.
+        /// </summary>
+        private static BlitParser MakeUnsafeBlitParser() {
+            var d = new DynamicMethod(
+                name: "BlitParseValue" + typeof(T),
+                returnType: typeof(T),
+                parameterTypes: new[] { typeof(byte[]), typeof(int), typeof(int) },
+                m: Assembly.GetExecutingAssembly().ManifestModule);
+
+            // ____(byte[] array, int offset, int length)
+            var g = d.GetILGenerator();
+
+            // T result = default(T);
+            g.DeclareLocal(typeof(T));
+            g.Emit(OpCodes.Ldloca_S, (byte)0);
+            g.Emit(OpCodes.Initobj, typeof(T));
+
+            // Marshal.Copy(array, offset, (IntPtr)resultPtr, length);
+            g.Emit(OpCodes.Ldarg_0);
+            g.Emit(OpCodes.Ldarg_1);
+            g.Emit(OpCodes.Ldloca_S, (byte)0);
+            g.Emit(OpCodes.Conv_U);
+            g.EmitCall(OpCodes.Call, typeof(IntPtr).GetMethod("op_Explicit", new[] { typeof(void*) }), null);
+            g.Emit(OpCodes.Ldarg_2);
+            g.EmitCall(OpCodes.Call, typeof(Marshal).GetMethod("Copy", new[] { typeof(byte[]), typeof(int), typeof(IntPtr), typeof(int) }), null);
+
+            // return result
+            g.Emit(OpCodes.Ldloc_0);
+            g.Emit(OpCodes.Ret);
+
+            return (BlitParser)d.CreateDelegate(typeof(BlitParser));
         }
     }
 }

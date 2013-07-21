@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Strilanc.PickleJar.Internal.Structured;
-using Strilanc.PickleJar.Internal.Unsafe;
 
 namespace Strilanc.PickleJar {
     public static partial class Jar {
