@@ -20,7 +20,7 @@ namespace Strilanc.PickleJar.Internal.Numbers {
             if (data.Count < SerializedLength) throw new DataFragmentException();
             var value = BitConverter.ToInt16(data.Array, data.Offset);
             if (!_isSystemEndian) value = value.ReverseBytes();
-            return new ParsedValue<Int16>(value, SerializedLength);
+            return value.AsParsed(SerializedLength);
         }
         public byte[] Pack(Int16 value) {
             var v = _isSystemEndian ? value : value.ReverseBytes();

@@ -87,20 +87,22 @@ namespace Strilanc.PickleJar.Internal {
         private static Expression MakeInlinedNumberParserExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var numberTypes = new[] {
                 typeof (byte), typeof (short), typeof (int), typeof (long),
-                typeof (sbyte), typeof (ushort), typeof (uint), typeof (ulong)
+                typeof (sbyte), typeof (ushort), typeof (uint), typeof (ulong),
+                typeof(float), typeof(double)
             };
             if (!numberTypes.Contains(typeof(T))) throw new ArgumentException("Unrecognized number type.");
 
-            if (typeof(T) == typeof(byte)) {
-                return Expression.ArrayIndex(array, offset);
-            }
-            if (typeof(T) == typeof(sbyte)) {
-                return Expression.Convert(Expression.ArrayIndex(array, offset), typeof(sbyte));
+            if (typeof(T) == typeof(byte) || typeof(T) == typeof(sbyte)) {
+                var v = (Expression)Expression.ArrayIndex(array, offset);
+                v = typeof (T) == typeof (byte) ? v : Expression.Convert(Expression.ArrayIndex(array, offset), typeof (sbyte));
+                return v;
             }
 
             var boundsCheck = Expression.IfThen(Expression.LessThan(count, Expression.Constant(Marshal.SizeOf(typeof(T)))), DataFragmentException.CachedThrowExpression);
             var value = Expression.Call(typeof(BitConverter).GetMethod("To" + typeof(T).Name), array, offset);
-            var result = isSystemEndian ? value : Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
+            var result = isSystemEndian
+                       ? value 
+                       : Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
             return Expression.Block(boundsCheck, result);
         }
 

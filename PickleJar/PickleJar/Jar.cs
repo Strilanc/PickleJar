@@ -41,6 +41,11 @@ namespace Strilanc.PickleJar {
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement unsigned long with the most significant byte first.</summary>
         public static IJar<UInt64> UInt64BigEndian { get { return new UInt64Jar(Endianess.BigEndian); } }
 
+        /// <summary>A jar for IEEE 32-bit single-precision floating point number.</summary>
+        public static IJar<float> Float32 { get { return new Float32Jar(); } }
+        /// <summary>A jar for IEEE 64-bit double-precision floating point number.</summary>
+        public static IJar<double> Float64 { get { return new Float64Jar(); } }
+
         /// <summary>Returns a parser that repeatedly uses an item parser a fixed number of times and puts the resulting item values into an array.</summary>
         public static IParser<IReadOnlyList<T>> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
