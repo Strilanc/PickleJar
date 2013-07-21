@@ -5,6 +5,7 @@ namespace Strilanc.PickleJar {
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parse;
 
         public AnonymousParser(Func<ArraySegment<byte>, ParsedValue<T>> parse) {
+            if (parse == null) throw new ArgumentNullException("parse");
             _parse = parse;
         }
         public ParsedValue<T> Parse(ArraySegment<byte> data) {

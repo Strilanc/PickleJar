@@ -52,7 +52,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PickleJar\AnonymousJar.cs" />
+    <Compile Include="PickleJar\AnonymousPacker.cs" />
     <Compile Include="PickleJar\CanonicalizingMemberName.cs" />
+    <Compile Include="PickleJar\IJar.cs" />
+    <Compile Include="PickleJar\Internal\IBulkJar.cs" />
+    <Compile Include="PickleJar\Internal\IJarInternal.cs" />
+    <Compile Include="PickleJar\Internal\IPackerInternal.cs" />
+    <Compile Include="PickleJar\IPacker.cs" />
     <Compile Include="PickleJar\JarUtil.cs" />
     <Compile Include="PickleJar\DataFragmentException.cs" />
     <Compile Include="PickleJar\Internal\CollectionUtil.cs" />

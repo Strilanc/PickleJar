@@ -7,9 +7,9 @@ namespace Strilanc.PickleJar.Internal.StructuredParsers {
     /// <summary>
     /// SequenceParser is used to parse consecutive values that have the same type but potentially different serialized representations.
     /// </summary>
-    internal sealed class SequenceParser<T> : IParserInternal<IReadOnlyList<T>> {
-        public readonly IReadOnlyList<IParser<T>> SubParsers;
-        public SequenceParser(IReadOnlyList<IParser<T>> subParsers) {
+    internal sealed class SequenceParser<T> : IJarInternal<IReadOnlyList<T>> {
+        public readonly IReadOnlyList<IJar<T>> SubParsers;
+        public SequenceParser(IReadOnlyList<IJar<T>> subParsers) {
             SubParsers = subParsers;
         }
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data) {
@@ -20,6 +20,9 @@ namespace Strilanc.PickleJar.Internal.StructuredParsers {
                 values.Add(r.Value);
             }
             return new ParsedValue<IReadOnlyList<T>>(values, total);
+        }
+        public byte[] Pack(IReadOnlyList<T> values) {
+            return values.Zip(SubParsers, (v, p) => p.Pack(v)).SelectMany(e => e).ToArray();
         }
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return SubParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength()); } }

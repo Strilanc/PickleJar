@@ -11,6 +11,7 @@ namespace Strilanc.PickleJar.Internal {
         /// When true, it may be possible to replace the parser with one that simply does a memcpy.
         /// </summary>
         bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get; }
+
         /// <summary>
         /// Determines if this parser is guaranteed to always consume the same number of bytes.
         /// If the result is non-null, it is the guaranteed constant number of bytes consumed in every parse.

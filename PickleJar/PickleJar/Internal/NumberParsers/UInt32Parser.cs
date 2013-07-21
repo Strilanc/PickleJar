@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.NumberParsers {
-    internal struct UInt32Parser : IParserInternal<UInt32> {
+    internal struct UInt32Parser : IJarInternal<UInt32> {
         private const int SerializedLength = 32 / 8;
 
         private readonly bool _isSystemEndian;
@@ -21,6 +21,10 @@ namespace Strilanc.PickleJar.Internal.NumberParsers {
             var value = BitConverter.ToUInt32(data.Array, data.Offset);
             if (!_isSystemEndian) value = value.ReverseBytes();
             return new ParsedValue<UInt32>(value, SerializedLength);
+        }
+        public byte[] Pack(UInt32 value) {
+            var v = _isSystemEndian ? value : value.ReverseBytes();
+            return BitConverter.GetBytes(v);
         }
 
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {

@@ -10,36 +10,36 @@ namespace Strilanc.PickleJar {
     /// </summary>
     public static partial class Jar {
         /// <summary>Returns a parser that parses a single serialized byte into the congruent signed byte value.</summary>
-        public static IParser<sbyte> Int8 { get { return new Int8Parser(); } }
+        public static IJar<sbyte> Int8 { get { return new Int8Parser(); } }
         /// <summary>Returns a parser that parses a single serialized byte into that same byte value.</summary>
-        public static IParser<byte> UInt8 { get { return new UInt8Parser(); } }
+        public static IJar<byte> UInt8 { get { return new UInt8Parser(); } }
 
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement signed short with the least significant byte first.</summary>
-        public static IParser<Int16> Int16LittleEndian { get { return new Int16Parser(Endianess.LittleEndian); } }
+        public static IJar<Int16> Int16LittleEndian { get { return new Int16Parser(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement signed short with the most significant byte first.</summary>
-        public static IParser<Int16> Int16BigEndian { get { return new Int16Parser(Endianess.BigEndian); } }
+        public static IJar<Int16> Int16BigEndian { get { return new Int16Parser(Endianess.BigEndian); } }
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement unsigned short with the least significant byte first.</summary>
-        public static IParser<UInt16> UInt16LittleEndian { get { return new UInt16Parser(Endianess.LittleEndian); } }
+        public static IJar<UInt16> UInt16LittleEndian { get { return new UInt16Parser(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement unsigned short with the most significant byte first.</summary>
-        public static IParser<UInt16> UInt16BigEndian { get { return new UInt16Parser(Endianess.BigEndian); } }
+        public static IJar<UInt16> UInt16BigEndian { get { return new UInt16Parser(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement signed int with the least significant byte first.</summary>
-        public static IParser<Int32> Int32LittleEndian { get { return new Int32Parser(Endianess.LittleEndian); } }
+        public static IJar<Int32> Int32LittleEndian { get { return new Int32Parser(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement signed int with the most significant byte first.</summary>
-        public static IParser<Int32> Int32BigEndian { get { return new Int32Parser(Endianess.BigEndian); } }
+        public static IJar<Int32> Int32BigEndian { get { return new Int32Parser(Endianess.BigEndian); } }
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement unsigned int with the least significant byte first.</summary>
-        public static IParser<UInt32> UInt32LittleEndian { get { return new UInt32Parser(Endianess.LittleEndian); } }
+        public static IJar<UInt32> UInt32LittleEndian { get { return new UInt32Parser(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement unsigned int with the most significant byte first.</summary>
-        public static IParser<UInt32> UInt32BigEndian { get { return new UInt32Parser(Endianess.BigEndian); } }
+        public static IJar<UInt32> UInt32BigEndian { get { return new UInt32Parser(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement signed long with the least significant byte first.</summary>
-        public static IParser<Int64> Int64LittleEndian { get { return new Int64Parser(Endianess.LittleEndian); } }
+        public static IJar<Int64> Int64LittleEndian { get { return new Int64Parser(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement signed long with the most significant byte first.</summary>
-        public static IParser<Int64> Int64BigEndian { get { return new Int64Parser(Endianess.BigEndian); } }
+        public static IJar<Int64> Int64BigEndian { get { return new Int64Parser(Endianess.BigEndian); } }
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement unsigned long with the least significant byte first.</summary>
-        public static IParser<UInt64> UInt64LittleEndian { get { return new UInt64Parser(Endianess.LittleEndian); } }
+        public static IJar<UInt64> UInt64LittleEndian { get { return new UInt64Parser(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement unsigned long with the most significant byte first.</summary>
-        public static IParser<UInt64> UInt64BigEndian { get { return new UInt64Parser(Endianess.BigEndian); } }
+        public static IJar<UInt64> UInt64BigEndian { get { return new UInt64Parser(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that repeatedly uses an item parser a fixed number of times and puts the resulting item values into an array.</summary>
         public static IParser<IReadOnlyList<T>> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {
@@ -48,7 +48,7 @@ namespace Strilanc.PickleJar {
             return new FixedRepeatParser<T>(itemParser.Bulk(), constantRepeatCount);
         }
         /// <summary>Returns a parser that first parses a count then repeatedly uses an item parser that number of times and puts the resulting item values into an array.</summary>
-        public static IParser<IReadOnlyList<T>> RepeatCountPrefixTimes<T>(this IParser<T> itemParser, IParser<int> countPrefixParser) {
+        public static IParser<IReadOnlyList<T>> RepeatCountPrefixTimes<T>(this IParser<T> itemParser, IJar<int> countPrefixParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
             if (countPrefixParser == null) throw new ArgumentNullException("countPrefixParser");
             return new CountPrefixedRepeatParser<T>(countPrefixParser, itemParser.Bulk());
@@ -65,10 +65,12 @@ namespace Strilanc.PickleJar {
             }
 
             var itemLength = n.Value;
-            var counter = new AnonymousParser<int>(e => {
-                if (e.Count % itemLength != 0) throw new InvalidOperationException("Fragment");
-                return new ParsedValue<int>(e.Count/itemLength, 0);
-            });
+            var counter = new AnonymousJar<int>(
+                data => {
+                    if (data.Count % itemLength != 0) throw new InvalidOperationException("Fragment");
+                    return new ParsedValue<int>(data.Count / itemLength, 0);
+                },
+                item => new byte[0]);
             return new CountPrefixedRepeatParser<T>(
                 counter,
                 itemParser.Bulk());
@@ -86,13 +88,16 @@ namespace Strilanc.PickleJar {
         /// <summary>
         /// Returns a parser that applies the given parser, but fails if running the value through the given constraint function does not return true.
         /// </summary>
-        public static IParser<T> Where<T>(this IParser<T> parser, Func<T, bool> constraint) {
+        public static IJar<T> Where<T>(this IJar<T> parser, Func<T, bool> constraint) {
             if (parser == null) throw new ArgumentNullException("parser");
             if (constraint == null) throw new ArgumentNullException("constraint");
-            return new AnonymousParser<T>(data => {
+            return new AnonymousJar<T>(data => {
                 var v = parser.Parse(data);
                 if (!constraint(v.Value)) throw new InvalidOperationException("Data did not match Where constraint");
                 return v;
+            }, item => {
+                if (!constraint(item)) throw new InvalidOperationException("Data did not match Where constraint");
+                return parser.Pack(item);
             });
         }
 

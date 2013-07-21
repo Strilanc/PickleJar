@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.NumberParsers {
-    internal struct Int8Parser : IParserInternal<sbyte> {
+    internal struct Int8Parser : IJarInternal<sbyte> {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return 1; } }
 
@@ -14,6 +14,11 @@ namespace Strilanc.PickleJar.Internal.NumberParsers {
             }
         }
 
+        public byte[] Pack(sbyte value) {
+            unchecked {
+                return new[] {(byte)value};
+            }
+        }
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return ParserUtil.MakeInlinedNumberParserComponents<sbyte>(true, array, offset, count);
         }
