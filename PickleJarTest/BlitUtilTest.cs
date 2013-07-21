@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Strilanc.PickleJar.Internal.Unsafe;
-using Strilanc.PickleJar.Internal;
+using Strilanc.PickleJar.Internal.Bulk;
+using Strilanc.PickleJar.Internal.Structured;
 
 [TestClass]
 public class BlitUtilTest {
@@ -24,20 +24,20 @@ public class BlitUtilTest {
 
     [TestMethod]
     public void TestValueParser() {
-        var r = UnsafeBlitUtil.MakeUnsafeValueBlitParser<TestStruct>();
+        var r = BlittableStructParser<TestStruct>.MakeUnsafeBlitParser();
         var y = r(new byte[] { 0, 1, 2, 3, 4, 5 }, 0, 6);
         y.AssertEquals(new TestStruct(0x0100, 0x05040302));
     }
     [TestMethod]
     public void TestValueParser2() {
-        var r = UnsafeBlitUtil.MakeUnsafeValueBlitParser<TestStruct2>();
+        var r = BlittableStructParser<TestStruct2>.MakeUnsafeBlitParser();
         var y = r(new byte[] { 0, 1, 2, 3, 4, 5 }, 0, 6);
         y.AssertEquals(new TestStruct2 {v01 = 0x0100, v2345 = 0x05040302});
     }
 
     [TestMethod]
     public void TestArrayParser() {
-        var r = UnsafeBlitUtil.MakeUnsafeArrayBlitParser<TestStruct>();
+        var r = BlittableBulkParser<TestStruct>.MakeUnsafeArrayBlitParser();
         var y = r(Enumerable.Range(0, 20).Select(e => (byte)e).ToArray(), 3, 0, 3*6);
         y.Length.AssertEquals(3);
         y[0].AssertEquals(new TestStruct(0x0100, 0x05040302));

@@ -13,7 +13,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// BlittableStructParser uses unsafe code, but is slightly faster than other parsers.
     /// </summary>
     internal sealed class BlittableStructParser<T> : IParserInternal<T> {
-        private delegate T BlitParser(byte[] data, int offset, int length);
+        public delegate T BlitParser(byte[] data, int offset, int length);
 
         private readonly int _length;
         private readonly BlitParser _parser;
@@ -79,7 +79,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
         /// <summary>
         /// Emits a method that copies the contents of an array segment over the memory representation of a value.
         /// </summary>
-        private static BlitParser MakeUnsafeBlitParser() {
+        public static BlitParser MakeUnsafeBlitParser() {
             var d = new DynamicMethod(
                 name: "BlitParseValue" + typeof(T),
                 returnType: typeof(T),
