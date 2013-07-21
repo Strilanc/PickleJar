@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.StructuredParsers {
+namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
     /// SequenceParser is used to parse consecutive values that have the same type but potentially different serialized representations.
     /// </summary>

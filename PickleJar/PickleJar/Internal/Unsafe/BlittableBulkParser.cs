@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Strilanc.PickleJar.Internal.UnsafeParsers {
+namespace Strilanc.PickleJar.Internal.Unsafe {
     /// <summary>
     /// BlittableBulkParser is used to parse arrays of values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.

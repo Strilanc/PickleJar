@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Strilanc.PickleJar.Internal.RepetitionParsers {
+namespace Strilanc.PickleJar.Internal.Repeated {
     /// <summary>
     /// GreedyRepeatParser parses contiguous values that are repeated until the last one ends at the end of the data.
     /// </summary>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
-namespace Strilanc.PickleJar.Internal.UnsafeParsers {
+namespace Strilanc.PickleJar.Internal.Unsafe {
     /// <summary>
     /// BlittableStructParser is used to parse values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.

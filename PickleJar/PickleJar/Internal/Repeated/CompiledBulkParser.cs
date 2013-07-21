@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.RepetitionParsers {
+namespace Strilanc.PickleJar.Internal.Repeated {
     /// <summary>
     /// CompiledBulkParser is an IBulkParser that performes dynamic optimization at runtime.
     /// In particular, CompiledBulkParser will attempt to inline the item parsing in order to avoid virtual calls.

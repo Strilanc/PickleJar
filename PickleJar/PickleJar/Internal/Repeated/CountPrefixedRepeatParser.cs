@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Strilanc.PickleJar.Internal.RepetitionParsers {
+namespace Strilanc.PickleJar.Internal.Repeated {
     /// <summary>
     /// CountPrefixedRepeatParser parses contiguous values that are repeated and prefixed by some sort of serialized repetition count.
     /// </summary>

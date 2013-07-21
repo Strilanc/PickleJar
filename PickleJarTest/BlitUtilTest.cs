@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Strilanc.PickleJar.Internal.UnsafeParsers;
+using Strilanc.PickleJar.Internal.Unsafe;
 using Strilanc.PickleJar.Internal;
 
 [TestClass]

@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Linq;
 
-namespace Strilanc.PickleJar.Internal.StructuredParsers {
+namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
     /// TupleParser is used to parse consecutive values that have different types.
     /// </summary>

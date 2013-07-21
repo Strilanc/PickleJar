@@ -5,9 +5,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Linq;
 using MoreLinq;
-using Strilanc.PickleJar.Internal.RepetitionParsers;
-using Strilanc.PickleJar.Internal.StructuredParsers;
-using Strilanc.PickleJar.Internal.UnsafeParsers;
+using Strilanc.PickleJar.Internal.Repeated;
+using Strilanc.PickleJar.Internal.Structured;
+using Strilanc.PickleJar.Internal.Unsafe;
 
 namespace Strilanc.PickleJar.Internal {
     /// <summary>

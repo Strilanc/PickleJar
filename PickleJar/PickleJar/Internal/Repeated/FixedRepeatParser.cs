@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.RepetitionParsers {
+namespace Strilanc.PickleJar.Internal.Repeated {
     /// <summary>
     /// FixedRepeatParser parses contiguous values that are repeated the same number of times every time.
     /// </summary>

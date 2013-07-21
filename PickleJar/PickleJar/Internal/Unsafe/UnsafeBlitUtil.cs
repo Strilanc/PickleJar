@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
-namespace Strilanc.PickleJar.Internal.UnsafeParsers {
+namespace Strilanc.PickleJar.Internal.Unsafe {
     /// <summary>
     /// UnsafeBlitUtil contains utility methods used when 'parsing' with a memcpy.
     /// </summary>

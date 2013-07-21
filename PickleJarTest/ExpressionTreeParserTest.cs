@@ -2,8 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.NumberParsers;
-using Strilanc.PickleJar.Internal.StructuredParsers;
+using Strilanc.PickleJar.Internal.Numbers;
+using Strilanc.PickleJar.Internal.Structured;
 
 [TestClass]
 public class ExpressionTreeParserTest {
@@ -34,31 +34,31 @@ public class ExpressionTreeParserTest {
     public void TestBadParsers() {
         // need ability to set all readonlys, fail safe if can't
         TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestUnsureClass1>(new[] {
-            new Int16Parser(Endianess.LittleEndian).ForField("InaccessibleValue")
+            new Int16Jar(Endianess.LittleEndian).ForField("InaccessibleValue")
         }));
         TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestUnsureClass1>(new IFieldParser[0]));
 
         // types must match
         TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestValidClass>(new[] {
-            new Int16Parser(Endianess.LittleEndian).ForField("MutableField"),
-            new Int32Parser(Endianess.LittleEndian).ForField("ReadOnlyField"),
-            new Int32Parser(Endianess.LittleEndian).ForField("PrivateReadOnlyField"),
-            new UInt8Parser().ForField("MutableProperty") // <-- wrong type
+            new Int16Jar(Endianess.LittleEndian).ForField("MutableField"),
+            new Int32Jar(Endianess.LittleEndian).ForField("ReadOnlyField"),
+            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField"),
+            new UInt8Jar().ForField("MutableProperty") // <-- wrong type
         }));
 
         // readonly fields must be initialized
         TestingUtilities.AssertThrows(() => new CompiledReflectionParser<TestValidClass>(new[] {
-            new Int16Parser(Endianess.LittleEndian).ForField("MutableField"),
+            new Int16Jar(Endianess.LittleEndian).ForField("MutableField"),
             // missing ReadOnlyField
-            new Int32Parser(Endianess.LittleEndian).ForField("PrivateReadOnlyField"),
-            new Int8Parser().ForField("MutableProperty")
+            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField"),
+            new Int8Jar().ForField("MutableProperty")
         }));
 
         // mutable fields are not required to be initialized
         TestingUtilities.AssertDoesNotThrow(() => new CompiledReflectionParser<TestValidClass>(new[] {
             // missing MutableField
-            new Int32Parser(Endianess.LittleEndian).ForField("ReadOnlyField"),
-            new Int32Parser(Endianess.LittleEndian).ForField("PrivateReadOnlyField")
+            new Int32Jar(Endianess.LittleEndian).ForField("ReadOnlyField"),
+            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField")
             // missing MutableProperty
         }));
     }
@@ -66,10 +66,10 @@ public class ExpressionTreeParserTest {
     [TestMethod]
     public void TestReflectedParser() {
         var r = new CompiledReflectionParser<TestValidClass>(new[] {
-            new UInt8Parser().ForField("MutableProperty"),
-            new Int16Parser(Endianess.LittleEndian).ForField("MutableField"),
-            new Int32Parser(Endianess.LittleEndian).ForField("ReadOnlyField"),
-            new Int32Parser(Endianess.LittleEndian).ForField("PrivateReadOnlyField")
+            new UInt8Jar().ForField("MutableProperty"),
+            new Int16Jar(Endianess.LittleEndian).ForField("MutableField"),
+            new Int32Jar(Endianess.LittleEndian).ForField("ReadOnlyField"),
+            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField")
         });
 
         TestingUtilities.AssertThrows(() => r.Parse(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.StructuredParsers {
+namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
     /// FieldParser names and exposes a generic parser with known type as a non-generic parser of unknown type.
     /// It is used as part of parsing types via reflection: each of the type's fields must be matched to a corresponding field parser.

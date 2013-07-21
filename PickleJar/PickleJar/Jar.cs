@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.NumberParsers;
-using Strilanc.PickleJar.Internal.RepetitionParsers;
+using Strilanc.PickleJar.Internal.Numbers;
+using Strilanc.PickleJar.Internal.Repeated;
 
 namespace Strilanc.PickleJar {
     /// <summary>
@@ -10,36 +10,36 @@ namespace Strilanc.PickleJar {
     /// </summary>
     public static partial class Jar {
         /// <summary>Returns a parser that parses a single serialized byte into the congruent signed byte value.</summary>
-        public static IJar<sbyte> Int8 { get { return new Int8Parser(); } }
+        public static IJar<sbyte> Int8 { get { return new Int8Jar(); } }
         /// <summary>Returns a parser that parses a single serialized byte into that same byte value.</summary>
-        public static IJar<byte> UInt8 { get { return new UInt8Parser(); } }
+        public static IJar<byte> UInt8 { get { return new UInt8Jar(); } }
 
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement signed short with the least significant byte first.</summary>
-        public static IJar<Int16> Int16LittleEndian { get { return new Int16Parser(Endianess.LittleEndian); } }
+        public static IJar<Int16> Int16LittleEndian { get { return new Int16Jar(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement signed short with the most significant byte first.</summary>
-        public static IJar<Int16> Int16BigEndian { get { return new Int16Parser(Endianess.BigEndian); } }
+        public static IJar<Int16> Int16BigEndian { get { return new Int16Jar(Endianess.BigEndian); } }
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement unsigned short with the least significant byte first.</summary>
-        public static IJar<UInt16> UInt16LittleEndian { get { return new UInt16Parser(Endianess.LittleEndian); } }
+        public static IJar<UInt16> UInt16LittleEndian { get { return new UInt16Jar(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses two bytes into the corresponding 2s-complement unsigned short with the most significant byte first.</summary>
-        public static IJar<UInt16> UInt16BigEndian { get { return new UInt16Parser(Endianess.BigEndian); } }
+        public static IJar<UInt16> UInt16BigEndian { get { return new UInt16Jar(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement signed int with the least significant byte first.</summary>
-        public static IJar<Int32> Int32LittleEndian { get { return new Int32Parser(Endianess.LittleEndian); } }
+        public static IJar<Int32> Int32LittleEndian { get { return new Int32Jar(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement signed int with the most significant byte first.</summary>
-        public static IJar<Int32> Int32BigEndian { get { return new Int32Parser(Endianess.BigEndian); } }
+        public static IJar<Int32> Int32BigEndian { get { return new Int32Jar(Endianess.BigEndian); } }
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement unsigned int with the least significant byte first.</summary>
-        public static IJar<UInt32> UInt32LittleEndian { get { return new UInt32Parser(Endianess.LittleEndian); } }
+        public static IJar<UInt32> UInt32LittleEndian { get { return new UInt32Jar(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses four bytes into the corresponding 2s-complement unsigned int with the most significant byte first.</summary>
-        public static IJar<UInt32> UInt32BigEndian { get { return new UInt32Parser(Endianess.BigEndian); } }
+        public static IJar<UInt32> UInt32BigEndian { get { return new UInt32Jar(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement signed long with the least significant byte first.</summary>
-        public static IJar<Int64> Int64LittleEndian { get { return new Int64Parser(Endianess.LittleEndian); } }
+        public static IJar<Int64> Int64LittleEndian { get { return new Int64Jar(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement signed long with the most significant byte first.</summary>
-        public static IJar<Int64> Int64BigEndian { get { return new Int64Parser(Endianess.BigEndian); } }
+        public static IJar<Int64> Int64BigEndian { get { return new Int64Jar(Endianess.BigEndian); } }
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement unsigned long with the least significant byte first.</summary>
-        public static IJar<UInt64> UInt64LittleEndian { get { return new UInt64Parser(Endianess.LittleEndian); } }
+        public static IJar<UInt64> UInt64LittleEndian { get { return new UInt64Jar(Endianess.LittleEndian); } }
         /// <summary>Returns a parser that parses eight bytes into the corresponding 2s-complement unsigned long with the most significant byte first.</summary>
-        public static IJar<UInt64> UInt64BigEndian { get { return new UInt64Parser(Endianess.BigEndian); } }
+        public static IJar<UInt64> UInt64BigEndian { get { return new UInt64Jar(Endianess.BigEndian); } }
 
         /// <summary>Returns a parser that repeatedly uses an item parser a fixed number of times and puts the resulting item values into an array.</summary>
         public static IParser<IReadOnlyList<T>> RepeatNTimes<T>(this IParser<T> itemParser, int constantRepeatCount) {

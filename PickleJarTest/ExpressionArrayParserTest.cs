@@ -2,8 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.NumberParsers;
-using Strilanc.PickleJar.Internal.RepetitionParsers;
+using Strilanc.PickleJar.Internal.Numbers;
+using Strilanc.PickleJar.Internal.Repeated;
 
 [TestClass]
 public class ExpressionArrayParserTest {
@@ -16,8 +16,8 @@ public class ExpressionArrayParserTest {
     public void TestArrayParse() {
         var r = new CompiledBulkParser<TestValidClass>(
             new Jar.Builder<TestValidClass> {
-                {"A", new Int16Parser(Endianess.BigEndian)},
-                {"B", new Int16Parser(Endianess.LittleEndian)}}.Build());
+                {"A", new Int16Jar(Endianess.BigEndian)},
+                {"B", new Int16Jar(Endianess.LittleEndian)}}.Build());
         var d = new ArraySegment<byte>(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 0xFF}, 0, 9);
         var x0 = r.Parse(d, 0);
         x0.Consumed.AssertEquals(0);

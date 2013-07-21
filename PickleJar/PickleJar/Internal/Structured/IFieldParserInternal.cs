@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.StructuredParsers {
+namespace Strilanc.PickleJar.Internal.Structured {
     internal interface IFieldParserInternal : IFieldParser {
         bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get; }
         int? OptionalConstantSerializedLength { get; }

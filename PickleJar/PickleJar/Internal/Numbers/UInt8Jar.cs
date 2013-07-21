@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.NumberParsers {
-    internal struct UInt8Parser : IJarInternal<byte> {
+namespace Strilanc.PickleJar.Internal.Numbers {
+    internal struct UInt8Jar : IJarInternal<byte> {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return 1; } }
         public ParsedValue<byte> Parse(ArraySegment<byte> data) {

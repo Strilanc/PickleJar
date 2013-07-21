@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using MoreLinq;
 
-namespace Strilanc.PickleJar.Internal.StructuredParsers {
+namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
     /// CompiledReflectionParser parses a value by using reflection to match up named parsers with fields/properties/constructor-parameters of that type.
     /// Creates a method, dynamically optimized at runtime, that runs the field parsers and initializes the type with their results.
