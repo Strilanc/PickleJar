@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,6 +21,9 @@ public static class TestingUtilities {
     }
     public static void AssertEquals<T1, T2>(this T1 value1, T2 value2) {
         Assert.AreEqual(value1, value2);
+    }
+    public static void AssertSequenceEquals<T>(this IEnumerable<T> value1, IEnumerable<T> value2) {
+        Assert.IsTrue(value1.SequenceEqual(value2));
     }
     public static void AssertNotEqualTo<T1, T2>(this T1 value1, T2 value2) {
         Assert.AreNotEqual(value1, value2);

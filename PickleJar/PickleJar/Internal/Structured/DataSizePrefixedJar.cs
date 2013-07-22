@@ -2,9 +2,6 @@
 using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Structured {
-    /// <summary>
-    /// TupleJar is used to parse consecutive values that have different types.
-    /// </summary>
     internal sealed class DataSizePrefixedJar<T> : IJar<T> {
         private readonly IJar<int> _dataSizePrefixJar; 
         private readonly IJar<T> _itemJar;

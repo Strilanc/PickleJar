@@ -37,6 +37,15 @@ namespace Strilanc.PickleJar.Internal {
             }
         }
 
+        public static IEnumerable<int> IndexesOf<T>(this IEnumerable<T> sequence, T item) {
+            if (sequence == null) throw new ArgumentNullException("sequence");
+            var i = 0;
+            foreach (var e in sequence) {
+                if (Equals(e, item)) yield return i;
+                i++;
+            }
+        }
+
         /// <summary>
         /// Enumerates all of the ways that it's possible one item from each collection in a sequence.
         /// Enumerated items are volatile. They are invalidated when the enumeration continues.
@@ -75,14 +84,6 @@ namespace Strilanc.PickleJar.Internal {
         /// </summary>
         public static IReadOnlyDictionary<TKey, TValue> KeyedBy<TKey, TValue>(this IEnumerable<TValue> sequence, Func<TValue, TKey> keySelector) {
             return sequence.ToDictionary(keySelector, e => e);
-        }
-
-        /// <summary>
-        /// Returns a dictionary where each item from the sequence is mapped to its index in the sequence.
-        /// </summary>
-        public static IReadOnlyDictionary<T, int> ToIndexMap<T>(this IEnumerable<T> sequence) {
-            var i = 0;
-            return sequence.ToDictionary(e => e, e => i++);
         }
 
         ///<summary>Returns an array segment over the same data, but with the start of the range advanced by the given count and the end kept fixed.</summary>

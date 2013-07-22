@@ -131,12 +131,18 @@ public class CollectionUtilTest {
         d[9].AssertEquals(3);
     }
     [TestMethod]
-    public void TestToIndexMap() {
-        var d = new[] { 'a', 'b', 'c' }.ToIndexMap();
-        d.Count.AssertEquals(3);
-        d['a'].AssertEquals(0);
-        d['b'].AssertEquals(1);
-        d['c'].AssertEquals(2);
+    public void TestIndexesOf() {
+        new string[0].IndexesOf("").AssertSequenceEquals(new int[0]);
+
+        new[] { "a", "bra", "ca", "da" }.IndexesOf("abracadabra").AssertSequenceEquals(new int[0]);
+        new[] { "a", "bra", "ca", "da" }.IndexesOf("a").AssertSequenceEquals(new[] { 0 });
+        new[] { "a", "bra", "ca", "da" }.IndexesOf("bra").AssertSequenceEquals(new[] { 1 });
+        new[] { "a", "bra", "ca", "da" }.IndexesOf("ca").AssertSequenceEquals(new[] { 2 });
+        new[] { "a", "bra", "ca", "da" }.IndexesOf("da").AssertSequenceEquals(new[] { 3 });
+
+        new[] { "a", "bra", "ca", "da", "bra" }.IndexesOf("bra").AssertSequenceEquals(new[] { 1, 4 });
+
+        Enumerable.Repeat("spam", 100).IndexesOf("spam").AssertSequenceEquals(Enumerable.Range(0, 100));
     }
     [TestMethod]
     public void TestSkip() {
