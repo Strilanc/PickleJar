@@ -12,7 +12,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
     /// TypeJarBlit uses unsafe code, but is slightly faster than other parsers.
     /// </summary>
-    internal sealed class TypeJarBlit<T> : IJarInternal<T> {
+    internal sealed class TypeJarBlit<T> : IJarMetadataInternal, IJar<T> {
         public delegate T BlitParser(byte[] data, int offset, int length);
 
         private readonly int _length;

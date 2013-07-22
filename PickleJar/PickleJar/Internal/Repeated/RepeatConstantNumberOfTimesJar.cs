@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.Bulk;
 
 namespace Strilanc.PickleJar.Internal.Repeated {
-    internal sealed class RepeatConstantNumberOfTimesJar<T> : IJarInternal<IReadOnlyList<T>> {
+    internal sealed class RepeatConstantNumberOfTimesJar<T> : IJarMetadataInternal, IJar<IReadOnlyList<T>> {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _bulkItemJar.OptionalConstantSerializedValueLength * _count; } }
 

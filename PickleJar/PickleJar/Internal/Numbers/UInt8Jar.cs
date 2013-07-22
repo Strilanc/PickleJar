@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.Numbers {
-    internal struct UInt8Jar : IJarInternal<byte> {
+    internal struct UInt8Jar : IJarMetadataInternal, IJar<byte> {
         private const int SerializedLength = 1;
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }

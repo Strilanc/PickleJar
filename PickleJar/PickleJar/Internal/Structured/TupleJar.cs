@@ -6,7 +6,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
     /// TupleJar is used to parse consecutive values that have different types.
     /// </summary>
-    internal sealed class TupleJar<T1, T2> : IJarInternal<Tuple<T1, T2>> {
+    internal sealed class TupleJar<T1, T2> : IJarMetadataInternal, IJar<Tuple<T1, T2>> {
         public readonly IJar<T1> SubParser1;
         public readonly IJar<T2> SubParser2;
         public TupleJar(IJar<T1> subParser1, IJar<T2> subParser2) {

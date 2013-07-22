@@ -5,7 +5,7 @@ namespace Strilanc.PickleJar.Internal {
     /// IJarInternal exposes the information used to optimize parsers.
     /// A parser that also implements IJarInternal can take advantage of optimizations such as being inlined inside other parsers.
     /// </summary>
-    internal interface IJarInternal<T> : IJar<T> {
+    internal interface IJarMetadataInternal {
         /// <summary>
         /// Determines if this parser's value's serialized representation is guaranteed to be the same its memory representation.
         /// When true, it may be possible to replace the parser with one that simply does a memcpy.

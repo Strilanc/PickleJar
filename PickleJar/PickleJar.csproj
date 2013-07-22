@@ -64,8 +64,7 @@
     <Compile Include="PickleJar\DataFragmentException.cs" />
     <Compile Include="PickleJar\Internal\CollectionUtil.cs" />
     <Compile Include="PickleJar\Internal\InlinedParserComponents.cs" />
-    <Compile Include="PickleJar\Internal\Structured\IMemberJarInternal.cs" />
-    <Compile Include="PickleJar\Internal\IJarInternal.cs" />
+    <Compile Include="PickleJar\Internal\IJarMetadataInternal.cs" />
     <Compile Include="PickleJar\Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatUntilEndOfDataJar.cs" />

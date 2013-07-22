@@ -17,21 +17,22 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         public IJar<T> ItemJar { get; private set; }
         private readonly BlitParser _parser;
         private readonly int _itemLength;
-        private BulkJarBlit(IJarInternal<T> itemJar) {
+        private BulkJarBlit(IJar<T> itemJar) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
-            if (!itemJar.OptionalConstantSerializedLength.HasValue) throw new ArgumentException();
+            var len = itemJar.OptionalConstantSerializedLength();
+            if (!len.HasValue) throw new ArgumentException();
             ItemJar = itemJar;
-            _itemLength = itemJar.OptionalConstantSerializedLength.Value;
+            _itemLength = len.Value;
             _parser = MakeUnsafeArrayBlitParser();
         }
 
         public static BulkJarBlit<T> TryMake(IJar<T> itemJar) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
-            var r = itemJar as IJarInternal<T>;
+            var r = itemJar as IJarMetadataInternal;
             if (r == null) return null;
             if (!r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch) return null;
             if (!r.OptionalConstantSerializedLength.HasValue) return null;
-            return new BulkJarBlit<T>(r);
+            return new BulkJarBlit<T>(itemJar);
         }
 
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count) {

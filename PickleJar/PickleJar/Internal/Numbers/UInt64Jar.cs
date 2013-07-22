@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.Numbers {
-    internal struct UInt64Jar : IJarInternal<UInt64> {
+    internal struct UInt64Jar : IJarMetadataInternal, IJar<UInt64> {
         private const int SerializedLength = 64 / 8;
 
         private readonly bool _isSystemEndian;

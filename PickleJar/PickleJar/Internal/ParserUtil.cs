@@ -30,20 +30,20 @@ namespace Strilanc.PickleJar.Internal {
         }
 
         public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch<T>(this IJar<T> parser) {
-            var r = parser as IJarInternal<T>;
+            var r = parser as IJarMetadataInternal;
             return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
         public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(this IMemberJar jar) {
-            var r = jar as IMemberJarInternal;
+            var r = jar.Jar as IJarMetadataInternal;
             return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
 
         public static int? OptionalConstantSerializedLength<T>(this IJar<T> parser) {
-            var r = parser as IJarInternal<T>;
+            var r = parser as IJarMetadataInternal;
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
         public static int? OptionalConstantSerializedLength(this IMemberJar jar) {
-            var r = jar as IMemberJarInternal;
+            var r = jar.Jar as IJarMetadataInternal;
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
 
@@ -64,13 +64,13 @@ namespace Strilanc.PickleJar.Internal {
                 afterParseConsumedGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
                 resultStorage: new[] {resultVar});
         }
-        public static InlinedParserComponents MakeInlinedParserComponents<T>(this IJar<T> parser, Expression array, Expression offset, Expression count) {
-            var r = parser as IJarInternal<T>;
+        public static InlinedParserComponents MakeInlinedParserComponents<T>(this IJar<T> jar, Expression array, Expression offset, Expression count) {
+            var r = jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
-                   ?? MakeDefaultInlinedParserComponents(parser, typeof(T), array, offset, count);
+                   ?? MakeDefaultInlinedParserComponents(jar, typeof(T), array, offset, count);
         }
         public static InlinedParserComponents MakeInlinedParserComponents(this IMemberJar memberJar, Expression array, Expression offset, Expression count) {
-            var r = memberJar as IMemberJarInternal;
+            var r = memberJar.Jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(memberJar.Jar, memberJar.FieldType, array, offset, count);
         }
