@@ -79,7 +79,7 @@
     <Compile Include="PickleJar\Internal\Numbers\UInt32Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\UInt64Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Int8Jar.cs" />
-    <Compile Include="PickleJar\ParseBuilder.cs" />
+    <Compile Include="PickleJar\JarBuilder.cs" />
     <Compile Include="PickleJar\Internal\Structured\MemberAndJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\TypeJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Numbers\UInt8Jar.cs" />
