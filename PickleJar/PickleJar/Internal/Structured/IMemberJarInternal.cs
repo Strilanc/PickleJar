@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.Structured {
-    internal interface IFieldJarInternal : IFieldJar {
+    internal interface IMemberJarInternal : IMemberJar {
         bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get; }
         int? OptionalConstantSerializedLength { get; }
 

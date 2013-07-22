@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MoreLinq;
+using Strilanc.Value;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
@@ -12,12 +13,14 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
     /// </summary>
     internal sealed class TypeJarCompiled<T> : IJarInternal<T> {
-        private readonly IReadOnlyList<IFieldJar> _fieldParsers;
+        private readonly IReadOnlyList<IMemberJar> _memberJars;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
+        private readonly Func<T, byte[]> _packer;
 
-        public TypeJarCompiled(IReadOnlyList<IFieldJar> fieldParsers) {
-            _fieldParsers = fieldParsers;
+        public TypeJarCompiled(IReadOnlyList<IMemberJar> memberJars) {
+            _memberJars = memberJars;
             _parser = MakeParser();
+            _packer = MakePacker();
         }
 
         private static IReadOnlyDictionary<CanonicalMemberName, MemberInfo> GetMutableMemberMap() {
@@ -76,7 +79,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             var varResultValue = Expression.Variable(typeof(T));
             var varTotal = Expression.Variable(typeof(int));
-            var parserMap = _fieldParsers.KeyedBy(e => e.CanonicalName);
+            var parserMap = _memberJars.KeyedBy(e => e.CanonicalName);
             var mutableMemberMap = GetMutableMemberMap();
 
             var unmatchedReadOnlyField = typeof(T).GetFields().FirstOrDefault(e => e.IsInitOnly && !parserMap.ContainsKey(e.CanonicalName()));
@@ -89,7 +92,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
             var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
 
-            var fieldParsings = (from fieldParser in _fieldParsers
+            var fieldParsings = (from fieldParser in _memberJars
                                  let inlinedParseComponents = fieldParser.MakeInlinedParserComponents(
                                      array,
                                      Expression.Add(offset, varTotal),
@@ -132,9 +135,38 @@ namespace Strilanc.PickleJar.Internal.Structured {
         }
 
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return _fieldParsers.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength()); } }
+        public int? OptionalConstantSerializedLength { get { return _memberJars.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength()); } }
         public byte[] Pack(T value) {
-            throw new NotImplementedException();
+            return _packer(value);
         }
+
+        private Func<T, byte[]> MakePacker() {
+            var memberMap = _memberJars.ToDictionary(
+                e => e.CanonicalName,
+                e => new { memberJar = e, memberGetter = e.PickMatchingMemberGetterForType(typeof (T))});
+
+            var param = Expression.Parameter(typeof (T), "value");
+            var resVar = Expression.Variable(typeof (List<byte[]>), "res");
+            var statements = Expression.Block(
+                (from fieldJar in _memberJars
+                 let packMethod = typeof (IJar<>).MakeGenericType(fieldJar.FieldType).GetMethod("Pack")
+                 let packAccess = memberMap[fieldJar.CanonicalName].memberGetter(param)
+                 let packCall = Expression.Call(Expression.Constant(fieldJar.Jar), packMethod, new[] {packAccess})
+                 select Expression.Call(resVar, typeof(List<byte[]>).GetMethod("Add"), new Expression[] { packCall })).Block(),
+                Expression.Assign(resVar, Expression.New(typeof (List<byte[]>).GetConstructor(new Type[0]).NotNull())));
+
+            // todo: inlining
+
+            var flattened = Expression.Call(typeof (CollectionUtil).GetMethod("Flatten"), new Expression[] {resVar});
+            var body = Expression.Block(
+                new[] {resVar},
+                statements,
+                flattened);
+            var method = Expression.Lambda<Func<T, byte[]>>(
+                body,
+                new[] { param });
+
+            return method.Compile();
+        } 
     }
 }

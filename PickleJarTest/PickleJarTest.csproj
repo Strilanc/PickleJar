@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="May">
+      <HintPath>..\packages\Strilanc.Value.May.1.0.2\lib\portable-net4+sl4+wp7+win8\May.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
   </ItemGroup>
@@ -54,6 +57,7 @@
     <Compile Include="BlittableParserTest.cs" />
     <Compile Include="BlitUtilTest.cs" />
     <Compile Include="CollectionUtilTest.cs" />
+    <Compile Include="CanonicalNameTest.cs" />
     <Compile Include="Derived\ParserTestUtil.cs" />
     <Compile Include="ExpressionArrayParserTest.cs" />
     <Compile Include="ExpressionTreeParserTest.cs" />
@@ -66,6 +70,9 @@
       <Project>{bd87eacb-e90f-460a-977d-5e693035bc0f}</Project>
       <Name>PickleJar</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -9,8 +9,8 @@ namespace Strilanc.PickleJar {
         /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
         /// Use the Build method to produce a dynamically optimized Jar for the type.
         /// </summary>
-        public sealed class Builder<T> : ICollection<IFieldJar> {
-            private readonly List<IFieldJar> _list = new List<IFieldJar>();
+        public sealed class Builder<T> : ICollection<IMemberJar> {
+            private readonly List<IMemberJar> _list = new List<IMemberJar>();
 
             ///<summary>Returns a dynamically optimized Jar based on the field parsers that have been added so far.</summary>
             public IJar<T> Build() {
@@ -19,31 +19,31 @@ namespace Strilanc.PickleJar {
             }
 
             public void Add<TItem>(CanonicalMemberName name, IJar<TItem> parser) {
-                Add(new FieldJar<TItem>(parser, name));
+                Add(new MemberJar<TItem>(parser, name));
             }
-            IEnumerator<IFieldJar> IEnumerable<IFieldJar>.GetEnumerator() {
+            IEnumerator<IMemberJar> IEnumerable<IMemberJar>.GetEnumerator() {
                 return _list.GetEnumerator();
             }
             IEnumerator IEnumerable.GetEnumerator() {
                 return _list.GetEnumerator();
             }
-            public void Add(IFieldJar item) {
+            public void Add(IMemberJar item) {
                 _list.Add(item);
             }
-            void ICollection<IFieldJar>.Clear() {
+            void ICollection<IMemberJar>.Clear() {
                 _list.Clear();
             }
-            bool ICollection<IFieldJar>.Contains(IFieldJar item) {
+            bool ICollection<IMemberJar>.Contains(IMemberJar item) {
                 return _list.Contains(item);
             }
-            void ICollection<IFieldJar>.CopyTo(IFieldJar[] array, int arrayIndex) {
+            void ICollection<IMemberJar>.CopyTo(IMemberJar[] array, int arrayIndex) {
                 _list.CopyTo(array, arrayIndex);
             }
-            bool ICollection<IFieldJar>.Remove(IFieldJar item) {
+            bool ICollection<IMemberJar>.Remove(IMemberJar item) {
                 return _list.Remove(item);
             }
-            int ICollection<IFieldJar>.Count { get { return _list.Count; } }
-            bool ICollection<IFieldJar>.IsReadOnly { get { return ((ICollection<IFieldJar>)_list).IsReadOnly; } }
+            int ICollection<IMemberJar>.Count { get { return _list.Count; } }
+            bool ICollection<IMemberJar>.IsReadOnly { get { return ((ICollection<IMemberJar>)_list).IsReadOnly; } }
         }
     }
 }

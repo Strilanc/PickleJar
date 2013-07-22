@@ -111,5 +111,41 @@ namespace Strilanc.PickleJar.Internal {
             return dictionary.Count == other.Count
                    && dictionary.All(other.Contains);
         }
+
+        public static byte[] Flatten(this List<byte[]> arrays) {
+            var size = arrays.Select(e => e.Length).Sum();
+            var result = new byte[size];
+            var offset = 0;
+            foreach (var array in arrays) {
+                array.CopyTo(result, offset);
+                offset += array.Length;
+            }
+            return result;
+        }
+
+        public static string TrimUpToOnePrefix(this string text, params string[] prefixes) {
+            return text.Substring(
+                prefixes
+                .Where(text.StartsWith)
+                .Select(e => e.Length)
+                .SingleOrDefault());
+        }
+
+        public static IEnumerable<IReadOnlyList<T>> StartNewPartitionWhen<T>(this IEnumerable<T> sequence, Func<T, bool> predicate) {
+            if (sequence == null) throw new ArgumentNullException("sequence");
+            if (predicate == null) throw new ArgumentNullException("predicate");
+
+            var curPartition = new List<T>();
+            foreach (var e in sequence) {
+                if (curPartition.Count > 0 && predicate(e)) {
+                    yield return curPartition.ToArray();
+                    curPartition.Clear();
+                }
+                curPartition.Add(e);
+            }
+            if (curPartition.Count > 0) {
+                yield return curPartition;
+            }
+        }
     }
 }

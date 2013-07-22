@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using Strilanc.PickleJar.Internal.Bulk;
 using Strilanc.PickleJar.Internal.Structured;
+using Strilanc.Value;
 
 namespace Strilanc.PickleJar.Internal {
     /// <summary>
@@ -32,8 +33,8 @@ namespace Strilanc.PickleJar.Internal {
             var r = parser as IJarInternal<T>;
             return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
-        public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(this IFieldJar jar) {
-            var r = jar as IFieldJarInternal;
+        public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(this IMemberJar jar) {
+            var r = jar as IMemberJarInternal;
             return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
 
@@ -41,8 +42,8 @@ namespace Strilanc.PickleJar.Internal {
             var r = parser as IJarInternal<T>;
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
-        public static int? OptionalConstantSerializedLength(this IFieldJar jar) {
-            var r = jar as IFieldJarInternal;
+        public static int? OptionalConstantSerializedLength(this IMemberJar jar) {
+            var r = jar as IMemberJarInternal;
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
 
@@ -68,10 +69,10 @@ namespace Strilanc.PickleJar.Internal {
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(parser, typeof(T), array, offset, count);
         }
-        public static InlinedParserComponents MakeInlinedParserComponents(this IFieldJar fieldJar, Expression array, Expression offset, Expression count) {
-            var r = fieldJar as IFieldJarInternal;
+        public static InlinedParserComponents MakeInlinedParserComponents(this IMemberJar memberJar, Expression array, Expression offset, Expression count) {
+            var r = memberJar as IMemberJarInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
-                   ?? MakeDefaultInlinedParserComponents(fieldJar.Jar, fieldJar.FieldType, array, offset, count);
+                   ?? MakeDefaultInlinedParserComponents(memberJar.Jar, memberJar.FieldType, array, offset, count);
         }
 
         public static InlinedParserComponents MakeInlinedNumberParserComponents<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
@@ -109,7 +110,6 @@ namespace Strilanc.PickleJar.Internal {
             return value;
         }
 
-
         public static int FieldOffsetOf(this Type type, FieldInfo field) {
             return (int)Marshal.OffsetOf(type, field.Name);
         }
@@ -142,8 +142,8 @@ namespace Strilanc.PickleJar.Internal {
         public static CanonicalMemberName CanonicalName(this ParameterInfo parameter) {
             return new CanonicalMemberName(parameter.Name);
         }
-        public static IFieldJar ForField<T>(this IJar<T> parser, string fieldName) {
-            return new FieldJar<T>(parser, fieldName);
+        public static IMemberJar ForField<T>(this IJar<T> parser, string fieldName) {
+            return new MemberJar<T>(parser, fieldName);
         }
     }
 }

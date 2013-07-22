@@ -172,4 +172,26 @@ public class CollectionUtilTest {
         new[] { 1, 3, 3 }.IsSameOrSubsetOf(new[] { 1, 2, 3 }).AssertTrue();
         new[] { 1, 2, 3, 3 }.IsSameOrSubsetOf(new[] { 1, 2, 3 }).AssertTrue();
     }
+    [TestMethod]
+    public void TestTrimUpToOnePrefix() {
+        // bad cases
+        TestingUtilities.AssertThrows(() => "ambiguous".TrimUpToOnePrefix("ambi", "amb").AssertEquals(""));
+        TestingUtilities.AssertThrows(() => "null1".TrimUpToOnePrefix(null).AssertEquals(""));
+        TestingUtilities.AssertThrows(() => "null2".TrimUpToOnePrefix("a", null).AssertEquals(""));
+        
+        // one
+        "get".TrimUpToOnePrefix("get").AssertEquals("");
+        "ge".TrimUpToOnePrefix("get").AssertEquals("ge");
+        "get".TrimUpToOnePrefix("ge").AssertEquals("t");
+
+        // two
+        "getter".TrimUpToOnePrefix("get", "set").AssertEquals("ter");
+        "setter".TrimUpToOnePrefix("get", "set").AssertEquals("ter");
+        "letter".TrimUpToOnePrefix("get", "ses").AssertEquals("letter");
+
+        // empty string
+        "".TrimUpToOnePrefix("").AssertEquals("");
+        "".TrimUpToOnePrefix(" ").AssertEquals("");
+        " ".TrimUpToOnePrefix("").AssertEquals(" ");
+    }
 }

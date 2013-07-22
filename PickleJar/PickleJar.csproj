@@ -37,6 +37,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="May">
+      <HintPath>..\packages\Strilanc.Value.May.1.0.2\lib\portable-net4+sl4+wp7+win8\May.dll</HintPath>
+    </Reference>
     <Reference Include="MoreLinq">
       <HintPath>..\packages\morelinq.1.0.16006\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
@@ -54,18 +57,19 @@
   <ItemGroup>
     <Compile Include="PickleJar\AnonymousJar.cs" />
     <Compile Include="PickleJar\CanonicalMemberName.cs" />
+    <Compile Include="PickleJar\Internal\ReflectionUtil.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Float32Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Float64Jar.cs" />
     <Compile Include="PickleJar\JarUtil.cs" />
     <Compile Include="PickleJar\DataFragmentException.cs" />
     <Compile Include="PickleJar\Internal\CollectionUtil.cs" />
     <Compile Include="PickleJar\Internal\InlinedParserComponents.cs" />
-    <Compile Include="PickleJar\Internal\Structured\IFieldJarInternal.cs" />
+    <Compile Include="PickleJar\Internal\Structured\IMemberJarInternal.cs" />
     <Compile Include="PickleJar\Internal\IJarInternal.cs" />
     <Compile Include="PickleJar\Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatUntilEndOfDataJar.cs" />
-    <Compile Include="PickleJar\IFieldJar.cs" />
+    <Compile Include="PickleJar\IMemberJar.cs" />
     <Compile Include="PickleJar\Internal\ParserUtil.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatBasedOnPrefixJar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarBlit.cs" />
@@ -76,7 +80,7 @@
     <Compile Include="PickleJar\Internal\Numbers\UInt64Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Int8Jar.cs" />
     <Compile Include="PickleJar\ParseBuilder.cs" />
-    <Compile Include="PickleJar\Internal\Structured\FieldJar.cs" />
+    <Compile Include="PickleJar\Internal\Structured\MemberJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\TypeJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Numbers\UInt8Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\IBulkJar.cs" />
