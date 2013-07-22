@@ -31,14 +31,14 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             var r = itemJar as IJarMetadataInternal;
             if (r == null) return null;
             if (!r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch) return null;
-            if (!r.OptionalConstantSerializedLength.HasValue) return null;
+            if (r.OptionalConstantSerializedLength.GetValueOrDefault() == 0) return null;
             return new BulkJarBlit<T>(itemJar);
         }
 
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count) {
             var length = count*_itemLength;
             if (data.Count < length) throw new InvalidOperationException("Fragment");
-            var value = _parser(data.Array, count, data.Offset, length);
+            var value = count == 0 ? new T[0] : _parser(data.Array, count, data.Offset, length);
             return new ParsedValue<IReadOnlyList<T>>(value, length);
         }
         public int? OptionalConstantSerializedValueLength { get { return _itemLength; } }

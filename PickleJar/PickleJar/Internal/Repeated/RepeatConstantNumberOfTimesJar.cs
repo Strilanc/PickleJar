@@ -6,22 +6,23 @@ using Strilanc.PickleJar.Internal.Bulk;
 namespace Strilanc.PickleJar.Internal.Repeated {
     internal sealed class RepeatConstantNumberOfTimesJar<T> : IJarMetadataInternal, IJar<IReadOnlyList<T>> {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return _bulkItemJar.OptionalConstantSerializedValueLength * _count; } }
+        public int? OptionalConstantSerializedLength { get { return _bulkItemJar.OptionalConstantSerializedValueLength * _constantCount; } }
 
-        private readonly int _count;
+        private readonly int _constantCount;
         private readonly IBulkJar<T> _bulkItemJar;
 
-        public RepeatConstantNumberOfTimesJar(IBulkJar<T> bulkItemJar, int count) {
+        public RepeatConstantNumberOfTimesJar(IBulkJar<T> bulkItemJar, int constantCount) {
             if (bulkItemJar == null) throw new ArgumentNullException("bulkItemJar");
-            if (count < 0) throw new ArgumentOutOfRangeException("count");
-            _count = count;
+            if (constantCount < 0) throw new ArgumentOutOfRangeException("constantCount");
+            _constantCount = constantCount;
             _bulkItemJar = bulkItemJar;
         }
 
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data) {
-            return _bulkItemJar.Parse(data, _count);
+            return _bulkItemJar.Parse(data, _constantCount);
         }
         public byte[] Pack(IReadOnlyList<T> value) {
+            if (value.Count != _constantCount) throw new ArgumentOutOfRangeException("value", "value.Count != _constantCount");
             return _bulkItemJar.Pack(value);
         }
 

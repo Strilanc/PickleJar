@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -29,7 +30,8 @@ public static class TestingUtilities {
         Assert.AreNotEqual(value1, value2);
     }
     public static void AssertSimilar<T>(this T value1, T value2) {
-        Assert.IsTrue(Equals(value1, value2) || Enumerable.SequenceEqual((dynamic)value1, (dynamic)value2));
+        Assert.IsTrue(Equals(value1, value2) 
+            || (value1.GetType().GetInterfaces().Contains(typeof(IEnumerable)) && Enumerable.SequenceEqual((dynamic)value1, (dynamic)value2)));
     }
     public static void AssertThrows(Action action) {
         try {
