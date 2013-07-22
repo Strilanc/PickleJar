@@ -30,8 +30,9 @@ public static class TestingUtilities {
         Assert.AreNotEqual(value1, value2);
     }
     public static void AssertSimilar<T>(this T value1, T value2) {
-        Assert.IsTrue(Equals(value1, value2) 
-            || (value1.GetType().GetInterfaces().Contains(typeof(IEnumerable)) && Enumerable.SequenceEqual((dynamic)value1, (dynamic)value2)));
+        bool b = Equals(value1, value2) 
+            || (value1.GetType().GetInterfaces().Contains(typeof(IEnumerable)) && Enumerable.SequenceEqual((dynamic)value1, (dynamic)value2));
+        if (!b) Assert.AreEqual(value1, value2);
     }
     public static void AssertThrows(Action action) {
         try {

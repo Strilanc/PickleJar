@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
@@ -69,17 +70,22 @@ public class ApiTest {
             var full = new ArraySegment<byte>(data);
 
             // parsing appears to work correctly?
-            var v1 = AssertParsesCorrectlyIfParses(jar, full);
-            var v2 = AssertParsesCorrectlyIfParses(jar, full.Skip(data.Length / 2));
-            var v3 = AssertParsesCorrectlyIfParses(jar, full.Skip(data.Length));
-            var v4 = AssertParsesCorrectlyIfParses(jar, new ArraySegment<byte>(data, 0, 0));
-            var v5 = AssertParsesCorrectlyIfParses(jar, new ArraySegment<byte>(new byte[0]));
+            var segments = new[] {
+                full,
+                full.Skip(data.Length/2),
+                full.Skip(data.Length),
+                new ArraySegment<byte>(data, 0, 0),
+                new ArraySegment<byte>(new byte[0])
+            };
+            var vs = segments.Select(e => AssertParsesCorrectlyIfParses(jar, e)).ToArray();
 
             // round trips work?
+            var packed = new List<byte[]>();
             foreach (var item in ChooseTestValues(itemType)) {
                 byte[] itemData;
                 try {
                     itemData = jar.Pack(item);
+                    packed.Add(itemData);
                 } catch (Exception) {
                     continue;
                 }
@@ -88,17 +94,45 @@ public class ApiTest {
                 TestingUtilities.AssertSimilar(item, p.Value);
             }
 
-            // does metadata match?
+            // metadata is good?
             var metadata = jar as IJarMetadataInternal;
             if (metadata != null) {
+                // length matches, if specified?
                 var len = metadata.OptionalConstantSerializedLength;
                 if (len.HasValue) {
                     if (len.Value > 0) {
                         TestingUtilities.AssertThrows(() => jar.Parse(new ArraySegment<byte>(data, 0, len.Value - 1)));
                     }
-                    foreach (var b in new[] { v1, v2, v3, v4, v5 }.Where(b => !ReferenceEquals(b, null))) {
+                    foreach (var b in vs.Where(b => !ReferenceEquals(b, null))) {
                         Assert.AreEqual(b.Consumed, len.Value);
                     }
+                    foreach (var b in packed) {
+                        Assert.AreEqual(b.Length, len.Value);
+                    }
+                }
+
+                // inlined expression has same result?
+                for (var i = 0; i < segments.Length; i++) {
+                    if (ReferenceEquals(null, vs[i])) continue;
+                    var inlined = metadata.TryMakeInlinedParserComponents(
+                        Expression.Constant(segments[i].Array),
+                        Expression.Constant(segments[i].Offset),
+                        Expression.Constant(segments[i].Count));
+                    if (inlined == null) continue;
+
+                    var compiledValue = Expression.Lambda(
+                        Expression.Block(
+                            inlined.ResultStorage,
+                            inlined.PerformParse,
+                            inlined.AfterParseValueGetter)).Compile().DynamicInvoke();
+                    TestingUtilities.AssertSimilar(compiledValue, vs[i].Value);
+
+                    var compiledConsumed = Expression.Lambda(
+                        Expression.Block(
+                            inlined.ResultStorage,
+                            inlined.PerformParse,
+                            inlined.AfterParseConsumedGetter)).Compile().DynamicInvoke();
+                    TestingUtilities.AssertSimilar(compiledConsumed, vs[i].Consumed);
                 }
             }
         }

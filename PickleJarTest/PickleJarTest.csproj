@@ -58,7 +58,7 @@
     <Compile Include="BlitUtilTest.cs" />
     <Compile Include="CollectionUtilTest.cs" />
     <Compile Include="CanonicalNameTest.cs" />
-    <Compile Include="Derived\ParserTestUtil.cs" />
+    <Compile Include="ApiTest.cs" />
     <Compile Include="ExpressionArrayParserTest.cs" />
     <Compile Include="ExpressionTreeParserTest.cs" />
     <Compile Include="TestingUtilities.cs" />
