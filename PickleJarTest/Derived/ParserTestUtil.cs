@@ -49,7 +49,7 @@ public class ParserTestUtil {
         var v4 = AssertParsesCorrectlyIfParses(parser, new ArraySegment<byte>(data, 0, 0));
         var v5 = AssertParsesCorrectlyIfParses(parser, new ArraySegment<byte>(new byte[0]));
             
-        var internalParser = parser as IJarInternal<T>;
+        var internalParser = parser as IJarMetadataInternal;
         if (internalParser != null) {
             var len = internalParser.OptionalConstantSerializedLength;
             if (len.HasValue) {

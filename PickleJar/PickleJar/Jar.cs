@@ -6,7 +6,7 @@ using Strilanc.PickleJar.Internal.Repeated;
 
 namespace Strilanc.PickleJar {
     /// <summary>
-    /// The Jar class exposes utilities for accessing, creating, and combining parsers.
+    /// The Jar class exposes utilities for accessing, creating, and combining jars (combination parsers and packers).
     /// </summary>
     public static partial class Jar {
         /// <summary>Returns a Jar that parses a single serialized byte into the congruent signed byte value.</summary>
@@ -47,16 +47,16 @@ namespace Strilanc.PickleJar {
         public static IJar<double> Float64 { get { return new Float64Jar(); } }
 
         /// <summary>Returns a Jar that repeatedly uses an item Jar a fixed number of times and puts the resulting item values into an array.</summary>
-        public static IJar<IReadOnlyList<T>> RepeatNTimes<T>(this IJar<T> itemParser, int constantRepeatCount) {
-            if (itemParser == null) throw new ArgumentNullException("itemParser");
+        public static IJar<IReadOnlyList<T>> RepeatNTimes<T>(this IJar<T> itemJar, int constantRepeatCount) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
             if (constantRepeatCount < 0) throw new ArgumentOutOfRangeException("constantRepeatCount");
-            return new RepeatConstantNumberOfTimesJar<T>(itemParser.Bulk(), constantRepeatCount);
+            return new RepeatConstantNumberOfTimesJar<T>(itemJar.Bulk(), constantRepeatCount);
         }
         /// <summary>Returns a Jar that first parses a count then repeatedly uses an item Jar that number of times and puts the resulting item values into an array.</summary>
-        public static IJar<IReadOnlyList<T>> RepeatCountPrefixTimes<T>(this IJar<T> itemParser, IJar<int> countPrefixParser) {
-            if (itemParser == null) throw new ArgumentNullException("itemParser");
-            if (countPrefixParser == null) throw new ArgumentNullException("countPrefixParser");
-            return new RepeatBasedOnPrefixJar<T>(countPrefixParser, itemParser.Bulk());
+        public static IJar<IReadOnlyList<T>> RepeatCountPrefixTimes<T>(this IJar<T> itemJar, IJar<int> countPrefixJar) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
+            if (countPrefixJar == null) throw new ArgumentNullException("countPrefixJar");
+            return new RepeatBasedOnPrefixJar<T>(countPrefixJar, itemJar.Bulk());
         }
         /// <summary>
         /// Returns a Jar that repeatedly uses an item Jar until there's no data left and puts the resulting items into an array.
@@ -85,31 +85,38 @@ namespace Strilanc.PickleJar {
         }
 
         /// <summary>
-        /// Returns a Jar that applies the given Jar, but then transform the resulting value by running it through a projection function.
+        /// Returns a Jar that transforms values after parsing and before packing.
         /// </summary>
-        public static IJar<TOut> Select<TIn, TOut>(this IJar<TIn> parser, Func<TIn, TOut> parseProjection, Func<TOut, TIn> packProjection) {
-            if (parser == null) throw new ArgumentNullException("parser");
+        public static IJar<TParsed> Select<TPacked, TParsed>(this IJar<TPacked> jar, Func<TPacked, TParsed> parseProjection, Func<TParsed, TPacked> packProjection) {
+            if (jar == null) throw new ArgumentNullException("jar");
             if (parseProjection == null) throw new ArgumentNullException("parseProjection");
             if (packProjection == null) throw new ArgumentNullException("packProjection");
-            return new AnonymousJar<TOut>(
-                data => parser.Parse(data).Select(parseProjection),
-                e => parser.Pack(packProjection(e)));
+            return new AnonymousJar<TParsed>(
+                data => jar.Parse(data).Select(parseProjection),
+                e => jar.Pack(packProjection(e)));
         }
 
         /// <summary>
         /// Returns a Jar that applies the given Jar, but fails if running the value through the given constraint function does not return true.
         /// </summary>
-        public static IJar<T> Where<T>(this IJar<T> parser, Func<T, bool> constraint) {
-            if (parser == null) throw new ArgumentNullException("parser");
+        public static IJar<T> Where<T>(this IJar<T> jar, Func<T, bool> constraint) {
+            if (jar == null) throw new ArgumentNullException("jar");
             if (constraint == null) throw new ArgumentNullException("constraint");
             return new AnonymousJar<T>(data => {
-                var v = parser.Parse(data);
+                var v = jar.Parse(data);
                 if (!constraint(v.Value)) throw new InvalidOperationException("Data did not match Where constraint");
                 return v;
             }, item => {
                 if (!constraint(item)) throw new InvalidOperationException("Data did not match Where constraint");
-                return parser.Pack(item);
+                return jar.Pack(item);
             });
+        }
+
+        /// <summary>
+        /// A jar that consumes no data but always returns/expects the same value.
+        /// </summary>
+        public static IJar<T> Constant<T>(T constantValue) {
+            return new ConstantJar<T>(constantValue);
         }
     }
 }

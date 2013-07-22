@@ -88,10 +88,11 @@ public class BlittableParserTest {
         TestNumberParserExpression(Jar.Int8);
     }
     private static void TestNumberParserExpression<T>(IJar<T> exposedParser) {
-        var parser = (IJarInternal<T>)exposedParser;
+        var parser = exposedParser;
+        var meta = (IJarMetadataInternal)exposedParser;
         var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
         var d = new ArraySegment<byte>(array, 0, array.Length);
-        var inlinedParseComponents = parser.TryMakeInlinedParserComponents(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
+        var inlinedParseComponents = meta.TryMakeInlinedParserComponents(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
 
         var body = Expression.Block(
             inlinedParseComponents.ResultStorage,

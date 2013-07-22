@@ -43,6 +43,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         }
         public int? OptionalConstantSerializedValueLength { get { return _itemLength; } }
         public byte[] Pack(IReadOnlyCollection<T> values) {
+            // todo: optimize into blit
             return values.SelectMany(ItemJar.Pack).ToArray();
         }
 

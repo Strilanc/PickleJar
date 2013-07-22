@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="PickleJar\AnonymousJar.cs" />
     <Compile Include="PickleJar\CanonicalMemberName.cs" />
+    <Compile Include="PickleJar\Internal\Numbers\ConstantJar.cs" />
     <Compile Include="PickleJar\Internal\ReflectionUtil.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Float32Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Float64Jar.cs" />
