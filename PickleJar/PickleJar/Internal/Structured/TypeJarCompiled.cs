@@ -13,11 +13,11 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
     /// </summary>
     internal sealed class TypeJarCompiled<T> : IJarMetadataInternal, IJar<T> {
-        private readonly IReadOnlyList<IMemberJar> _memberJars;
+        private readonly IReadOnlyList<IMemberAndJar> _memberJars;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
         private readonly Func<T, byte[]> _packer;
 
-        public TypeJarCompiled(IReadOnlyList<IMemberJar> memberJars) {
+        public TypeJarCompiled(IReadOnlyList<IMemberAndJar> memberJars) {
             _memberJars = memberJars;
             _parser = MakeParser();
             _packer = MakePacker();

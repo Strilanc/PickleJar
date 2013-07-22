@@ -17,7 +17,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         private readonly int _length;
         private readonly BlitParser _parser;
-        private TypeJarBlit(IEnumerable<IMemberJar> fieldParsers) {
+        private TypeJarBlit(IEnumerable<IMemberAndJar> fieldParsers) {
             var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength());
             if (!len.HasValue) throw new ArgumentException();
             _parser = MakeUnsafeBlitParser();
@@ -32,12 +32,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
-        public static TypeJarBlit<T> TryMake(IReadOnlyList<IMemberJar> fieldParsers) {
+        public static TypeJarBlit<T> TryMake(IReadOnlyList<IMemberAndJar> fieldParsers) {
             if (!CanBlitParseWith(fieldParsers)) return null;
             return new TypeJarBlit<T>(fieldParsers);
         }
 
-        private static bool CanBlitParseWith(IReadOnlyList<IMemberJar> fieldParsers) {
+        private static bool CanBlitParseWith(IReadOnlyList<IMemberAndJar> fieldParsers) {
             if (fieldParsers == null) throw new ArgumentNullException("fieldParsers");
 
             // type has blittable representation?

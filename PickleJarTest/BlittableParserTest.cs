@@ -27,7 +27,7 @@ public class BlittableParserTest {
 
     [TestMethod]
     public void TestValueParser() {
-        var r = TypeJarBlit<TestStruct>.TryMake(new List<IMemberJar> {
+        var r = TypeJarBlit<TestStruct>.TryMake(new List<IMemberAndJar> {
             Jar.Int16LittleEndian.ForField("v01"),
             Jar.Int32LittleEndian.ForField("v2345")
         });
@@ -37,7 +37,7 @@ public class BlittableParserTest {
     }
     [TestMethod]
     public void TestValueParser2() {
-        var r = TypeJarBlit<TestStruct2>.TryMake(new List<IMemberJar> {
+        var r = TypeJarBlit<TestStruct2>.TryMake(new List<IMemberAndJar> {
             Jar.Int16LittleEndian.ForField("v01"),
             Jar.Int32LittleEndian.ForField("v2345")
         });

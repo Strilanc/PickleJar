@@ -69,7 +69,7 @@
     <Compile Include="PickleJar\Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatUntilEndOfDataJar.cs" />
-    <Compile Include="PickleJar\IMemberJar.cs" />
+    <Compile Include="PickleJar\IMemberAndJar.cs" />
     <Compile Include="PickleJar\Internal\ParserUtil.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatBasedOnPrefixJar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarBlit.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="PickleJar\Internal\Numbers\UInt64Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Int8Jar.cs" />
     <Compile Include="PickleJar\ParseBuilder.cs" />
-    <Compile Include="PickleJar\Internal\Structured\MemberJar.cs" />
+    <Compile Include="PickleJar\Internal\Structured\MemberAndJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\TypeJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Numbers\UInt8Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\IBulkJar.cs" />

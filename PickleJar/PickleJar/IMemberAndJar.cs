@@ -1,7 +1,7 @@
 using System;
 
 namespace Strilanc.PickleJar {
-    public interface IMemberJar {
+    public interface IMemberAndJar {
         /// <summary>
         /// The name of the field, ignoring underscores and casing.
         /// </summary>

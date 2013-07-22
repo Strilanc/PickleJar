@@ -9,8 +9,8 @@ namespace Strilanc.PickleJar {
         /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
         /// Use the Build method to produce a dynamically optimized Jar for the type.
         /// </summary>
-        public sealed class Builder<T> : ICollection<IMemberJar> {
-            private readonly List<IMemberJar> _list = new List<IMemberJar>();
+        public sealed class Builder<T> : ICollection<IMemberAndJar> {
+            private readonly List<IMemberAndJar> _list = new List<IMemberAndJar>();
 
             ///<summary>Returns a dynamically optimized Jar based on the field parsers that have been added so far.</summary>
             public IJar<T> Build() {
@@ -19,31 +19,31 @@ namespace Strilanc.PickleJar {
             }
 
             public void Add<TItem>(CanonicalMemberName name, IJar<TItem> parser) {
-                Add(new MemberJar<TItem>(parser, name));
+                Add(new MemberAndJar<TItem>(parser, name));
             }
-            IEnumerator<IMemberJar> IEnumerable<IMemberJar>.GetEnumerator() {
+            IEnumerator<IMemberAndJar> IEnumerable<IMemberAndJar>.GetEnumerator() {
                 return _list.GetEnumerator();
             }
             IEnumerator IEnumerable.GetEnumerator() {
                 return _list.GetEnumerator();
             }
-            public void Add(IMemberJar item) {
+            public void Add(IMemberAndJar item) {
                 _list.Add(item);
             }
-            void ICollection<IMemberJar>.Clear() {
+            void ICollection<IMemberAndJar>.Clear() {
                 _list.Clear();
             }
-            bool ICollection<IMemberJar>.Contains(IMemberJar item) {
+            bool ICollection<IMemberAndJar>.Contains(IMemberAndJar item) {
                 return _list.Contains(item);
             }
-            void ICollection<IMemberJar>.CopyTo(IMemberJar[] array, int arrayIndex) {
+            void ICollection<IMemberAndJar>.CopyTo(IMemberAndJar[] array, int arrayIndex) {
                 _list.CopyTo(array, arrayIndex);
             }
-            bool ICollection<IMemberJar>.Remove(IMemberJar item) {
+            bool ICollection<IMemberAndJar>.Remove(IMemberAndJar item) {
                 return _list.Remove(item);
             }
-            int ICollection<IMemberJar>.Count { get { return _list.Count; } }
-            bool ICollection<IMemberJar>.IsReadOnly { get { return ((ICollection<IMemberJar>)_list).IsReadOnly; } }
+            int ICollection<IMemberAndJar>.Count { get { return _list.Count; } }
+            bool ICollection<IMemberAndJar>.IsReadOnly { get { return ((ICollection<IMemberAndJar>)_list).IsReadOnly; } }
         }
     }
 }
