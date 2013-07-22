@@ -13,13 +13,13 @@ namespace Strilanc.PickleJar.Internal {
     /// </summary>
     internal static class ParserUtil {
         /// <summary>
-        /// Returns an appropriate parser capable of bulk parsing operations, based on the given item parser.
+        /// Returns an appropriate Jar capable of bulk parsing operations, based on the given item Jar.
         /// </summary>
-        public static IBulkParser<T> Bulk<T>(this IParser<T> itemParser) {
+        public static IBulkJar<T> Bulk<T>(this IJar<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
 
-            return (IBulkParser<T>)BlittableBulkParser<T>.TryMake(itemParser)
-                   ?? new CompiledBulkParser<T>(itemParser);
+            return (IBulkJar<T>)BulkJarBlit<T>.TryMake(itemParser)
+                   ?? new BulkJarCompiled<T>(itemParser);
         }
         public static ParsedValue<T> AsParsed<T>(this T value, int consumed) {
             return new ParsedValue<T>(value, consumed);
@@ -28,21 +28,21 @@ namespace Strilanc.PickleJar.Internal {
             return new ParsedValue<TOut>(projection(value.Value), value.Consumed);
         }
 
-        public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch<T>(this IParser<T> parser) {
-            var r = parser as IParserInternal<T>;
+        public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch<T>(this IJar<T> parser) {
+            var r = parser as IJarInternal<T>;
             return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
-        public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(this IFieldParser parser) {
-            var r = parser as IFieldParserInternal;
+        public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(this IFieldJar jar) {
+            var r = jar as IFieldJarInternal;
             return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
         }
 
-        public static int? OptionalConstantSerializedLength<T>(this IParser<T> parser) {
-            var r = parser as IParserInternal<T>;
+        public static int? OptionalConstantSerializedLength<T>(this IJar<T> parser) {
+            var r = parser as IJarInternal<T>;
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
-        public static int? OptionalConstantSerializedLength(this IFieldParser parser) {
-            var r = parser as IFieldParserInternal;
+        public static int? OptionalConstantSerializedLength(this IFieldJar jar) {
+            var r = jar as IFieldJarInternal;
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
 
@@ -50,7 +50,7 @@ namespace Strilanc.PickleJar.Internal {
             var resultVar = Expression.Variable(valueType, "parsed");
             var parse = Expression.Call(
                 Expression.Constant(parser),
-                typeof(IParser<>).MakeGenericType(valueType).GetMethod("Parse"),
+                typeof(IJar<>).MakeGenericType(valueType).GetMethod("Parse"),
                 new Expression[] {
                     Expression.New(
                         typeof (ArraySegment<byte>).GetConstructor(new[] {typeof (byte[]), typeof (int), typeof (int)}).NotNull(),
@@ -63,15 +63,15 @@ namespace Strilanc.PickleJar.Internal {
                 afterParseConsumedGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
                 resultStorage: new[] {resultVar});
         }
-        public static InlinedParserComponents MakeInlinedParserComponents<T>(this IParser<T> parser, Expression array, Expression offset, Expression count) {
-            var r = parser as IParserInternal<T>;
+        public static InlinedParserComponents MakeInlinedParserComponents<T>(this IJar<T> parser, Expression array, Expression offset, Expression count) {
+            var r = parser as IJarInternal<T>;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(parser, typeof(T), array, offset, count);
         }
-        public static InlinedParserComponents MakeInlinedParserComponents(this IFieldParser fieldParser, Expression array, Expression offset, Expression count) {
-            var r = fieldParser as IFieldParserInternal;
+        public static InlinedParserComponents MakeInlinedParserComponents(this IFieldJar fieldJar, Expression array, Expression offset, Expression count) {
+            var r = fieldJar as IFieldJarInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
-                   ?? MakeDefaultInlinedParserComponents(fieldParser.Parser, fieldParser.ParserValueType, array, offset, count);
+                   ?? MakeDefaultInlinedParserComponents(fieldJar.Jar, fieldJar.FieldType, array, offset, count);
         }
 
         public static InlinedParserComponents MakeInlinedNumberParserComponents<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
@@ -136,14 +136,14 @@ namespace Strilanc.PickleJar.Internal {
             if (exp.Length == 0) return Expression.Empty();
             return Expression.Block(exp);
         }
-        public static CanonicalizingMemberName CanonicalName(this MemberInfo member) {
-            return new CanonicalizingMemberName(member.Name);
+        public static CanonicalMemberName CanonicalName(this MemberInfo member) {
+            return new CanonicalMemberName(member.Name);
         }
-        public static CanonicalizingMemberName CanonicalName(this ParameterInfo parameter) {
-            return new CanonicalizingMemberName(parameter.Name);
+        public static CanonicalMemberName CanonicalName(this ParameterInfo parameter) {
+            return new CanonicalMemberName(parameter.Name);
         }
-        public static IFieldParser ForField<T>(this IParser<T> parser, string fieldName) {
-            return new FieldParser<T>(parser, fieldName);
+        public static IFieldJar ForField<T>(this IJar<T> parser, string fieldName) {
+            return new FieldJar<T>(parser, fieldName);
         }
     }
 }

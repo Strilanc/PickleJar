@@ -3,31 +3,35 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Bulk {
     /// <summary>
-    /// BlittableBulkParser is used to parse arrays of values when memcpy'ing them is valid.
+    /// BulkJarBlit is used to parse arrays of values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
-    /// BlittableBulkParser uses unsafe code, but is an order of magnitude (or two!) faster than other parsers.
+    /// BulkJarBlit uses unsafe code, but is an order of magnitude (or two!) faster than other parsers.
     /// </summary>
-    internal sealed class BlittableBulkParser<T> : IBulkParser<T> {
+    internal sealed class BulkJarBlit<T> : IBulkJar<T> {
         public delegate T[] BlitParser(byte[] data, int itemCount, int offset, int length);
 
+        public IJar<T> ItemJar { get; private set; }
         private readonly BlitParser _parser;
         private readonly int _itemLength;
-        private BlittableBulkParser(IParserInternal<T> itemParser) {
-            if (!itemParser.OptionalConstantSerializedLength.HasValue) throw new ArgumentException();
-            _itemLength = itemParser.OptionalConstantSerializedLength.Value;
+        private BulkJarBlit(IJarInternal<T> itemJar) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
+            if (!itemJar.OptionalConstantSerializedLength.HasValue) throw new ArgumentException();
+            ItemJar = itemJar;
+            _itemLength = itemJar.OptionalConstantSerializedLength.Value;
             _parser = MakeUnsafeArrayBlitParser();
         }
 
-        public static BlittableBulkParser<T> TryMake(IParser<T> itemParser) {
-            if (itemParser == null) throw new ArgumentNullException("itemParser");
-            var r = itemParser as IParserInternal<T>;
+        public static BulkJarBlit<T> TryMake(IJar<T> itemJar) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
+            var r = itemJar as IJarInternal<T>;
             if (r == null) return null;
             if (!r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch) return null;
             if (!r.OptionalConstantSerializedLength.HasValue) return null;
-            return new BlittableBulkParser<T>(r);
+            return new BulkJarBlit<T>(r);
         }
 
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count) {
@@ -37,6 +41,9 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             return new ParsedValue<IReadOnlyList<T>>(value, length);
         }
         public int? OptionalConstantSerializedValueLength { get { return _itemLength; } }
+        public byte[] Pack(IReadOnlyCollection<T> values) {
+            return values.SelectMany(ItemJar.Pack).ToArray();
+        }
 
         /// <summary>
         /// Emits a method that copies the contents of an array segment over the memory representation of anew  returned array of values.

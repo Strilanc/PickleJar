@@ -7,20 +7,20 @@ using MoreLinq;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
-    /// CompiledReflectionParser parses a value by using reflection to match up named parsers with fields/properties/constructor-parameters of that type.
+    /// TypeJarCompiled parses a value by using reflection to match up named parsers with fields/properties/constructor-parameters of that type.
     /// Creates a method, dynamically optimized at runtime, that runs the field parsers and initializes the type with their results.
     /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
     /// </summary>
-    internal sealed class CompiledReflectionParser<T> : IParserInternal<T> {
-        private readonly IReadOnlyList<IFieldParser> _fieldParsers;
+    internal sealed class TypeJarCompiled<T> : IJarInternal<T> {
+        private readonly IReadOnlyList<IFieldJar> _fieldParsers;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
 
-        public CompiledReflectionParser(IReadOnlyList<IFieldParser> fieldParsers) {
+        public TypeJarCompiled(IReadOnlyList<IFieldJar> fieldParsers) {
             _fieldParsers = fieldParsers;
             _parser = MakeParser();
         }
 
-        private static IReadOnlyDictionary<CanonicalizingMemberName, MemberInfo> GetMutableMemberMap() {
+        private static IReadOnlyDictionary<CanonicalMemberName, MemberInfo> GetMutableMemberMap() {
             var mutableFields = typeof(T).GetFields()
                                          .Where(e => e.IsPublic)
                                          .Where(e => !e.IsInitOnly);
@@ -31,7 +31,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
                                 .Concat(mutableProperties)
                                 .KeyedBy(e => e.CanonicalName());
         }
-        private static ConstructorInfo ChooseCompatibleConstructor(IEnumerable<CanonicalizingMemberName> mutableMembers, IEnumerable<CanonicalizingMemberName> parsers) {
+        private static ConstructorInfo ChooseCompatibleConstructor(IEnumerable<CanonicalMemberName> mutableMembers, IEnumerable<CanonicalMemberName> parsers) {
             var possibleConstructors = (from c in typeof(T).GetConstructors()
                                         where c.IsPublic
                                         let parameterNames = c.GetParameters().Select(e => e.CanonicalName()).ToArray()
@@ -133,5 +133,8 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _fieldParsers.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength()); } }
+        public byte[] Pack(T value) {
+            throw new NotImplementedException();
+        }
     }
 }

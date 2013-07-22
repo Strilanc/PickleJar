@@ -1,18 +1,18 @@
 ﻿namespace Strilanc.PickleJar {
-    public struct CanonicalizingMemberName {
+    public struct CanonicalMemberName {
         private readonly string _name;
         private readonly string _canonicalName;
-        public CanonicalizingMemberName(string name) {
+        public CanonicalMemberName(string name) {
             _name = name;
             _canonicalName = name.ToLowerInvariant().Replace("_", "");
         }
 
         public override bool Equals(object obj) {
-            return obj is CanonicalizingMemberName
-                   && Equals(_canonicalName, ((CanonicalizingMemberName)obj)._canonicalName);
+            return obj is CanonicalMemberName
+                   && Equals(_canonicalName, ((CanonicalMemberName)obj)._canonicalName);
         }
-        public static implicit operator CanonicalizingMemberName(string name) {
-            return new CanonicalizingMemberName(name);
+        public static implicit operator CanonicalMemberName(string name) {
+            return new CanonicalMemberName(name);
         }
         public override int GetHashCode() {
             return _canonicalName == null ? 0 : _canonicalName.GetHashCode();

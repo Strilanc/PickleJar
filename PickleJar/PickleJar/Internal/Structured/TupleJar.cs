@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
-    /// TupleParser is used to parse consecutive values that have different types.
+    /// TupleJar is used to parse consecutive values that have different types.
     /// </summary>
-    internal sealed class TupleParser<T1, T2> : IJarInternal<Tuple<T1, T2>> {
+    internal sealed class TupleJar<T1, T2> : IJarInternal<Tuple<T1, T2>> {
         public readonly IJar<T1> SubParser1;
         public readonly IJar<T2> SubParser2;
-        public TupleParser(IJar<T1> subParser1, IJar<T2> subParser2) {
+        public TupleJar(IJar<T1> subParser1, IJar<T2> subParser2) {
             SubParser1 = subParser1;
             SubParser2 = subParser2;
         }

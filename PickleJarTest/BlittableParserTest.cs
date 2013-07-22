@@ -27,7 +27,7 @@ public class BlittableParserTest {
 
     [TestMethod]
     public void TestValueParser() {
-        var r = BlittableStructParser<TestStruct>.TryMake(new List<IFieldParser> {
+        var r = TypeJarBlit<TestStruct>.TryMake(new List<IFieldJar> {
             Jar.Int16LittleEndian.ForField("v01"),
             Jar.Int32LittleEndian.ForField("v2345")
         });
@@ -37,7 +37,7 @@ public class BlittableParserTest {
     }
     [TestMethod]
     public void TestValueParser2() {
-        var r = BlittableStructParser<TestStruct2>.TryMake(new List<IFieldParser> {
+        var r = TypeJarBlit<TestStruct2>.TryMake(new List<IFieldJar> {
             Jar.Int16LittleEndian.ForField("v01"),
             Jar.Int32LittleEndian.ForField("v2345")
         });
@@ -87,8 +87,8 @@ public class BlittableParserTest {
         TestNumberParserExpression(Jar.UInt8);
         TestNumberParserExpression(Jar.Int8);
     }
-    private static void TestNumberParserExpression<T>(IParser<T> exposedParser) {
-        var parser = (IParserInternal<T>)exposedParser;
+    private static void TestNumberParserExpression<T>(IJar<T> exposedParser) {
+        var parser = (IJarInternal<T>)exposedParser;
         var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
         var d = new ArraySegment<byte>(array, 0, array.Length);
         var inlinedParseComponents = parser.TryMakeInlinedParserComponents(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));

@@ -18,7 +18,7 @@ public class ParserTestUtil {
             .ToArray();
         Func<Type, object[]> getParams = t => {
             if (t == typeof(int)) return new object[] {int.MinValue, -1, 0, 1, 2, int.MaxValue};
-            if (t == typeof(IParser<int>)) return new object[] { Jar.Int32LittleEndian, Jar.Int32BigEndian };
+            if (t == typeof(IJar<int>)) return new object[] { Jar.Int32LittleEndian, Jar.Int32BigEndian };
             if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,>)) return new object[] { new Func<int, int>(e1 => e1 + 1) };
             if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Func<,,>)) return new object[] { new Func<int, int, int>((e1, e2) => e1 + e2 + 1) };
             var p = parsers.Where(e => e.GetType().IsInstanceOfType(t)).ToArray();
@@ -40,7 +40,7 @@ public class ParserTestUtil {
         }
     }
 
-    public static void AssertIsValidIParser<T>(IParser<T> parser) {
+    public static void AssertIsValidIParser<T>(IJar<T> parser) {
         var data = Enumerable.Range(0, 8*3*5*7).Select(e => (byte)e).ToArray();
         var full = new ArraySegment<byte>(data);
         var v1 = AssertParsesCorrectlyIfParses(parser, full);
@@ -49,7 +49,7 @@ public class ParserTestUtil {
         var v4 = AssertParsesCorrectlyIfParses(parser, new ArraySegment<byte>(data, 0, 0));
         var v5 = AssertParsesCorrectlyIfParses(parser, new ArraySegment<byte>(new byte[0]));
             
-        var internalParser = parser as IParserInternal<T>;
+        var internalParser = parser as IJarInternal<T>;
         if (internalParser != null) {
             var len = internalParser.OptionalConstantSerializedLength;
             if (len.HasValue) {
@@ -62,7 +62,7 @@ public class ParserTestUtil {
             }
         }
     }
-    private static ParsedValue<T>? AssertParsesCorrectlyIfParses<T>(IParser<T> parser, ArraySegment<byte> data) {
+    private static ParsedValue<T>? AssertParsesCorrectlyIfParses<T>(IJar<T> parser, ArraySegment<byte> data) {
         ParsedValue<T> v;
         try {
             v = parser.Parse(data);

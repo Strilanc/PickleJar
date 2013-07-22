@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Bulk {
     /// <summary>
-    /// CompiledBulkParser is an IBulkParser that performes dynamic optimization at runtime.
-    /// In particular, CompiledBulkParser will attempt to inline the item parsing in order to avoid virtual calls.
+    /// BulkJarCompiled is an IBulkJar that specializes based on the given item jar by compiling code at runtime.
+    /// For example, BulkJarCompiled will inline the item parsing method into the parse loop when possible.
     /// </summary>
-    internal sealed class CompiledBulkParser<T> : IBulkParser<T> {
-        private readonly IParser<T> _itemParser;
+    internal sealed class BulkJarCompiled<T> : IBulkJar<T> {
+        public IJar<T> ItemJar { get; private set; }
+        public int? OptionalConstantSerializedValueLength { get { return ItemJar.OptionalConstantSerializedLength(); } }
         private readonly Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>> _parser;
-        public CompiledBulkParser(IParser<T> itemParser) {
-            _itemParser = itemParser;
-            _parser = MakeParser();
+
+        public BulkJarCompiled(IJar<T> itemParser) {
+            ItemJar = itemParser;
+            _parser = MakeAndCompileSpecializedParser();
         }
+
         public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count) {
             return _parser(data.Array, data.Offset, data.Count, count);
         }
-        private Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>> MakeParser() {
+        private Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>> MakeAndCompileSpecializedParser() {
             var dataArray = Expression.Parameter(typeof(byte[]), "dataArray");
             var dataOffset = Expression.Parameter(typeof(int), "dataOffset");
             var dataCount = Expression.Parameter(typeof(int), "dataCount");
@@ -28,7 +32,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             var resultConsumed = Expression.Variable(typeof(int), "totalConsumed");
             var loopIndex = Expression.Variable(typeof(int), "i");
 
-            var inlinedParseComponents = _itemParser.MakeInlinedParserComponents(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
+            var inlinedParseComponents = ItemJar.MakeInlinedParserComponents(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
 
             var locals = new[] { resultArray, resultConsumed, loopIndex };
             var initStatements = Expression.Block(
@@ -67,7 +71,11 @@ namespace Strilanc.PickleJar.Internal.Bulk {
 
             return method.Compile();
         }
-        public int? OptionalConstantSerializedValueLength { get { return _itemParser.OptionalConstantSerializedLength(); } }
+
+        public byte[] Pack(IReadOnlyCollection<T> values) {
+            // todo: compile at runtime
+            return values.SelectMany(ItemJar.Pack).ToArray();
+        }
     }
 }
 

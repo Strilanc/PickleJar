@@ -1,4 +1,8 @@
-﻿namespace Strilanc.PickleJar {
-    public interface IJar<T> : IParser<T>, IPacker<T> {
+﻿using System;
+
+namespace Strilanc.PickleJar {
+    public interface IJar<T> {
+        ParsedValue<T> Parse(ArraySegment<byte> data);
+        byte[] Pack(T value);
     }
 }

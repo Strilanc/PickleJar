@@ -8,16 +8,16 @@ using System.Runtime.InteropServices;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
-    /// BlittableStructParser is used to parse values when memcpy'ing them is valid.
+    /// TypeJarBlit is used to parse values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
-    /// BlittableStructParser uses unsafe code, but is slightly faster than other parsers.
+    /// TypeJarBlit uses unsafe code, but is slightly faster than other parsers.
     /// </summary>
-    internal sealed class BlittableStructParser<T> : IParserInternal<T> {
+    internal sealed class TypeJarBlit<T> : IJarInternal<T> {
         public delegate T BlitParser(byte[] data, int offset, int length);
 
         private readonly int _length;
         private readonly BlitParser _parser;
-        private BlittableStructParser(IEnumerable<IFieldParser> fieldParsers) {
+        private TypeJarBlit(IEnumerable<IFieldJar> fieldParsers) {
             var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength());
             if (!len.HasValue) throw new ArgumentException();
             _parser = MakeUnsafeBlitParser();
@@ -32,12 +32,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
-        public static BlittableStructParser<T> TryMake(IReadOnlyList<IFieldParser> fieldParsers) {
+        public static TypeJarBlit<T> TryMake(IReadOnlyList<IFieldJar> fieldParsers) {
             if (!CanBlitParseWith(fieldParsers)) return null;
-            return new BlittableStructParser<T>(fieldParsers);
+            return new TypeJarBlit<T>(fieldParsers);
         }
 
-        private static bool CanBlitParseWith(IReadOnlyList<IFieldParser> fieldParsers) {
+        private static bool CanBlitParseWith(IReadOnlyList<IFieldJar> fieldParsers) {
             if (fieldParsers == null) throw new ArgumentNullException("fieldParsers");
 
             // type has blittable representation?
@@ -108,6 +108,10 @@ namespace Strilanc.PickleJar.Internal.Structured {
             g.Emit(OpCodes.Ret);
 
             return (BlitParser)d.CreateDelegate(typeof(BlitParser));
+        }
+
+        public byte[] Pack(T value) {
+            throw new NotImplementedException();
         }
     }
 }

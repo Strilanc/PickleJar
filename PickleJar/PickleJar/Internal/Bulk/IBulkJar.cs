@@ -1,7 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Strilanc.PickleJar.Internal.Bulk {
-    internal interface IBulkJar<T> : IBulkParser<T> {
-        byte[] Pack(IReadOnlyList<T> values);
+    /// <summary>
+    /// IBulkJar is implemented by types capable of efficiently parsing multiple contiguous values.
+    /// </summary>
+    internal interface IBulkJar<T> {
+        IJar<T> ItemJar { get; }
+        ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count);
+        int? OptionalConstantSerializedValueLength { get; }
+        byte[] Pack(IReadOnlyCollection<T> values);
     }
 }

@@ -35,7 +35,9 @@ public class Program {
     static void Main2() {
         const int DataRepeatCount = 10000;
 
-        var handrolledParser = new AnonymousParser<IReadOnlyList<Point3>>(HandrolledParse);
+        var handrolledParser = new AnonymousJar<IReadOnlyList<Point3>>(
+            HandrolledParse, 
+            x => { throw new NotImplementedException(); });
 
         var blitParser =
             new Jar.Builder<Point3> {
@@ -44,12 +46,12 @@ public class Program {
                 {"z", Jar.Int32LittleEndian}}.Build()
             .RepeatUntilEndOfData();
 
-        var dynamicParser =
-            (from y in Jar.Int32LittleEndian
-             from x in (y == 0 ? Jar.Int32LittleEndian : Jar.Int32BigEndian)
-             from z in Jar.Int32LittleEndian
-             select new Point3(x, y, z)
-            ).RepeatUntilEndOfData();
+        //var dynamicParser =
+        //    (from y in Jar.Int32LittleEndian
+        //     from x in (y == 0 ? Jar.Int32LittleEndian : Jar.Int32BigEndian)
+        //     from z in Jar.Int32LittleEndian
+        //     select new Point3(x, y, z)
+        //    ).RepeatUntilEndOfData();
 
         var compiledParser =
             new Jar.Builder<Point3> {
@@ -60,11 +62,11 @@ public class Program {
 
         var data = new ArraySegment<byte>(Enumerable.Repeat(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, DataRepeatCount).SelectMany(e => e).ToArray());
 
-        var parsers = new Dictionary<string, IParser<IReadOnlyList<Point3>>> {
+        var parsers = new Dictionary<string, IJar<IReadOnlyList<Point3>>> {
             {"handrolled", handrolledParser},
             {"compiled", compiledParser},
             {"blit", blitParser},
-            {"dynamic", dynamicParser}
+            //{"dynamic", dynamicParser},
         };
         var s = new Stopwatch();
         const long Repetitions = 1000;
