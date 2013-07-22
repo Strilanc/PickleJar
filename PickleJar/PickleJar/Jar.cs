@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Strilanc.PickleJar.Internal;
 using Strilanc.PickleJar.Internal.Numbers;
 using Strilanc.PickleJar.Internal.Repeated;
+using Strilanc.PickleJar.Internal.Structured;
 
 namespace Strilanc.PickleJar {
     /// <summary>
@@ -57,6 +58,12 @@ namespace Strilanc.PickleJar {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
             if (countPrefixJar == null) throw new ArgumentNullException("countPrefixJar");
             return new RepeatBasedOnPrefixJar<T>(countPrefixJar, itemJar.Bulk());
+        }
+        /// <summary>Returns a Jar that first parses a size then parses an item that should consume exactly that amount of data.</summary>
+        public static IJar<T> DataSizePrefixed<T>(this IJar<T> itemJar, IJar<int> dataSizePrefixJar) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
+            if (dataSizePrefixJar == null) throw new ArgumentNullException("dataSizePrefixJar");
+            return new DataSizePrefixedJar<T>(dataSizePrefixJar, itemJar);
         }
         /// <summary>
         /// Returns a Jar that repeatedly uses an item Jar until there's no data left and puts the resulting items into an array.

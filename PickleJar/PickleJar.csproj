@@ -61,6 +61,7 @@
     <Compile Include="PickleJar\Internal\ReflectionUtil.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Float32Jar.cs" />
     <Compile Include="PickleJar\Internal\Numbers\Float64Jar.cs" />
+    <Compile Include="PickleJar\Internal\Structured\DataSizePrefixedJar.cs" />
     <Compile Include="PickleJar\JarUtil.cs" />
     <Compile Include="PickleJar\DataFragmentException.cs" />
     <Compile Include="PickleJar\Internal\CollectionUtil.cs" />

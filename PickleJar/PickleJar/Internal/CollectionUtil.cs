@@ -89,6 +89,11 @@ namespace Strilanc.PickleJar.Internal {
         public static ArraySegment<T> Skip<T>(this ArraySegment<T> segment, int count) {
             return new ArraySegment<T>(segment.Array, segment.Offset + count, segment.Count - count);
         }
+        ///<summary>Returns an array segment over the same data, but with the end of the range stopped at the given count.</summary>
+        public static ArraySegment<T> Take<T>(this ArraySegment<T> segment, int count) {
+            if (count > segment.Count) throw new ArgumentOutOfRangeException("count");
+            return new ArraySegment<T>(segment.Array, segment.Offset, count);
+        }
         ///<summary>Determines if all items from the second given sequence are present in the first given sequence.</summary>
         public static bool IsSameOrSubsetOf<T>(this IEnumerable<T> sequence, IEnumerable<T> other) {
             var r = new HashSet<T>(other);
