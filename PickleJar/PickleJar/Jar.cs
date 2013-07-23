@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.Numbers;
+using Strilanc.PickleJar.Internal.Values;
 using Strilanc.PickleJar.Internal.Repeated;
 using Strilanc.PickleJar.Internal.Structured;
 
@@ -47,6 +47,14 @@ namespace Strilanc.PickleJar {
         /// <summary>A jar for IEEE 64-bit double-precision floating point number.</summary>
         public static IJar<double> Float64 { get { return new Float64Jar(); } }
 
+        /// <summary>A jar for strings encoded in utf8.</summary>
+        public static IJar<string> Utf8Jar { get { return new UTF8Jar(); } }
+
+        /// <summary>Returns a Jar that consumes all data up to a null terminator, and no more.</summary>
+        public static IJar<T> NullTerminated<T>(this IJar<T> itemJar) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
+            return new NullTerminatedJar<T>(itemJar);
+        }
         /// <summary>Returns a Jar that repeatedly uses an item Jar a fixed number of times and puts the resulting item values into an array.</summary>
         public static IJar<IReadOnlyList<T>> RepeatNTimes<T>(this IJar<T> itemJar, int constantRepeatCount) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");

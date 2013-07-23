@@ -9,37 +9,63 @@ using Strilanc.PickleJar.Internal;
 
 [TestClass]
 public class ApiTest {
-    private static readonly IEnumerable<object> ApiJarGetters = typeof (Jar)
+    [TestMethod]
+    public void TestApiHasOnlyValidJars() {
+        foreach (dynamic jar in JarsExposedByPublicApi()) {
+            AssertJarIsValid(jar);
+        }
+    }
+
+    private static IEnumerable<MethodInfo> FillInGenericParameters(MethodInfo method) {
+        if (!method.IsGenericMethodDefinition) {
+            yield return method;
+            yield break;
+        }
+
+        var allIntTypeArgs = method.GetGenericArguments().Select(_ => typeof(int)).ToArray();
+        yield return method.MakeGenericMethod(allIntTypeArgs);
+
+        var allStringTypeArgs = method.GetGenericArguments().Select(_ => typeof(string)).ToArray();
+        yield return method.MakeGenericMethod(allStringTypeArgs);
+    }
+
+    private static readonly IEnumerable<object> ApiJarGetters = 
+        typeof(Jar) // <-- class with primitive jars and jar factory methods
         .GetProperties(BindingFlags.Static | BindingFlags.Public)
         .Select(e => e.GetValue(null))
         .ToArray();
-    private static readonly IEnumerable<MethodInfo> ApiJarMakers = typeof(Jar)
+    private static readonly IEnumerable<MethodInfo> ApiJarMakers = 
+        typeof(Jar)
         .GetMethods(BindingFlags.Static | BindingFlags.Public)
-        // just assume type parameters should be Int32
-        .Select(e => !e.IsGenericMethodDefinition ? e : e.MakeGenericMethod(e.GetGenericArguments().Select(_ => typeof (int)).ToArray()))
+        .SelectMany(FillInGenericParameters)
         .ToArray();
 
-    private static dynamic[] ChooseTestValues(Type type) {
-        if (type == typeof(int)) return new dynamic[] { -100, -1, 0, 1, 2, 100 };
-        if (type == typeof(sbyte)) return ChooseTestValues(typeof(int)).Select(e => (dynamic)(sbyte)(int)e).ToArray();
-        if (type == typeof(short)) return ChooseTestValues(typeof(int)).Select(e => (dynamic)(short)(int)e).ToArray();
-        if (type == typeof(long)) return ChooseTestValues(typeof(int)).Select(e => (dynamic)(long)(int)e).ToArray();
-        if (type == typeof(float)) return ChooseTestValues(typeof(int)).Select(e => (dynamic)(float)(int)e).ToArray();
-        if (type == typeof(double)) return ChooseTestValues(typeof(int)).Select(e => (dynamic)(double)(int)e).ToArray();
-        if (type == typeof(byte)) return ChooseTestValues(typeof(int)).Where(e => (int)e > 0).Select(e => (dynamic)(byte)(int)e).ToArray();
-        if (type == typeof(ushort)) return ChooseTestValues(typeof(int)).Where(e => (int)e > 0).Select(e => (dynamic)(ushort)(int)e).ToArray();
-        if (type == typeof(uint)) return ChooseTestValues(typeof(int)).Where(e => (int)e > 0).Select(e => (dynamic)(uint)(int)e).ToArray();
-        if (type == typeof(ulong)) return ChooseTestValues(typeof(int)).Where(e => (int)e > 0).Select(e => (dynamic)(ulong)(int)e).ToArray();
+    private static IEnumerable<object> ChooseTestValues(Type type) {
+        if (type == typeof(sbyte)) return new object[] { (sbyte)-100, (sbyte)-1, (sbyte)0, (sbyte)1, (sbyte)2, (sbyte)100 };
+        if (type == typeof(short)) return new object[] { (short)-100, (short)-1, (short)0, (short)1, (short)2, (short)100 };
+        if (type == typeof(int)) return new object[] { -100, -1, 0, 1, 2, 100 };
+        if (type == typeof(long)) return new object[] { -100L, -1L, 0L, 1L, 2L, 100L };
 
-        if (type == typeof(IJar<int>)) return new dynamic[] { Jar.Int32LittleEndian, Jar.Int32BigEndian };
-        if (type == typeof(IReadOnlyList<int>)) return new dynamic[] { new int[0], new[] { -1 }, new[] { 2, 3, 5, 7 } };
-        if (type == typeof(Func<int, bool>)) return new dynamic[] { new Func<int, bool>(e1 => e1 % 2 == 0) };
-        
+        if (type == typeof(float)) return new object[] { -100f, -1f, 0f, 1f, 2f, 100f };
+        if (type == typeof(double)) return new object[] { -100.0, -1.0, 0.0, 1.0, 2.0, 100.0 };
+
+        if (type == typeof(byte)) return new object[] { (byte)0, (byte)1, (byte)2, (byte)100 };
+        if (type == typeof(ushort)) return new object[] { (ushort)0, (ushort)1, (ushort)2, (ushort)100 };
+        if (type == typeof(uint)) return new object[] { 0u, 1u, 2u, 100u };
+        if (type == typeof(ulong)) return new object[] { 0ul, 1ul, 2ul, 100ul };
+
+        if (type == typeof(IReadOnlyList<int>)) return new object[] { new int[0], new[] { -1 }, new[] { 2, 3, 5, 7 } };
+        if (type == typeof(Func<int, bool>)) return new object[] { new Func<int, bool>(e1 => e1 % 2 == 0) };
+        if (type == typeof(Func<string, bool>)) return new object[] { new Func<string, bool>(e1 => e1.Length % 2 == 0) };
+
+        if (type == typeof(string)) return new[] { "a", "bra", "ca", "da" };
+
         // note: this function must currently be its own inverse, else Select's packer projection won't undo its parser projection
-        if (type == typeof(Func<int, int>)) return new dynamic[] { new Func<int, int>(e1 => e1 * -1) };
-        if (type == typeof(IJar<IReadOnlyList<int>>)) return new dynamic[] { Jar.Int32LittleEndian.RepeatNTimes(2) };
+        if (type == typeof(Func<int, int>)) return new object[] { new Func<int, int>(e1 => e1 * -1) };
+        if (type == typeof(Func<string, string>)) return new object[] { new Func<string, string>(e1 => new string(e1.Reverse().ToArray())) };
+        if (type == typeof(IJar<IReadOnlyList<int>>)) return new object[] { Jar.Int32LittleEndian.RepeatNTimes(2) };
 
-        var matchingJar = ApiJarGetters.Where(type.IsInstanceOfType).Select(e => (dynamic)e).ToArray();
+        var matchingJar = ApiJarGetters.Where(type.IsInstanceOfType).ToArray();
         if (matchingJar.Length > 0) return matchingJar;
         throw new Exception(type.ToString());
     }
@@ -47,7 +73,6 @@ public class ApiTest {
         var derivedJars = (from jarMaker in ApiJarMakers
                            from args in jarMaker.GetParameters()
                                                 .Select(e => ChooseTestValues(e.ParameterType))
-                                                .ToArray()
                                                 .AllChoiceCombinationsVolatile()
                            let e = TestingUtilities.InvokeWithDefaultOnFail(() => jarMaker.Invoke(null, args))
                            where e != null
@@ -57,83 +82,75 @@ public class ApiTest {
 
         return ApiJarGetters.Concat(derivedJars);
     }
-    [TestMethod]
-    public void TestApiHasValidJars() {
-        foreach (dynamic jar in JarsExposedByPublicApi()) {
-            var itemType = 
-                ((Type)jar.GetType())
-                .GetInterfaces()
-                .Single(e => e.IsGenericType && e.GetGenericTypeDefinition() == typeof(IJar<>))
-                .GetGenericArguments()
-                .Single();
-            var data = Enumerable.Range(0, 8 * 3 * 5 * 7).Select(e => (byte)e).ToArray();
-            var full = new ArraySegment<byte>(data);
 
-            // parsing appears to work correctly?
-            var segments = new[] {
-                full,
-                full.Skip(data.Length/2),
-                full.Skip(data.Length),
-                new ArraySegment<byte>(data, 0, 0),
-                new ArraySegment<byte>(new byte[0])
-            };
-            var vs = segments.Select(e => AssertParsesCorrectlyIfParses(jar, e)).ToArray();
+    private static void AssertJarIsValid<T>(IJar<T> jar) {
+        var data = Enumerable.Range(0, 8*3*5*7).Select(e => (byte)e).ToArray();
+        var full = new ArraySegment<byte>(data);
 
-            // round trips work?
-            var packed = new List<byte[]>();
-            foreach (var item in ChooseTestValues(itemType)) {
-                byte[] itemData;
-                try {
-                    itemData = jar.Pack(item);
-                    packed.Add(itemData);
-                } catch (Exception) {
-                    continue;
+        // parsing appears to work correctly?
+        var segments = new[] {
+            full,
+            full.Skip(data.Length/2),
+            full.Skip(data.Length),
+            new ArraySegment<byte>(data, 0, 0),
+            new ArraySegment<byte>(new byte[0])
+        };
+        var vs = segments.Select(e => AssertParsesCorrectlyIfParses(jar, e)).ToArray();
+
+        // round trips work?
+        var packed = new List<byte[]>();
+        foreach (var item in ChooseTestValues(typeof(T)).Cast<T>()) {
+            byte[] itemData;
+            try {
+                itemData = jar.Pack(item);
+                packed.Add(itemData);
+            } catch (Exception) {
+                continue;
+            }
+            var p = jar.Parse(new ArraySegment<byte>(itemData));
+            itemData.Length.AssertEquals(p.Consumed);
+            item.AssertSimilar(p.Value);
+        }
+
+        // metadata is good?
+        var metadata = jar as IJarMetadataInternal;
+        if (metadata != null) {
+            // length matches, if specified?
+            var len = metadata.OptionalConstantSerializedLength;
+            if (len.HasValue) {
+                if (len.Value > 0) {
+                    TestingUtilities.AssertThrows(() => jar.Parse(new ArraySegment<byte>(data, 0, len.Value - 1)));
                 }
-                var p = jar.Parse(new ArraySegment<byte>(itemData));
-                Assert.AreEqual(itemData.Length, p.Consumed);
-                TestingUtilities.AssertSimilar(item, p.Value);
+                foreach (var b in vs.Where(b => !ReferenceEquals(b, null))) {
+                    b.Value.Consumed.AssertEquals(len.Value);
+                }
+                foreach (var b in packed) {
+                    b.Length.AssertEquals(len.Value);
+                }
             }
 
-            // metadata is good?
-            var metadata = jar as IJarMetadataInternal;
-            if (metadata != null) {
-                // length matches, if specified?
-                var len = metadata.OptionalConstantSerializedLength;
-                if (len.HasValue) {
-                    if (len.Value > 0) {
-                        TestingUtilities.AssertThrows(() => jar.Parse(new ArraySegment<byte>(data, 0, len.Value - 1)));
-                    }
-                    foreach (var b in vs.Where(b => !ReferenceEquals(b, null))) {
-                        Assert.AreEqual(b.Consumed, len.Value);
-                    }
-                    foreach (var b in packed) {
-                        Assert.AreEqual(b.Length, len.Value);
-                    }
-                }
+            // inlined expression has same result?
+            for (var i = 0; i < segments.Length; i++) {
+                if (ReferenceEquals(null, vs[i])) continue;
+                var inlined = metadata.TryMakeInlinedParserComponents(
+                    Expression.Constant(segments[i].Array),
+                    Expression.Constant(segments[i].Offset),
+                    Expression.Constant(segments[i].Count));
+                if (inlined == null) continue;
 
-                // inlined expression has same result?
-                for (var i = 0; i < segments.Length; i++) {
-                    if (ReferenceEquals(null, vs[i])) continue;
-                    var inlined = metadata.TryMakeInlinedParserComponents(
-                        Expression.Constant(segments[i].Array),
-                        Expression.Constant(segments[i].Offset),
-                        Expression.Constant(segments[i].Count));
-                    if (inlined == null) continue;
+                var compiledValue = Expression.Lambda(
+                    Expression.Block(
+                        inlined.ResultStorage,
+                        inlined.PerformParse,
+                        inlined.AfterParseValueGetter)).Compile().DynamicInvoke();
+                compiledValue.AssertSimilar(vs[i].Value.Value);
 
-                    var compiledValue = Expression.Lambda(
-                        Expression.Block(
-                            inlined.ResultStorage,
-                            inlined.PerformParse,
-                            inlined.AfterParseValueGetter)).Compile().DynamicInvoke();
-                    TestingUtilities.AssertSimilar(compiledValue, vs[i].Value);
-
-                    var compiledConsumed = Expression.Lambda(
-                        Expression.Block(
-                            inlined.ResultStorage,
-                            inlined.PerformParse,
-                            inlined.AfterParseConsumedGetter)).Compile().DynamicInvoke();
-                    TestingUtilities.AssertSimilar(compiledConsumed, vs[i].Consumed);
-                }
+                var compiledConsumed = Expression.Lambda(
+                    Expression.Block(
+                        inlined.ResultStorage,
+                        inlined.PerformParse,
+                        inlined.AfterParseConsumedGetter)).Compile().DynamicInvoke();
+                compiledConsumed.AssertSimilar(vs[i].Value.Consumed);
             }
         }
     }

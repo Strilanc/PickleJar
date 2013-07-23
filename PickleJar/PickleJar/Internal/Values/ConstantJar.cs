@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.Numbers {
+namespace Strilanc.PickleJar.Internal.Values {
     internal struct ConstantJar<T> : IJarMetadataInternal, IJar<T> {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return 0; } }

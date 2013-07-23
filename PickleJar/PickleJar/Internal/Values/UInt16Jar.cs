@@ -1,34 +1,34 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.Numbers {
-    internal struct UInt32Jar : IJarMetadataInternal, IJar<UInt32> {
-        private const int SerializedLength = 32 / 8;
+namespace Strilanc.PickleJar.Internal.Values {
+    internal struct UInt16Jar : IJarMetadataInternal, IJar<UInt16> {
+        private const int SerializedLength = 16 / 8;
 
         private readonly bool _isSystemEndian;
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return _isSystemEndian; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
 
-        public UInt32Jar(Endianess endianess) {
+        public UInt16Jar(Endianess endianess) {
             if (endianess != Endianess.BigEndian && endianess != Endianess.LittleEndian)
                 throw new ArgumentException("Unrecognized endianess", "endianess");
             var isLittleEndian = endianess == Endianess.LittleEndian;
             _isSystemEndian = isLittleEndian == BitConverter.IsLittleEndian;
         }
 
-        public ParsedValue<UInt32> Parse(ArraySegment<byte> data) {
+        public ParsedValue<UInt16> Parse(ArraySegment<byte> data) {
             if (data.Count < SerializedLength) throw new DataFragmentException();
-            var value = BitConverter.ToUInt32(data.Array, data.Offset);
+            var value = BitConverter.ToUInt16(data.Array, data.Offset);
             if (!_isSystemEndian) value = value.ReverseBytes();
             return value.AsParsed(SerializedLength);
         }
-        public byte[] Pack(UInt32 value) {
+        public byte[] Pack(UInt16 value) {
             var v = _isSystemEndian ? value : value.ReverseBytes();
             return BitConverter.GetBytes(v);
         }
 
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            return ParserUtil.MakeInlinedNumberParserComponents<UInt32>(_isSystemEndian, array, offset, count);
+            return ParserUtil.MakeInlinedNumberParserComponents<UInt16>(_isSystemEndian, array, offset, count);
         }
     }
 }

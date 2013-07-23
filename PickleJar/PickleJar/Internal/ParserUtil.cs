@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using Strilanc.PickleJar.Internal.Bulk;
 using Strilanc.PickleJar.Internal.Structured;
-using Strilanc.Value;
 
 namespace Strilanc.PickleJar.Internal {
     /// <summary>

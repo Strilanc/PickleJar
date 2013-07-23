@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.Numbers;
+using Strilanc.PickleJar.Internal.Values;
 using Strilanc.PickleJar.Internal.Structured;
 
 [TestClass]

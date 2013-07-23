@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.Numbers {
+namespace Strilanc.PickleJar.Internal.Values {
     internal struct Int8Jar : IJarMetadataInternal, IJar<sbyte> {
         private const int SerializedLength = 1;
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }

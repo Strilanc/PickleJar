@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal.Numbers {
+namespace Strilanc.PickleJar.Internal.Values {
     internal struct UInt64Jar : IJarMetadataInternal, IJar<UInt64> {
         private const int SerializedLength = 64 / 8;
 

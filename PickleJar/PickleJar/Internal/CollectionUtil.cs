@@ -70,6 +70,7 @@ namespace Strilanc.PickleJar.Internal {
                 while (e.MoveNext()) {
                     var tailChoice = e.Current;
                     foreach (var headChoice in headChoices) {
+             
                         tailChoice[index] = headChoice;
                         yield return tailChoice;
                     }

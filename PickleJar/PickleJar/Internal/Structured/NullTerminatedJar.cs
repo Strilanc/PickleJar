@@ -13,16 +13,20 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
             var index = data.IndexesOf((byte)0).MayFirst();
-            if (!index.HasValue) throw new ArgumentException("Null terminator not count.");
-            var n = index.ForceGetValue();
-            var r = _itemJar.Parse(data.Take(n));
-            if (r.Consumed != n) throw new ArgumentException("Leftover data.");
-            return r;
+            if (!index.HasValue) throw new ArgumentException("Null terminator not found.");
+
+            var itemDataLength = index.ForceGetValue();
+            var parsedItem = _itemJar.Parse(data.Take(itemDataLength));
+            if (parsedItem.Consumed != itemDataLength) throw new LeftoverDataException();
+
+            var dataLength = itemDataLength + 1;
+            return parsedItem.Value.AsParsed(dataLength);
         }
+
         public byte[] Pack(T value) {
             var itemData = _itemJar.Pack(value);
             if (itemData.Contains((byte)0)) throw new ArgumentException("Null terminated data contains a zero.");
-            return itemData.Concat(new byte[] {0}).ToArray();
+            return itemData.Concat(new byte[] { 0 }).ToArray();
         }
     }
 }
