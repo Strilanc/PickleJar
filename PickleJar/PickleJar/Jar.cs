@@ -48,7 +48,7 @@ namespace Strilanc.PickleJar {
         public static IJar<double> Float64 { get { return new Float64Jar(); } }
 
         /// <summary>A jar for strings encoded in utf8.</summary>
-        public static IJar<string> Utf8Jar { get { return new UTF8Jar(); } }
+        public static IJar<string> Utf8 { get { return new UTF8Jar(); } }
 
         /// <summary>Returns a Jar that consumes all data up to a null terminator, and no more.</summary>
         public static IJar<T> NullTerminated<T>(this IJar<T> itemJar) {
