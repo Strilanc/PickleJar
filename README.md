@@ -26,11 +26,11 @@ public sealed class Point {
 }
 
 var pointJar = new Jar.Builder<Point> {
-    {"x", Parse.Float32},
-    {"y", Parse.Float32}
+    {"x", Jar.Float32},
+    {"y", Jar.Float32}
 }.Build();
 
-var p = pointParser.Parse(new byte[]{0,0,0,0, 0,0,128,63}).Value;
+var p = pointJar.Parse(new byte[]{0,0,0,0, 0,0,128,63}).Value;
 // p now contains a Point with X=0.0f and Y=1.0f
 ```
 
@@ -45,11 +45,11 @@ public struct Point3 {
     public int Z;
 }
 
-var bulkPointParser = new Parse.Builder<Point3> {
+var bulkPointParser = new Jar.Builder<Point3> {
     // notice that the fields come in the same order as they are declared
-    {"x", Parse.Int32LittleEndian},
-    {"y", Parse.Int32LittleEndian},
-    {"z", Parse.Int32LittleEndian}
+    {"x", Jar.Int32LittleEndian},
+    {"y", Jar.Int32LittleEndian},
+    {"z", Jar.Int32LittleEndian}
 }.Build()
  .RepeatUntilEndOfData();
 
