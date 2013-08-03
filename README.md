@@ -1,30 +1,40 @@
-Fast Parser Combinators for C#
-==============================
+PickleJar
+=========
 
-Example usage:
+**PickleJar is not yet ready for usage.**
+
+PickleJar is a library for describing the binary serialized formats, and using that description to pack and parse values into and out of said format.
+
+PickleJar performs optimization and compilation of parsers/packers at runtime, to avoid the overhead of interpreting the descriptions anew each time.
+
+(The name comes from python, which refers to serialization as 'pickling', and the process of actually making pickles, which uses actual jars.)
+
+========
+Examples
+========
+
+Parsing a 2d point, serialized as two contiguous floats:
 
 ```CSharp
 public sealed class Point {
-    // (X can't be set externally, but the library will detect that it can use the constructor parameter 'x' to do it)
-    public readonly int X;
-    public readonly int Y;
-    public Point(int x, int y) {
+    public readonly float X;
+    public readonly float Y;
+    public Point(float x, float y) {
         X = x;
         Y = y;
     }
 }
 
-var pointParser = new Parse.Builder<Point> {
-    // since y comes first in these entries, the serialized form will have y first
-    {"y", Parse.Int32LittleEndian},
-    {"x", Parse.Int32LittleEndian}
+var pointJar = new Jar.Builder<Point> {
+    {"x", Jar.Float32},
+    {"y", Jar.Float32}
 }.Build();
 
-var p = pointParser.Parse(new byte[] {2,0,0,0, 3,0,0,0}).Value;
-// p now contains a Point with X=3 and Y=2
+var p = pointJar.Parse(new byte[]{0,0,0,0, 0,0,128,63}).Value;
+// p now contains a Point with X=0.0f and Y=1.0f
 ```
 
-Example optimizing usage:
+Using StructLayoutAttribute to allow memcpy optimizations:
 
 ```C#
 // (the layout attribute forces a particular memory representation, which the library will notice and exploit)
@@ -35,11 +45,11 @@ public struct Point3 {
     public int Z;
 }
 
-var bulkPointParser = new Parse.Builder<Point3> {
+var bulkPointParser = new Jar.Builder<Point3> {
     // notice that the fields come in the same order as they are declared
-    {"x", Parse.Int32LittleEndian},
-    {"y", Parse.Int32LittleEndian},
-    {"z", Parse.Int32LittleEndian}
+    {"x", Jar.Int32LittleEndian},
+    {"y", Jar.Int32LittleEndian},
+    {"z", Jar.Int32LittleEndian}
 }.Build()
  .RepeatUntilEndOfData();
 
