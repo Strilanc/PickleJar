@@ -30,5 +30,11 @@ namespace Strilanc.PickleJar.Internal.Values {
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return ParserUtil.MakeInlinedNumberParserComponents<UInt32>(_isSystemEndian, array, offset, count);
         }
+        public override string ToString() {
+            var end = _isSystemEndian ? ""
+                    : BitConverter.IsLittleEndian ? "[BigEndian]"
+                    : "[LittleEndian]";
+            return "UInt32" + end;
+        }
     }
 }

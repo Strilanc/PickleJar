@@ -17,7 +17,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         private readonly int _length;
         private readonly BlitParser _parser;
-        private TypeJarBlit(IEnumerable<IMemberAndJar> fieldParsers) {
+        private TypeJarBlit(IEnumerable<IJarForMember> fieldParsers) {
             var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength());
             if (!len.HasValue) throw new ArgumentException();
             _parser = MakeUnsafeBlitParser();
@@ -32,12 +32,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
         public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
-        public static TypeJarBlit<T> TryMake(IReadOnlyList<IMemberAndJar> fieldParsers) {
+        public static TypeJarBlit<T> TryMake(IReadOnlyList<IJarForMember> fieldParsers) {
             if (!CanBlitParseWith(fieldParsers)) return null;
             return new TypeJarBlit<T>(fieldParsers);
         }
 
-        private static bool CanBlitParseWith(IReadOnlyList<IMemberAndJar> fieldParsers) {
+        private static bool CanBlitParseWith(IReadOnlyList<IJarForMember> fieldParsers) {
             if (fieldParsers == null) throw new ArgumentNullException("fieldParsers");
 
             // type has blittable representation?
@@ -54,19 +54,19 @@ namespace Strilanc.PickleJar.Internal.Structured {
             if (structLayout.Pack != 1) return false;
 
             // parsers and struct fields have matching canonical names?
-            var serialNames = fieldParsers.Select(e => e.CanonicalName);
-            var fieldNames = typeof(T).GetFields().Select(e => e.CanonicalName());
+            var serialNames = fieldParsers.Select(e => e.MemberMatchInfo);
+            var fieldNames = typeof(T).GetFields().Select(e => e.MatchInfo());
             if (!serialNames.HasSameSetOfItemsAs(fieldNames)) return false;
 
             // offsets implied by parser ordering matches offsets of the struct's fields?
             var memoryOffsets =
                 typeof(T).GetFields().ToDictionary(
-                    e => e.CanonicalName(),
+                    e => e.MatchInfo(),
                     e => (int?)typeof(T).FieldOffsetOf(e));
             var serialOffsets =
                 fieldParsers
                     .StreamZip((int?)0, (a, e) => a + e.OptionalConstantSerializedLength())
-                    .ToDictionary(e => e.Item1.CanonicalName, e => e.Item2 - e.Item1.OptionalConstantSerializedLength());
+                    .ToDictionary(e => e.Item1.MemberMatchInfo, e => e.Item2 - e.Item1.OptionalConstantSerializedLength());
             if (!serialOffsets.HasSameKeyValuesAs(memoryOffsets)) return false;
 
             return true;
@@ -112,6 +112,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         public byte[] Pack(T value) {
             throw new NotImplementedException();
+        }
+
+        public override string ToString() {
+            return string.Format(
+                "{0}[memcpy]",
+                typeof(T));
         }
     }
 }

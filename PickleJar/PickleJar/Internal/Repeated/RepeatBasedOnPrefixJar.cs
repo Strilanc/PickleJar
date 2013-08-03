@@ -26,5 +26,12 @@ namespace Strilanc.PickleJar.Internal.Repeated {
             var itemData = _bulkItemJar.Pack(value);
             return countData.Concat(itemData).ToArray();
         }
+
+        public override string ToString() {
+            return string.Format(
+                "{0}.RepeatCountPrefixTimes({1})",
+                _bulkItemJar,
+                _countPrefixJar);
+        }
     }
 }

@@ -3,12 +3,18 @@ using Strilanc.PickleJar.Internal;
 using System.Linq;
 
 namespace Strilanc.PickleJar {
-    public struct CanonicalMemberName {
-        private readonly string _name;
+    public struct MemberMatchInfo : IEquatable<MemberMatchInfo> {
+        private readonly string _rawName;
         private readonly string _canonicalName;
-        public CanonicalMemberName(string name) {
-            _name = name;
+        private readonly Type _memberType;
+        public Type MemberType { get { return _memberType; } }
+
+        public MemberMatchInfo(string name, Type type) {
+            if (name == null) throw new ArgumentNullException("name");
+            if (type == null) throw new ArgumentNullException("type");
+            _rawName = name;
             _canonicalName = Canonize(name);
+            _memberType = type;
         }
         public static string Canonize(string name) {
             var tokens = name
@@ -25,24 +31,25 @@ namespace Strilanc.PickleJar {
             return string.Join("", tokens);
         }
 
-        public static bool operator ==(CanonicalMemberName name1, CanonicalMemberName name2) {
+        public static bool operator ==(MemberMatchInfo name1, MemberMatchInfo name2) {
             return name1.Equals(name2);
         }
-        public static bool operator !=(CanonicalMemberName name1, CanonicalMemberName name2) {
+        public static bool operator !=(MemberMatchInfo name1, MemberMatchInfo name2) {
             return !name1.Equals(name2);
         }
         public override bool Equals(object obj) {
-            return obj is CanonicalMemberName
-                   && Equals(_canonicalName, ((CanonicalMemberName)obj)._canonicalName);
+            return obj is MemberMatchInfo
+                && Equals((MemberMatchInfo)obj);
         }
-        public static implicit operator CanonicalMemberName(string name) {
-            return new CanonicalMemberName(name);
+        public bool Equals(MemberMatchInfo other) {
+            return _canonicalName == other._canonicalName
+                && _memberType == other._memberType;
         }
         public override int GetHashCode() {
             return _canonicalName == null ? 0 : _canonicalName.GetHashCode();
         }
         public override string ToString() {
-            return _name;
+            return string.Format("member with name like '{0}' of type {1}", _rawName, _memberType);
         }
     }
 }

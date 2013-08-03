@@ -23,5 +23,10 @@ namespace Strilanc.PickleJar.Internal.Values {
                 Expression.Constant(ConstantValue),
                 Expression.Constant(0));
         }
+        public override string ToString() {
+            return string.Format(
+                "Constant[{0}]",
+                ConstantValue);
+        }
     }
 }

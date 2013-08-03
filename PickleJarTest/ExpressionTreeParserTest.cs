@@ -36,7 +36,6 @@ public class ExpressionTreeParserTest {
         TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestUnsureClass1>(new[] {
             new Int16Jar(Endianess.LittleEndian).ForField("InaccessibleValue")
         }));
-        TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestUnsureClass1>(new IMemberAndJar[0]));
 
         // types must match
         TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestValidClass>(new[] {

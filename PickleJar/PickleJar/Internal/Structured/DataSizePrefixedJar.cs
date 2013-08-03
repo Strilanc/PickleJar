@@ -24,5 +24,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
             var countData = _dataSizePrefixJar.Pack(itemData.Length);
             return countData.Concat(itemData).ToArray();
         }
+
+        public override string ToString() {
+            return string.Format(
+                "{0}.DataSizePrefixed({1})",
+                _itemJar,
+                _dataSizePrefixJar);
+        }
     }
 }

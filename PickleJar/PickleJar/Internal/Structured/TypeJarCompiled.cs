@@ -12,31 +12,33 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
     /// </summary>
     internal sealed class TypeJarCompiled<T> : IJarMetadataInternal, IJar<T> {
-        private readonly IReadOnlyList<IMemberAndJar> _memberJars;
+        private readonly IReadOnlyList<IJarForMember> _memberJars;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
         private readonly Func<T, byte[]> _packer;
 
-        public TypeJarCompiled(IReadOnlyList<IMemberAndJar> memberJars) {
+        public TypeJarCompiled(IReadOnlyList<IJarForMember> memberJars) {
+            if (memberJars == null) throw new ArgumentNullException("memberJars");
             _memberJars = memberJars;
             _parser = MakeParser();
             _packer = MakePacker();
         }
 
-        private static IReadOnlyDictionary<CanonicalMemberName, MemberInfo> GetMutableMemberMap() {
+        private static IReadOnlyDictionary<MemberMatchInfo, MemberInfo> GetMutableMemberMap() {
             var mutableFields = typeof(T).GetFields()
                                          .Where(e => e.IsPublic)
-                                         .Where(e => !e.IsInitOnly);
+                                         .Where(e => !e.IsInitOnly)
+                                         .Select(e => new { value = (MemberInfo)e, key = e.MatchInfo() });
             var mutableProperties = typeof(T).GetProperties()
                                              .Where(e => e.CanWrite)
-                                             .Where(e => e.SetMethod.IsPublic);
-            return mutableFields.Cast<MemberInfo>()
-                                .Concat(mutableProperties)
-                                .KeyedBy(e => e.CanonicalName());
+                                             .Where(e => e.SetMethod.IsPublic)
+                                             .Select(e => new { value = (MemberInfo)e, key = e.MatchInfo() });
+            return mutableFields.Concat(mutableProperties)
+                                .ToDictionary(e => e.key, e => e.value);
         }
-        private static ConstructorInfo ChooseCompatibleConstructor(IEnumerable<CanonicalMemberName> mutableMembers, IEnumerable<CanonicalMemberName> parsers) {
+        private static ConstructorInfo ChooseCompatibleConstructor(IEnumerable<MemberMatchInfo> mutableMembers, IEnumerable<MemberMatchInfo> parsers) {
             var possibleConstructors = (from c in typeof(T).GetConstructors()
                                         where c.IsPublic
-                                        let parameterNames = c.GetParameters().Select(e => e.CanonicalName()).ToArray()
+                                        let parameterNames = c.GetParameters().Select(e => e.MatchInfo()).ToArray()
                                         where parameterNames.IsSameOrSubsetOf(parsers)
                                         where parsers.IsSameOrSubsetOf(parameterNames.Concat(mutableMembers))
                                         select c
@@ -48,7 +50,6 @@ namespace Strilanc.PickleJar.Internal.Structured {
             }
             return possibleConstructors.MaxBy(e => e.GetParameters().Count());
         }
-
 
         private Func<ArraySegment<byte>, ParsedValue<T>> MakeParser() {
             var paramData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
@@ -78,16 +79,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             var varResultValue = Expression.Variable(typeof(T));
             var varTotal = Expression.Variable(typeof(int));
-            var parserMap = _memberJars.KeyedBy(e => e.CanonicalName);
+            var parserMap = _memberJars.KeyedBy(e => e.MemberMatchInfo);
             var mutableMemberMap = GetMutableMemberMap();
-
-            var unmatchedReadOnlyField = typeof(T).GetFields().FirstOrDefault(e => e.IsInitOnly && !parserMap.ContainsKey(e.CanonicalName()));
-            if (unmatchedReadOnlyField != null)
-                throw new ArgumentException(string.Format("A readonly field named '{0}' of type {1} doesn't have a corresponding fieldParser.", unmatchedReadOnlyField.Name, typeof(T)));
 
             var chosenConstructor = ChooseCompatibleConstructor(mutableMemberMap.Keys, parserMap.Keys);
             var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
-                .KeyedBy(e => e.CanonicalName());
+                .KeyedBy(e => e.MatchInfo());
 
             var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
 
@@ -103,12 +100,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 e.inlinedParseComponents.PerformParse,
                 Expression.AddAssign(varTotal, e.inlinedParseComponents.AfterParseConsumedGetter))).Block();
 
-            var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.CanonicalName);
+            var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.MemberMatchInfo);
             var valueConstructedFromParsedValues = 
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
                 : Expression.New(chosenConstructor,
-                                 chosenConstructor.GetParameters().Select(e => parseValMap[e.CanonicalName()].inlinedParseComponents.AfterParseValueGetter));
+                                 chosenConstructor.GetParameters().Select(e => parseValMap[e.MatchInfo()].inlinedParseComponents.AfterParseValueGetter));
 
             var assignMutableMembersBlock =
                 parserMap
@@ -141,16 +138,16 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         private Func<T, byte[]> MakePacker() {
             var memberMap = _memberJars.ToDictionary(
-                e => e.CanonicalName,
+                e => e.MemberMatchInfo,
                 e => new { memberJar = e, memberGetter = e.PickMatchingMemberGetterForType(typeof (T))});
 
             var param = Expression.Parameter(typeof (T), "value");
             var resVar = Expression.Variable(typeof (List<byte[]>), "res");
             var statements = Expression.Block(
-                (from fieldJar in _memberJars
-                 let packMethod = typeof (IJar<>).MakeGenericType(fieldJar.FieldType).GetMethod("Pack")
-                 let packAccess = memberMap[fieldJar.CanonicalName].memberGetter(param)
-                 let packCall = Expression.Call(Expression.Constant(fieldJar.Jar), packMethod, new[] {packAccess})
+                (from memberJar in _memberJars
+                 let packMethod = typeof(IJar<>).MakeGenericType(memberJar.MemberMatchInfo.MemberType).GetMethod("Pack")
+                 let packAccess = memberMap[memberJar.MemberMatchInfo].memberGetter(param)
+                 let packCall = Expression.Call(Expression.Constant(memberJar.Jar), packMethod, new[] {packAccess})
                  select Expression.Call(resVar, typeof(List<byte[]>).GetMethod("Add"), new Expression[] { packCall })).Block(),
                 Expression.Assign(resVar, Expression.New(typeof (List<byte[]>).GetConstructor(new Type[0]).NotNull())));
 
@@ -166,6 +163,11 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 new[] { param });
 
             return method.Compile();
-        } 
+        }
+        public override string ToString() {
+            return string.Format(
+                "{0}[compiled]",
+                typeof(T));
+        }
     }
 }

@@ -9,8 +9,8 @@ namespace Strilanc.PickleJar {
         /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
         /// Use the Build method to produce a dynamically optimized Jar for the type.
         /// </summary>
-        public sealed class Builder<T> : ICollection<IMemberAndJar> {
-            private readonly List<IMemberAndJar> _list = new List<IMemberAndJar>();
+        public sealed class Builder<T> : ICollection<IJarForMember> {
+            private readonly List<IJarForMember> _list = new List<IJarForMember>();
 
             ///<summary>Returns a dynamically optimized Jar based on the field parsers that have been added so far.</summary>
             public IJar<T> Build() {
@@ -18,32 +18,35 @@ namespace Strilanc.PickleJar {
                        ?? new TypeJarCompiled<T>(_list);
             }
 
-            public void Add<TItem>(CanonicalMemberName name, IJar<TItem> parser) {
-                Add(new MemberAndJar<TItem>(parser, name));
+            public void Add<TItem>(MemberMatchInfo memberMatchInfo, IJar<TItem> parser) {
+                Add(new JarForMember<TItem>(parser, memberMatchInfo));
             }
-            IEnumerator<IMemberAndJar> IEnumerable<IMemberAndJar>.GetEnumerator() {
+            public void Add<TItem>(string nameMatcher, IJar<TItem> parser) {
+                Add(new JarForMember<TItem>(parser, new MemberMatchInfo(nameMatcher, typeof(TItem))));
+            }
+            IEnumerator<IJarForMember> IEnumerable<IJarForMember>.GetEnumerator() {
                 return _list.GetEnumerator();
             }
             IEnumerator IEnumerable.GetEnumerator() {
                 return _list.GetEnumerator();
             }
-            public void Add(IMemberAndJar item) {
+            public void Add(IJarForMember item) {
                 _list.Add(item);
             }
-            void ICollection<IMemberAndJar>.Clear() {
+            void ICollection<IJarForMember>.Clear() {
                 _list.Clear();
             }
-            bool ICollection<IMemberAndJar>.Contains(IMemberAndJar item) {
+            bool ICollection<IJarForMember>.Contains(IJarForMember item) {
                 return _list.Contains(item);
             }
-            void ICollection<IMemberAndJar>.CopyTo(IMemberAndJar[] array, int arrayIndex) {
+            void ICollection<IJarForMember>.CopyTo(IJarForMember[] array, int arrayIndex) {
                 _list.CopyTo(array, arrayIndex);
             }
-            bool ICollection<IMemberAndJar>.Remove(IMemberAndJar item) {
+            bool ICollection<IJarForMember>.Remove(IJarForMember item) {
                 return _list.Remove(item);
             }
-            int ICollection<IMemberAndJar>.Count { get { return _list.Count; } }
-            bool ICollection<IMemberAndJar>.IsReadOnly { get { return ((ICollection<IMemberAndJar>)_list).IsReadOnly; } }
+            int ICollection<IJarForMember>.Count { get { return _list.Count; } }
+            bool ICollection<IJarForMember>.IsReadOnly { get { return ((ICollection<IJarForMember>)_list).IsReadOnly; } }
         }
     }
 }

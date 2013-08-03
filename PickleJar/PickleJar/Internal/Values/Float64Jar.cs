@@ -19,5 +19,8 @@ namespace Strilanc.PickleJar.Internal.Values {
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return ParserUtil.MakeInlinedNumberParserComponents<double>(true, array, offset, count);
         }
+        public override string ToString() {
+            return "Float64";
+        }
     }
 }

@@ -11,5 +11,8 @@ namespace Strilanc.PickleJar.Internal.Values {
         public byte[] Pack(string value) {
             return Encoding.UTF8.GetBytes(value);
         }
+        public override string ToString() {
+            return "Text[UTF8]";
+        }
     }
 }

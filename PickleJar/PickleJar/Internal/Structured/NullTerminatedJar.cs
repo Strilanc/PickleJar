@@ -28,5 +28,10 @@ namespace Strilanc.PickleJar.Internal.Structured {
             if (itemData.Contains((byte)0)) throw new ArgumentException("Null terminated data contains a zero.");
             return itemData.Concat(new byte[] { 0 }).ToArray();
         }
+        public override string ToString() {
+            return string.Format(
+                "{0}.NullTerminated()",
+                _itemJar);
+        }
     }
 }

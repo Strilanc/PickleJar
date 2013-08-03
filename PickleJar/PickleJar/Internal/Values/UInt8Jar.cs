@@ -18,5 +18,8 @@ namespace Strilanc.PickleJar.Internal.Values {
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return ParserUtil.MakeInlinedNumberParserComponents<byte>(true, array, offset, count);
         }
+        public override string ToString() {
+            return "UInt8";
+        }
     }
 }

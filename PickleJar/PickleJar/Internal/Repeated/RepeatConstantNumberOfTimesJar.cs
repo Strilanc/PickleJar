@@ -29,5 +29,12 @@ namespace Strilanc.PickleJar.Internal.Repeated {
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
         }
+
+        public override string ToString() {
+            return string.Format(
+                "{0}.RepeatNTimes({1})",
+                _bulkItemJar,
+                _constantCount);
+        }
     }
 }

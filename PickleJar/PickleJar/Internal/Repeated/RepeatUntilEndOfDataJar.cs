@@ -26,5 +26,11 @@ namespace Strilanc.PickleJar.Internal.Repeated {
         public byte[] Pack(IReadOnlyList<T> value) {
             return _bulkItemJar.Pack(value);
         }
+
+        public override string ToString() {
+            return string.Format(
+                "{0}.RepeatUntilEndOfData()",
+                _bulkItemJar);
+        }
     }
 }

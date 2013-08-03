@@ -37,9 +37,10 @@ public static class TestingUtilities {
     public static void AssertThrows(Action action) {
         try {
             action();
-            Assert.Fail();
         } catch (Exception) {
+            return;
         }
+        Assert.Fail();
     }
     public static void AssertDoesNotThrow(Action action) {
         action();

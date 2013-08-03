@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PickleJar\AnonymousJar.cs" />
-    <Compile Include="PickleJar\CanonicalMemberName.cs" />
+    <Compile Include="PickleJar\MemberMatchInfo.cs" />
     <Compile Include="PickleJar\LeftoverDataException.cs" />
     <Compile Include="PickleJar\Internal\Values\ConstantJar.cs" />
     <Compile Include="PickleJar\Internal\ReflectionUtil.cs" />
@@ -73,7 +73,7 @@
     <Compile Include="PickleJar\Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatUntilEndOfDataJar.cs" />
-    <Compile Include="PickleJar\IMemberAndJar.cs" />
+    <Compile Include="PickleJar\IJarForMember.cs" />
     <Compile Include="PickleJar\Internal\ParserUtil.cs" />
     <Compile Include="PickleJar\Internal\Repeated\RepeatBasedOnPrefixJar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\BulkJarBlit.cs" />
@@ -84,7 +84,7 @@
     <Compile Include="PickleJar\Internal\Values\UInt64Jar.cs" />
     <Compile Include="PickleJar\Internal\Values\Int8Jar.cs" />
     <Compile Include="PickleJar\JarBuilder.cs" />
-    <Compile Include="PickleJar\Internal\Structured\MemberAndJar.cs" />
+    <Compile Include="PickleJar\Internal\Structured\JarForMember.cs" />
     <Compile Include="PickleJar\Internal\Structured\TypeJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Values\UInt8Jar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\IBulkJar.cs" />
