@@ -20,6 +20,7 @@ public class ExpressionTreeParserTest {
             this._privateReadOnlyField = privateReadOnlyField;
         }
     }
+
     public class TestUnsureClass1 {
         private readonly Int32 _inaccessibleValue;
         public TestUnsureClass1() {
@@ -32,43 +33,42 @@ public class ExpressionTreeParserTest {
 
     [TestMethod]
     public void TestBadParsers() {
-        // need ability to set all readonlys, fail safe if can't
+        // all parsers must be matched to some sort of setter
+        TestingUtilities.AssertDoesNotThrow(() => new TypeJarCompiled<TestUnsureClass1>(new IJarForMember[0]));
         TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestUnsureClass1>(new[] {
-            new Int16Jar(Endianess.LittleEndian).ForField("InaccessibleValue")
+            new Int16Jar(Endianess.LittleEndian).ForMember("InaccessibleValue")
         }));
 
         // types must match
         TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestValidClass>(new[] {
-            new Int16Jar(Endianess.LittleEndian).ForField("MutableField"),
-            new Int32Jar(Endianess.LittleEndian).ForField("ReadOnlyField"),
-            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField"),
-            new UInt8Jar().ForField("MutableProperty") // <-- wrong type
+            new Int16Jar(Endianess.LittleEndian).ForMember("MutableField"),
+            new Int32Jar(Endianess.LittleEndian).ForMember("ReadOnlyField"),
+            new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField"),
+            new Int8Jar().ForMember("MutableProperty") // <-- wrong type
         }));
 
-        // readonly fields must be initialized
+        // must have all values needed to invoke a constructor
         TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestValidClass>(new[] {
-            new Int16Jar(Endianess.LittleEndian).ForField("MutableField"),
-            // missing ReadOnlyField
-            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField"),
-            new Int8Jar().ForField("MutableProperty")
+            new Int16Jar(Endianess.LittleEndian).ForMember("MutableField"),
+            // missing constructor parameter
+            new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField"),
+            new Int8Jar().ForMember("MutableProperty")
         }));
 
         // mutable fields are not required to be initialized
         TestingUtilities.AssertDoesNotThrow(() => new TypeJarCompiled<TestValidClass>(new[] {
-            // missing MutableField
-            new Int32Jar(Endianess.LittleEndian).ForField("ReadOnlyField"),
-            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField")
-            // missing MutableProperty
+            new Int32Jar(Endianess.LittleEndian).ForMember("ReadOnlyField"),
+            new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField")
         }));
     }
 
     [TestMethod]
     public void TestReflectedParser() {
         var r = new TypeJarCompiled<TestValidClass>(new[] {
-            new UInt8Jar().ForField("MutableProperty"),
-            new Int16Jar(Endianess.LittleEndian).ForField("MutableField"),
-            new Int32Jar(Endianess.LittleEndian).ForField("ReadOnlyField"),
-            new Int32Jar(Endianess.LittleEndian).ForField("PrivateReadOnlyField")
+            new UInt8Jar().ForMember("MutableProperty"),
+            new Int16Jar(Endianess.LittleEndian).ForMember("MutableField"),
+            new Int32Jar(Endianess.LittleEndian).ForMember("ReadOnlyField"),
+            new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField")
         });
 
         TestingUtilities.AssertThrows(() => r.Parse(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
@@ -87,8 +87,8 @@ public class ExpressionTreeParserTest {
     [TestMethod]
     public void TestNoConstructor() {
         var r = new TypeJarCompiled<TestNoConstructorStruct>(new[] {
-            Jar.Int32LittleEndian.ForField("X"),
-            Jar.Int32LittleEndian.ForField("Y")
+            Jar.Int32LittleEndian.ForMember("X"),
+            Jar.Int32LittleEndian.ForMember("Y")
         });
         var e = r.Parse(new byte[] {1, 0, 0, 0, 2, 0, 0, 0, 0xFF});
         e.Consumed.AssertEquals(8);

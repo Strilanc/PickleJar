@@ -28,8 +28,8 @@ public class BlittableParserTest {
     [TestMethod]
     public void TestValueParser() {
         var r = TypeJarBlit<TestStruct>.TryMake(new List<IJarForMember> {
-            Jar.Int16LittleEndian.ForField("v01"),
-            Jar.Int32LittleEndian.ForField("v2345")
+            Jar.Int16LittleEndian.ForMember("v01"),
+            Jar.Int32LittleEndian.ForMember("v2345")
         });
         var y = r.Parse(new byte[] { 0, 1, 2, 3, 4, 5, 0xFF });
         y.Consumed.AssertEquals(6);
@@ -38,8 +38,8 @@ public class BlittableParserTest {
     [TestMethod]
     public void TestValueParser2() {
         var r = TypeJarBlit<TestStruct2>.TryMake(new List<IJarForMember> {
-            Jar.Int16LittleEndian.ForField("v01"),
-            Jar.Int32LittleEndian.ForField("v2345")
+            Jar.Int16LittleEndian.ForMember("v01"),
+            Jar.Int32LittleEndian.ForMember("v2345")
         });
         var y = r.Parse(new byte[] { 0, 1, 2, 3, 4, 5, 0xFF });
         y.Consumed.AssertEquals(6);

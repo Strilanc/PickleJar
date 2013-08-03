@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MoreLinq;
+using Strilanc.Value;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
@@ -57,7 +58,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
             var paramDataOffset = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Offset"));
             var paramDataCount = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Count"));
 
-            var bodyAndVars = TryMakeInlinedParserComponents(paramDataArray, paramDataOffset, paramDataCount);
+            var bodyAndVars = MakeInlinedParserComponents(paramDataArray, paramDataOffset, paramDataCount);
     
             var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
                 Expression.Block(
@@ -77,48 +78,72 @@ namespace Strilanc.PickleJar.Internal.Structured {
             return _parser(data);
         }
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return MakeInlinedParserComponents(array, offset, count);
+        }
+        public InlinedParserComponents MakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             var varResultValue = Expression.Variable(typeof(T));
             var varTotal = Expression.Variable(typeof(int));
-            var parserMap = _memberJars.KeyedBy(e => e.MemberMatchInfo);
+            var memberJarMap = _memberJars.KeyedBy(e => e.MemberMatchInfo);
             var mutableMemberMap = GetMutableMemberMap();
 
-            var chosenConstructor = ChooseCompatibleConstructor(mutableMemberMap.Keys, parserMap.Keys);
+            var chosenConstructor = ChooseCompatibleConstructor(mutableMemberMap.Keys, memberJarMap.Keys);
             var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
                 .KeyedBy(e => e.MatchInfo());
+            var unmatched = _memberJars
+                .Where(e => !mutableMemberMap.ContainsKey(e.MemberMatchInfo))
+                .Where(e => !parameterMap.ContainsKey(e.MemberMatchInfo))
+                .Select(e => e.MemberMatchInfo);
+            var mismatched = mutableMemberMap
+                .Where(e => !parameterMap.ContainsKey(e.Key))
+                .Where(e => memberJarMap.ContainsKey(e.Key))
+                .Where(e => memberJarMap[e.Key].MemberMatchInfo.MemberType != e.Value.GetMemberSettableType())
+                .Select(e => e.Key);
+            unmatched
+                .Concat(mismatched)
+                .MayFirst()
+                .IfHasValueThenDo(e => {
+                    throw new ArgumentException(string.Format(
+                        "Failed to find a member matching {0} on type {1}",
+                        e,
+                        typeof(T)));
+                });
 
             var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
 
-            var fieldParsings = (from fieldParser in _memberJars
-                                 let inlinedParseComponents = fieldParser.MakeInlinedParserComponents(
+            var memberParsers = (from memberJar in _memberJars
+                                 let inlinedParseComponents = memberJar.MakeInlinedParserComponents(
                                      array,
                                      Expression.Add(offset, varTotal),
                                      Expression.Subtract(count, varTotal))
-                                 select new { fieldParser, inlinedParseComponents }
+                                 select new { memberJar, inlinedParseComponents }
                                  ).ToArray();
 
-            var parseFieldsAndStoreResultsBlock = fieldParsings.Select(e => Expression.Block(
-                e.inlinedParseComponents.PerformParse,
-                Expression.AddAssign(varTotal, e.inlinedParseComponents.AfterParseConsumedGetter))).Block();
+            var performMemberParsesBlock = 
+                memberParsers
+                .Select(parser => Expression.Block(
+                    parser.inlinedParseComponents.PerformParse,
+                    Expression.AddAssign(varTotal, parser.inlinedParseComponents.AfterParseConsumedGetter)))
+                .Block();
 
-            var parseValMap = fieldParsings.KeyedBy(e => e.fieldParser.MemberMatchInfo);
+            var parserMap = memberParsers.KeyedBy(parser => parser.memberJar.MemberMatchInfo);
             var valueConstructedFromParsedValues = 
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
                 : Expression.New(chosenConstructor,
-                                 chosenConstructor.GetParameters().Select(e => parseValMap[e.MatchInfo()].inlinedParseComponents.AfterParseValueGetter));
+                                 chosenConstructor.GetParameters().Select(e => parserMap[e.MatchInfo()].inlinedParseComponents.AfterParseValueGetter));
 
             var assignMutableMembersBlock =
-                parserMap
-                    .Where(e => !parameterMap.ContainsKey(e.Key))
-                    .Select(e => Expression.Assign(
-                        Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
-                        parseValMap[e.Key].inlinedParseComponents.AfterParseValueGetter))
-                    .Block();
+                memberJarMap
+                .Where(e => !parameterMap.ContainsKey(e.Key))
+                .Select(e => Expression.Assign(
+                    Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
+                    parserMap[e.Key].inlinedParseComponents.AfterParseValueGetter))
+                .Block();
 
-            var locals = fieldParsings.SelectMany(e => e.inlinedParseComponents.ResultStorage);
+            var locals = memberParsers.SelectMany(e => e.inlinedParseComponents.ResultStorage);
             var statements = new[] {
                 initLocals,
-                parseFieldsAndStoreResultsBlock,
+                performMemberParsesBlock,
                 Expression.Assign(varResultValue, valueConstructedFromParsedValues),
                 assignMutableMembersBlock
             };

@@ -147,8 +147,21 @@ namespace Strilanc.PickleJar.Internal {
         public static MemberMatchInfo GetterMatchInfo(this MethodInfo method) {
             return new MemberMatchInfo(method.Name, method.ReturnType);
         }
-        public static IJarForMember ForField<T>(this IJar<T> parser, string memberNameMatcher) {
+        public static IJarForMember ForMember<T>(this IJar<T> parser, string memberNameMatcher) {
             return new JarForMember<T>(parser, new MemberMatchInfo(memberNameMatcher, typeof(T)));
         }
+        public static Type GetMemberSettableType(this MemberInfo memberInfo) {
+            var field = memberInfo as FieldInfo;
+            if (field != null) return field.FieldType;
+
+            var property = memberInfo as PropertyInfo;
+            if (property != null) return property.PropertyType;
+
+            var method = memberInfo as MethodInfo;
+            if (method != null && method.GetParameters().Length == 1) return method.GetParameters().Single().ParameterType;
+
+            throw new ArgumentException("Not a settable member.");
+        }
+
     }
 }

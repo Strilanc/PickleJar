@@ -12,6 +12,6 @@ namespace Strilanc.PickleJar {
         /// <summary>
         /// Determines which member's value the jar is parsing/packing.
         /// </summary>
-        MemberMatchInfo Member { get; }
+        MemberMatchInfo MemberMatchInfo { get; }
     }
 }
