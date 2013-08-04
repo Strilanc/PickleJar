@@ -21,9 +21,9 @@ public class ExpressionTreeParserTest {
         }
     }
 
-    public class TestUnsureClass1 {
+    public class ClassWithInternalState {
         private readonly Int32 _inaccessibleValue;
-        public TestUnsureClass1() {
+        public ClassWithInternalState() {
             _inaccessibleValue = 1;
         }
         public Int32 Get() {
@@ -34,8 +34,8 @@ public class ExpressionTreeParserTest {
     [TestMethod]
     public void TestBadParsers() {
         // all parsers must be matched to some sort of setter
-        TestingUtilities.AssertDoesNotThrow(() => new TypeJarCompiled<TestUnsureClass1>(new IJarForMember[0]));
-        TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestUnsureClass1>(new[] {
+        TestingUtilities.AssertDoesNotThrow(() => new TypeJarCompiled<ClassWithInternalState>(new IJarForMember[0]));
+        TestingUtilities.AssertThrows(() => new TypeJarCompiled<ClassWithInternalState>(new[] {
             new Int16Jar(Endianess.LittleEndian).ForMember("InaccessibleValue")
         }));
 
