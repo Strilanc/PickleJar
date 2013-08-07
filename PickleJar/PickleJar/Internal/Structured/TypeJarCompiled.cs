@@ -155,7 +155,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 resultStorage: new[] {varTotal, varResultValue});
         }
 
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
+        public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _memberJars.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength()); } }
         public byte[] Pack(T value) {
             return _packer(value);

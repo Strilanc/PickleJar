@@ -29,7 +29,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
             var value = _parser(data.Array, data.Offset, _length);
             return new ParsedValue<T>(value, _length);
         }
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
+        public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
         public static TypeJarBlit<T> TryMake(IReadOnlyList<IJarForMember> fieldParsers) {

@@ -10,7 +10,7 @@ namespace Strilanc.PickleJar.Internal {
         /// Determines if this parser's value's serialized representation is guaranteed to be the same its memory representation.
         /// When true, it may be possible to replace the parser with one that simply does a memcpy.
         /// </summary>
-        bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get; }
+        bool IsBlittable { get; }
 
         /// <summary>
         /// Determines if this parser is guaranteed to always consume the same number of bytes.

@@ -5,7 +5,7 @@ using Strilanc.PickleJar.Internal.Bulk;
 
 namespace Strilanc.PickleJar.Internal.Repeated {
     internal sealed class RepeatConstantNumberOfTimesJar<T> : IJarMetadataInternal, IJar<IReadOnlyList<T>> {
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
+        public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _bulkItemJar.OptionalConstantSerializedValueLength * _constantCount; } }
 
         private readonly int _constantCount;

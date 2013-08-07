@@ -30,7 +30,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
             var r = itemJar as IJarMetadataInternal;
             if (r == null) return null;
-            if (!r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch) return null;
+            if (!r.IsBlittable) return null;
             if (r.OptionalConstantSerializedLength.GetValueOrDefault() == 0) return null;
             return new BulkJarBlit<T>(itemJar);
         }

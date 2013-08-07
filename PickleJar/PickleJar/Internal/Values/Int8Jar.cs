@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace Strilanc.PickleJar.Internal.Values {
     internal struct Int8Jar : IJarMetadataInternal, IJar<sbyte> {
         private const int SerializedLength = 1;
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
+        public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
 
         public ParsedValue<sbyte> Parse(ArraySegment<byte> data) {

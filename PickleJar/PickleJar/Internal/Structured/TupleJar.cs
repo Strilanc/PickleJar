@@ -25,7 +25,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
             var r2 = SubJar2.Pack(value.Item2);
             return r1.Concat(r2).ToArray();
         }
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return false; } }
+        public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return SubJar1.OptionalConstantSerializedLength() + SubJar2.OptionalConstantSerializedLength(); } }
         public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;

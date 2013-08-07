@@ -30,11 +30,11 @@ namespace Strilanc.PickleJar.Internal {
 
         public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch<T>(this IJar<T> parser) {
             var r = parser as IJarMetadataInternal;
-            return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
+            return r != null && r.IsBlittable;
         }
         public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch(this IJarForMember jar) {
             var r = jar.Jar as IJarMetadataInternal;
-            return r != null && r.AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch;
+            return r != null && r.IsBlittable;
         }
 
         public static int? OptionalConstantSerializedLength<T>(this IJar<T> parser) {

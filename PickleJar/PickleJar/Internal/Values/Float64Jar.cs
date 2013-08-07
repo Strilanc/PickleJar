@@ -5,7 +5,7 @@ namespace Strilanc.PickleJar.Internal.Values {
     internal struct Float64Jar : IJarMetadataInternal, IJar<double> {
         private const int SerializedLength = 64/8;
 
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return true; } }
+        public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
 
         public ParsedValue<double> Parse(ArraySegment<byte> data) {
