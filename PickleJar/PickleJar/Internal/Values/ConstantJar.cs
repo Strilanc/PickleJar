@@ -2,6 +2,9 @@
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.Values {
+    /// <summary>
+    /// A jar that consumes no data, and always returns the same fixed value.
+    /// </summary>
     internal struct ConstantJar<T> : IJarMetadataInternal, IJar<T> {
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return 0; } }

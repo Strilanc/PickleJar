@@ -103,7 +103,11 @@ public static class TestingUtilities {
         Assert.AreEqual(value1, value2);
     }
     public static void AssertSequenceEquals<T>(this IEnumerable<T> value1, IEnumerable<T> value2) {
-        Assert.IsTrue(value1.SequenceEqual(value2));
+        var d1 = value1.ToArray();
+        var d2 = value2.ToArray();
+        if (!d1.SequenceEqual(d2)) {
+            Assert.Fail("Expected {0} to be sequence as {1}", string.Join(", ", d1), string.Join(", ", d2));
+        }
     }
     public static void AssertNotEqualTo<T1, T2>(this T1 value1, T2 value2) {
         Assert.AreNotEqual(value1, value2);

@@ -6,7 +6,7 @@ namespace Strilanc.PickleJar.Internal.Values {
         private const int SerializedLength = 16/8;
 
         private readonly bool _isSystemEndian;
-        public bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch { get { return _isSystemEndian; } }
+        public bool IsBlittable { get { return _isSystemEndian; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
 
         public Int16Jar(Endianess endianess) {
