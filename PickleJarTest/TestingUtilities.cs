@@ -2,9 +2,88 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Strilanc.PickleJar;
+using Strilanc.PickleJar.Internal;
 
 public static class TestingUtilities {
+    internal static IJar<T> TryCompileInlined<T>(this IJar<T> jar) {
+        var meta = jar as IJarMetadataInternal;
+        if (meta == null) return null;
+
+        var array = Expression.Parameter(typeof(byte[]), "array");
+        var offset = Expression.Parameter(typeof(int), "offset");
+        var count = Expression.Parameter(typeof(int), "count");
+
+        var inlined = meta.TryMakeInlinedParserComponents(
+            array,
+            offset,
+            count);
+        if (inlined == null) return null;
+
+        var parseBody = Expression.Block(
+            inlined.ResultStorage,
+            inlined.PerformParse,
+            Expression.New(
+                typeof(ParsedValue<T>).GetConstructor(new[] {typeof(T), typeof(int)}).NotNull(), 
+                inlined.AfterParseValueGetter,
+                inlined.AfterParseConsumedGetter));
+        var parseMethod = Expression.Lambda<Func<byte[], int, int, ParsedValue<T>>>(
+            parseBody,
+            new[] {array, offset, count});
+
+        var c = parseMethod.Compile();
+
+        return new AnonymousJar<T>(
+            e => c(e.Array, e.Offset, e.Count),
+            jar.Pack);
+    }
+    public static void AssertPicklesNoMoreNoLess<T>(this IJar<T> jar, T value, params byte[] data) {
+        jar.AssertPickles(value, data, ignoresExtraData: true, failsOnLessData: true);
+    }
+    public static void AssertPickles<T>(this IJar<T> jar, T value, byte[] data, bool ignoresExtraData, bool failsOnLessData) {
+        // packs to same data
+        var packed = jar.Pack(value);
+        data.AssertSequenceEquals(packed);
+
+        // parses to same value, consumes correct data
+        var snippets = new[] {
+            new byte[] {},
+            new byte[] {1},
+            new byte[] {2, 3, 5}
+        };
+        foreach (var v in from prefix in snippets
+                          from suffix in snippets
+                          from includedSuffix in ignoresExtraData ? snippets : snippets.Take(1)
+                          let d = prefix.Concat(data).Concat(includedSuffix).Concat(suffix).ToArray()
+                          select jar.Parse(new ArraySegment<byte>(d, prefix.Length, data.Length + includedSuffix.Length))) {
+            v.Consumed.AssertEquals(data.Length);
+            v.Value.AssertSimilar(value);
+        }
+
+        if (failsOnLessData && data.Length > 0) {
+            AssertThrows(() => jar.Parse(data.Take(data.Length - 1).ToArray()));
+        }
+
+        // optimized form also works?
+        var optimized = jar.TryCompileInlined();
+        if (optimized != null) optimized.AssertPickles(value, data, ignoresExtraData, failsOnLessData);
+    }
+    public static void AssertCantParse<T>(this IJar<T> jar, params byte[] data) {
+        var surrounding = new[] {
+            new byte[] {},
+            new byte[] {1,2,3},
+        };
+        foreach (var s in surrounding) {
+            var d = s.Concat(data).ToArray();
+            AssertThrows(() => jar.Parse(new ArraySegment<byte>(d, s.Length, data.Length)));
+        }
+
+        var optimized = jar.TryCompileInlined();
+        if (optimized != null) optimized.AssertCantParse(data);
+    }
+
     public static void AssertTrue(this bool value) {
         Assert.IsTrue(value);
     }
@@ -43,6 +122,9 @@ public static class TestingUtilities {
         Assert.Fail();
     }
     public static void AssertDoesNotThrow(Action action) {
+        action();
+    }
+    public static void AssertDoesNotThrow<T>(Func<T> action) {
         action();
     }
 }

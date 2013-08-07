@@ -61,9 +61,17 @@
     <Compile Include="ApiTest.cs" />
     <Compile Include="ExpressionArrayParserTest.cs" />
     <Compile Include="ExpressionTreeParserTest.cs" />
+    <Compile Include="Internal\Values\UInt8JarTest.cs" />
+    <Compile Include="Internal\Values\Int8JarTest.cs" />
+    <Compile Include="Internal\Values\UInt64JarTest.cs" />
+    <Compile Include="Internal\Values\UInt16JarTest.cs" />
+    <Compile Include="Internal\Values\Int16JarTest.cs" />
+    <Compile Include="Internal\Values\Int64JarTest.cs" />
+    <Compile Include="Internal\Values\UInt32JarTest.cs" />
     <Compile Include="TestingUtilities.cs" />
     <Compile Include="TwiddleUtilTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Internal\Values\Int32JarTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PickleJar\PickleJar.csproj">

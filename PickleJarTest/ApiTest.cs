@@ -87,6 +87,9 @@ public class ApiTest {
         var data = Enumerable.Range(0, 8*3*5*7).Select(e => (byte)e).ToArray();
         var full = new ArraySegment<byte>(data);
 
+        // ToString doesn't murder everyone?
+        TestingUtilities.AssertDoesNotThrow(() => jar.ToString());
+
         // parsing appears to work correctly?
         var segments = new[] {
             full,
