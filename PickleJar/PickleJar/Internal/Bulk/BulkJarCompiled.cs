@@ -13,8 +13,10 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         public int? OptionalConstantSerializedValueLength { get { return ItemJar.OptionalConstantSerializedLength(); } }
         private readonly Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>> _parser;
 
-        public BulkJarCompiled(IJar<T> itemParser) {
-            ItemJar = itemParser;
+        public BulkJarCompiled(IJar<T> itemJar) {
+            if (itemJar == null) throw new ArgumentNullException("itemJar");
+            if (!itemJar.CanBeFollowed) throw new ArgumentException("!itemJar.CanBeFollowed");
+            ItemJar = itemJar;
             _parser = MakeAndCompileSpecializedParser();
         }
 
@@ -75,6 +77,10 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         public byte[] Pack(IReadOnlyCollection<T> values) {
             // todo: compile at runtime
             return values.SelectMany(ItemJar.Pack).ToArray();
+        }
+
+        public override string ToString() {
+            return string.Format("BulkCompiled[{0}]", ItemJar);
         }
     }
 }

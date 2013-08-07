@@ -61,6 +61,10 @@
     <Compile Include="ApiTest.cs" />
     <Compile Include="ExpressionArrayParserTest.cs" />
     <Compile Include="ExpressionTreeParserTest.cs" />
+    <Compile Include="Internal\Values\ConstantJarTest.cs" />
+    <Compile Include="Internal\Values\TextJarTest.cs" />
+    <Compile Include="Internal\Values\Float64JarTest.cs" />
+    <Compile Include="Internal\Values\Float32JarTest.cs" />
     <Compile Include="Internal\Values\UInt8JarTest.cs" />
     <Compile Include="Internal\Values\Int8JarTest.cs" />
     <Compile Include="Internal\Values\UInt64JarTest.cs" />

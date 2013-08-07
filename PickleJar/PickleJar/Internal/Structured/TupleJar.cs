@@ -9,8 +9,10 @@ namespace Strilanc.PickleJar.Internal.Structured {
     internal sealed class TupleJar<T1, T2> : IJarMetadataInternal, IJar<Tuple<T1, T2>> {
         public readonly IJar<T1> SubJar1;
         public readonly IJar<T2> SubJar2;
+        public bool CanBeFollowed { get { return SubJar2.CanBeFollowed; } }
         public TupleJar(IJar<T1> subJar1, IJar<T2> subJar2) {
             if (subJar1 == null) throw new ArgumentNullException("subJar1");
+            if (!subJar1.CanBeFollowed) throw new ArgumentException("!subJar1.CanBeFollowed");
             if (subJar2 == null) throw new ArgumentNullException("subJar2");
             SubJar1 = subJar1;
             SubJar2 = subJar2;

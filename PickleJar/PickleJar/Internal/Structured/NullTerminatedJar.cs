@@ -5,6 +5,7 @@ using Strilanc.Value;
 namespace Strilanc.PickleJar.Internal.Structured {
     internal sealed class NullTerminatedJar<T> : IJar<T> {
         private readonly IJar<T> _itemJar;
+        public bool CanBeFollowed { get { return true; } }
 
         public NullTerminatedJar(IJar<T> itemJar) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");

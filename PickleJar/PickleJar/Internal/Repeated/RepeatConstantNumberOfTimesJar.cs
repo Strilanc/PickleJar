@@ -7,6 +7,7 @@ namespace Strilanc.PickleJar.Internal.Repeated {
     internal sealed class RepeatConstantNumberOfTimesJar<T> : IJarMetadataInternal, IJar<IReadOnlyList<T>> {
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return _bulkItemJar.OptionalConstantSerializedValueLength * _constantCount; } }
+        public bool CanBeFollowed { get { return true; } }
 
         private readonly int _constantCount;
         private readonly IBulkJar<T> _bulkItemJar;

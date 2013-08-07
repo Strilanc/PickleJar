@@ -16,6 +16,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
         private readonly IReadOnlyList<IJarForMember> _memberJars;
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
         private readonly Func<T, byte[]> _packer;
+        public bool CanBeFollowed { get { return true; } }
 
         public TypeJarCompiled(IReadOnlyList<IJarForMember> memberJars) {
             if (memberJars == null) throw new ArgumentNullException("memberJars");

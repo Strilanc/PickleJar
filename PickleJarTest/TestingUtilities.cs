@@ -37,7 +37,8 @@ public static class TestingUtilities {
 
         return new AnonymousJar<T>(
             e => c(e.Array, e.Offset, e.Count),
-            jar.Pack);
+            jar.Pack,
+            jar.CanBeFollowed);
     }
     public static void AssertPicklesNoMoreNoLess<T>(this IJar<T> jar, T value, params byte[] data) {
         jar.AssertPickles(value, data, ignoresExtraData: true, failsOnLessData: true);
@@ -70,6 +71,19 @@ public static class TestingUtilities {
         var optimized = jar.TryCompileInlined();
         if (optimized != null) optimized.AssertPickles(value, data, ignoresExtraData, failsOnLessData);
     }
+    public static void AssertCanParse<T>(this IJar<T> jar, params byte[] data) {
+        var surrounding = new[] {
+            new byte[] {},
+            new byte[] {1,2,3},
+        };
+        foreach (var s in surrounding) {
+            var d = s.Concat(data).ToArray();
+            AssertDoesNotThrow(() => jar.Parse(new ArraySegment<byte>(d, s.Length, data.Length)));
+        }
+
+        var optimized = jar.TryCompileInlined();
+        if (optimized != null) optimized.AssertCanParse(data);        
+    }
     public static void AssertCantParse<T>(this IJar<T> jar, params byte[] data) {
         var surrounding = new[] {
             new byte[] {},
@@ -82,6 +96,18 @@ public static class TestingUtilities {
 
         var optimized = jar.TryCompileInlined();
         if (optimized != null) optimized.AssertCantParse(data);
+    }
+    public static void AssertCantPack<T>(this IJar<T> jar, T value) {
+        AssertThrows(() => jar.Pack(value));
+
+        var optimized = jar.TryCompileInlined();
+        if (optimized != null) optimized.AssertCantPack(value);
+    }
+    public static void AssertCanPack<T>(this IJar<T> jar, T value) {
+        AssertDoesNotThrow(() => jar.Pack(value));
+
+        var optimized = jar.TryCompileInlined();
+        if (optimized != null) optimized.AssertCanPack(value);
     }
 
     public static void AssertTrue(this bool value) {
@@ -123,7 +149,16 @@ public static class TestingUtilities {
         } catch (Exception) {
             return;
         }
-        Assert.Fail();
+        Assert.Fail("Expected method to throw, but it ran succesfully.");
+    }
+    public static void AssertThrows<T>(Func<T> action) {
+        T result;
+        try {
+            result = action();
+        } catch {
+            return;
+        }
+        Assert.Fail("Expected method to throw, but it returned {0} instead.", result);
     }
     public static void AssertDoesNotThrow(Action action) {
         action();

@@ -5,9 +5,11 @@ namespace Strilanc.PickleJar.Internal.Structured {
     internal sealed class DataSizePrefixedJar<T> : IJar<T> {
         private readonly IJar<int> _dataSizePrefixJar; 
         private readonly IJar<T> _itemJar;
+        public bool CanBeFollowed { get { return true; } }
 
         public DataSizePrefixedJar(IJar<int> dataSizePrefixJar, IJar<T> itemJar) {
             if (dataSizePrefixJar == null) throw new ArgumentNullException("dataSizePrefixJar");
+            if (!dataSizePrefixJar.CanBeFollowed) throw new ArgumentException("!dataSizePrefixJar.CanBeFollowed");
             if (itemJar == null) throw new ArgumentNullException("itemJar");
             this._dataSizePrefixJar = dataSizePrefixJar;
             this._itemJar = itemJar;

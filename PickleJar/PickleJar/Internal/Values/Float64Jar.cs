@@ -7,6 +7,7 @@ namespace Strilanc.PickleJar.Internal.Values {
 
         public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
+        public bool CanBeFollowed { get { return true; } }
 
         public ParsedValue<double> Parse(ArraySegment<byte> data) {
             if (data.Count < SerializedLength) throw new DataFragmentException();

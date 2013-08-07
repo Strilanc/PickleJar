@@ -37,7 +37,8 @@ public class Program {
 
         var handrolledParser = new AnonymousJar<IReadOnlyList<Point3>>(
             HandrolledParse, 
-            x => { throw new NotImplementedException(); });
+            x => { throw new NotImplementedException(); },
+            canBeFollowed: false);
 
         var blitParser =
             new Jar.Builder<Point3> {

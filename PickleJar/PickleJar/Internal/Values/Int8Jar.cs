@@ -6,6 +6,7 @@ namespace Strilanc.PickleJar.Internal.Values {
         private const int SerializedLength = 1;
         public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
+        public bool CanBeFollowed { get { return true; } }
 
         public ParsedValue<sbyte> Parse(ArraySegment<byte> data) {
             unchecked {

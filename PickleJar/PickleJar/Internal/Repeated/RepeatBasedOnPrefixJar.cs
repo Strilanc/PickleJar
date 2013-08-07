@@ -7,9 +7,11 @@ namespace Strilanc.PickleJar.Internal.Repeated {
     internal struct RepeatBasedOnPrefixJar<T> : IJar<IReadOnlyList<T>> {
         private readonly IJar<int> _countPrefixJar; 
         private readonly IBulkJar<T> _bulkItemJar;
+        public bool CanBeFollowed { get { return true; } }
 
         public RepeatBasedOnPrefixJar(IJar<int> countPrefixJar, IBulkJar<T> bulkItemJar) {
             if (countPrefixJar == null) throw new ArgumentNullException("countPrefixJar");
+            if (!countPrefixJar.CanBeFollowed) throw new ArgumentException("!countPrefixJar.CanBeFollowed");
             if (bulkItemJar == null) throw new ArgumentNullException("bulkItemJar");
             this._countPrefixJar = countPrefixJar;
             this._bulkItemJar = bulkItemJar;

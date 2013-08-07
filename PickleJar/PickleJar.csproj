@@ -56,11 +56,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PickleJar\AnonymousJar.cs" />
+    <Compile Include="PickleJar\Internal\Values\TextJar.cs" />
     <Compile Include="PickleJar\MemberMatchInfo.cs" />
     <Compile Include="PickleJar\LeftoverDataException.cs" />
     <Compile Include="PickleJar\Internal\Values\ConstantJar.cs" />
     <Compile Include="PickleJar\Internal\ReflectionUtil.cs" />
-    <Compile Include="PickleJar\Internal\Values\UTF8Jar.cs" />
     <Compile Include="PickleJar\Internal\Values\Float32Jar.cs" />
     <Compile Include="PickleJar\Internal\Values\Float64Jar.cs" />
     <Compile Include="PickleJar\Internal\Structured\NullTerminatedJar.cs" />

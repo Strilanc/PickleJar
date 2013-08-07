@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
 using Strilanc.PickleJar.Internal;
@@ -55,6 +56,7 @@ public class ApiTest {
         if (type == typeof(ulong)) return new object[] { 0ul, 1ul, 2ul, 100ul };
 
         if (type == typeof(IReadOnlyList<int>)) return new object[] { new int[0], new[] { -1 }, new[] { 2, 3, 5, 7 } };
+        if (type == typeof(IReadOnlyList<string>)) return new object[] { new string[0], new[] { "" }, new[] { "a", "bra", "ca", "da" } };
         if (type == typeof(Func<int, bool>)) return new object[] { new Func<int, bool>(e1 => e1 % 2 == 0) };
         if (type == typeof(Func<string, bool>)) return new object[] { new Func<string, bool>(e1 => e1.Length % 2 == 0) };
 
@@ -64,6 +66,7 @@ public class ApiTest {
         if (type == typeof(Func<int, int>)) return new object[] { new Func<int, int>(e1 => e1 * -1) };
         if (type == typeof(Func<string, string>)) return new object[] { new Func<string, string>(e1 => new string(e1.Reverse().ToArray())) };
         if (type == typeof(IJar<IReadOnlyList<int>>)) return new object[] { Jar.Int32LittleEndian.RepeatNTimes(2) };
+        if (type == typeof (Encoding)) return new object[] {Encoding.UTF32};
 
         var matchingJar = ApiJarGetters.Where(type.IsInstanceOfType).ToArray();
         if (matchingJar.Length > 0) return matchingJar;

@@ -8,6 +8,7 @@ namespace Strilanc.PickleJar.Internal.Values {
     internal struct ConstantJar<T> : IJarMetadataInternal, IJar<T> {
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return 0; } }
+        public bool CanBeFollowed { get { return true; } }
         public readonly T ConstantValue;
         public ConstantJar(T constantValue) {
             ConstantValue = constantValue;

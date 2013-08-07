@@ -47,7 +47,7 @@ namespace Strilanc.PickleJar.Internal {
         }
 
         private static InlinedParserComponents MakeDefaultInlinedParserComponents(object parser, Type valueType, Expression array, Expression offset, Expression count) {
-            var resultVar = Expression.Variable(valueType, "parsed");
+            var resultVar = Expression.Variable(typeof(ParsedValue<>).MakeGenericType(valueType), "parsed");
             var parse = Expression.Call(
                 Expression.Constant(parser),
                 typeof(IJar<>).MakeGenericType(valueType).GetMethod("Parse"),

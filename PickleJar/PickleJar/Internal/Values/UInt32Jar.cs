@@ -8,6 +8,7 @@ namespace Strilanc.PickleJar.Internal.Values {
         private readonly bool _isSystemEndian;
         public bool IsBlittable { get { return _isSystemEndian; } }
         public int? OptionalConstantSerializedLength { get { return SerializedLength; } }
+        public bool CanBeFollowed { get { return true; } }
 
         public UInt32Jar(Endianess endianess) {
             if (endianess != Endianess.BigEndian && endianess != Endianess.LittleEndian)

@@ -14,6 +14,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// </summary>
     internal sealed class TypeJarBlit<T> : IJarMetadataInternal, IJar<T> {
         public delegate T BlitParser(byte[] data, int offset, int length);
+        public bool CanBeFollowed { get { return true; } }
 
         private readonly int _length;
         private readonly BlitParser _parser;

@@ -5,6 +5,7 @@ using Strilanc.PickleJar.Internal.Bulk;
 namespace Strilanc.PickleJar.Internal.Repeated {
     internal sealed class RepeatUntilEndOfDataJar<T> : IJar<IReadOnlyList<T>> {
         private readonly IBulkJar<T> _bulkItemJar;
+        public bool CanBeFollowed { get { return false; } }
 
         public RepeatUntilEndOfDataJar(IBulkJar<T> bulkItemJar) {
             if (bulkItemJar == null) throw new ArgumentNullException("bulkItemJar");

@@ -19,6 +19,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         private readonly int _itemLength;
         private BulkJarBlit(IJar<T> itemJar) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
+            if (!itemJar.CanBeFollowed) throw new ArgumentException("!itemJar.CanBeFollowed");
             var len = itemJar.OptionalConstantSerializedLength();
             if (!len.HasValue) throw new ArgumentException();
             ItemJar = itemJar;
@@ -91,6 +92,9 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             g.Emit(OpCodes.Ret);
 
             return (BlitParser)d.CreateDelegate(typeof(BlitParser));
+        }
+        public override string ToString() {
+            return string.Format("BulkBlit[{0}]", ItemJar);
         }
     }
 }

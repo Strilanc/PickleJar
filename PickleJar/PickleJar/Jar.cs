@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Strilanc.PickleJar.Internal;
 using Strilanc.PickleJar.Internal.Values;
 using Strilanc.PickleJar.Internal.Repeated;
@@ -48,7 +49,26 @@ namespace Strilanc.PickleJar {
         public static IJar<double> Float64 { get { return new Float64Jar(); } }
 
         /// <summary>A jar for strings encoded in utf8.</summary>
-        public static IJar<string> Utf8 { get { return new UTF8Jar(); } }
+        public static IJar<string> Utf8 {
+            get {
+                return new TextJar(Encoding.GetEncoding(Encoding.UTF8.WebName,
+                                                        new EncoderExceptionFallback(),
+                                                        new DecoderExceptionFallback()));
+            }
+        }
+        /// <summary>A jar for strings encoded in ASCII.</summary>
+        public static IJar<string> Ascii {
+            get {
+                return new TextJar(Encoding.GetEncoding(Encoding.ASCII.WebName,
+                                                        new EncoderExceptionFallback(),
+                                                        new DecoderExceptionFallback()));
+            }
+        }
+
+        public static IJar<string> TextJar(Encoding encoding) {
+            if (encoding == null) throw new ArgumentNullException("encoding");
+            return new TextJar(encoding);
+        }
 
         /// <summary>Returns a Jar that consumes all data up to a null terminator, and no more.</summary>
         public static IJar<T> NullTerminated<T>(this IJar<T> itemJar) {
@@ -93,7 +113,8 @@ namespace Strilanc.PickleJar {
                     if (data.Count % itemLength != 0) throw new InvalidOperationException("Fragment");
                     return new ParsedValue<int>(data.Count / itemLength, 0);
                 },
-                item => new byte[0]);
+                item => new byte[0],
+                canBeFollowed: false);
             return new RepeatBasedOnPrefixJar<T>(
                 counter,
                 bulkItemJar);
@@ -108,7 +129,8 @@ namespace Strilanc.PickleJar {
             if (packProjection == null) throw new ArgumentNullException("packProjection");
             return new AnonymousJar<TParsed>(
                 data => jar.Parse(data).Select(parseProjection),
-                e => jar.Pack(packProjection(e)));
+                e => jar.Pack(packProjection(e)),
+                jar.CanBeFollowed);
         }
 
         /// <summary>
@@ -124,7 +146,7 @@ namespace Strilanc.PickleJar {
             }, item => {
                 if (!constraint(item)) throw new InvalidOperationException("Data did not match Where constraint");
                 return jar.Pack(item);
-            });
+            }, jar.CanBeFollowed);
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         public JarForMember(IJar<T> jar, MemberMatchInfo name) {
             if (jar == null) throw new ArgumentNullException("jar");
+            if (!jar.CanBeFollowed) throw new ArgumentException("!jar.CanBeFollowed");
             Jar = jar;
             MemberMatchInfo = name;
         }
