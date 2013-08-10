@@ -134,7 +134,7 @@ namespace Strilanc.PickleJar {
         }
 
         /// <summary>
-        /// Augments a Jar to pickle lists of values into/outof the representations of those values one after another, until the end of the data.
+        /// Augments a jar to pickle lists of values into/outof the representations of those values one after another, until the end of the data.
         /// Consumes all data unless augmented with a method like NullTerminated or DataSizePrefixed.
         /// </summary>
         public static IJar<IReadOnlyList<T>> RepeatUntilEndOfData<T>(this IJar<T> itemJar) {
@@ -165,7 +165,7 @@ namespace Strilanc.PickleJar {
         /// <summary>
         /// Wraps a jar to transform values before pickling them.
         /// When parsing, the given jar parses out an internal value which is transformed into a value of the exposed type.
-        /// When packing, the exposed value is transformed into a value of the internal type and then pacjed by the given jar.
+        /// When packing, the exposed value is transformed into a value of the internal type and then packed by the given jar.
         /// </summary>
         public static IJar<TExposed> Select<TInternal, TExposed>(this IJar<TInternal> jar, Func<TInternal, TExposed> parseProjection, Func<TExposed, TInternal> packProjection) {
             if (jar == null) throw new ArgumentNullException("jar");
@@ -204,6 +204,9 @@ namespace Strilanc.PickleJar {
                 ?? new TypeJarCompiled<T>(list);
         }
 
+        /// <summary>
+        /// Creates a jar that pickles two values into/outof the representations of the given jars one after another.
+        /// </summary>
         public static IJar<Tuple<T1, T2>> Then<T1, T2>(this IJar<T1> jar1, IJar<T2> jar2) {
             if (jar1 == null) throw new ArgumentNullException("jar1");
             if (jar2 == null) throw new ArgumentNullException("jar2");
