@@ -42,6 +42,7 @@ public class ApiTest {
         .ToArray();
 
     private static IEnumerable<object> ChooseTestValues(Type type) {
+        if (type == typeof(bool)) return new object[] { true, false };
         if (type == typeof(sbyte)) return new object[] { (sbyte)-100, (sbyte)-1, (sbyte)0, (sbyte)1, (sbyte)2, (sbyte)100 };
         if (type == typeof(short)) return new object[] { (short)-100, (short)-1, (short)0, (short)1, (short)2, (short)100 };
         if (type == typeof(int)) return new object[] { -100, -1, 0, 1, 2, 100 };
@@ -66,7 +67,14 @@ public class ApiTest {
         if (type == typeof(Func<int, int>)) return new object[] { new Func<int, int>(e1 => e1 * -1) };
         if (type == typeof(Func<string, string>)) return new object[] { new Func<string, string>(e1 => new string(e1.Reverse().ToArray())) };
         if (type == typeof(IJar<IReadOnlyList<int>>)) return new object[] { Jar.Int32LittleEndian.RepeatNTimes(2) };
-        if (type == typeof (Encoding)) return new object[] {Encoding.UTF32};
+        if (type == typeof(Encoding)) return new object[] {Encoding.UTF32};
+        if (type == typeof(IEnumerable<IJarForMember>)) return new object[] { null };
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Tuple<,>)) {
+            return from v1 in ChooseTestValues(type.GetGenericArguments()[0])
+                   from v2 in ChooseTestValues(type.GetGenericArguments()[1])
+                   select type.GetConstructor(type.GetGenericArguments()).NotNull().Invoke(new[] {v1, v2});
+        }
 
         var matchingJar = ApiJarGetters.Where(type.IsInstanceOfType).ToArray();
         if (matchingJar.Length > 0) return matchingJar;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Strilanc.PickleJar.Internal {
     /// <summary>
@@ -74,6 +75,21 @@ namespace Strilanc.PickleJar.Internal {
             unchecked {
                 return (Int16)((UInt16)value).ReverseBytes();
             }
+        }
+
+        /// <summary>
+        /// Reverses the byte orderding of a float.
+        /// Used to swap between big endian and little endian.
+        /// </summary>
+        public static float ReverseBytes(this float value) {
+            return BitConverter.ToSingle(BitConverter.GetBytes(value).Reverse().ToArray(), 0);
+        }
+        /// <summary>
+        /// Reverses the byte orderding of a double.
+        /// Used to swap between big endian and little endian.
+        /// </summary>
+        public static double ReverseBytes(this double value) {
+            return BitConverter.ToDouble(BitConverter.GetBytes(value).Reverse().ToArray(), 0);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Strilanc.PickleJar.Internal.Structured;
 
@@ -9,7 +10,7 @@ namespace Strilanc.PickleJar {
         /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
         /// Use the Build method to produce a dynamically optimized Jar for the type.
         /// </summary>
-        public sealed class Builder<T> : ICollection<IJarForMember> {
+        public sealed class Builder<T> : ICollection<IJarForMember>  {
             private readonly List<IJarForMember> _list = new List<IJarForMember>();
 
             ///<summary>Returns a dynamically optimized Jar based on the field parsers that have been added so far.</summary>
@@ -19,9 +20,12 @@ namespace Strilanc.PickleJar {
             }
 
             public void Add<TItem>(MemberMatchInfo memberMatchInfo, IJar<TItem> parser) {
+                if (parser == null) throw new ArgumentNullException("parser");
                 Add(new JarForMember<TItem>(parser, memberMatchInfo));
             }
             public void Add<TItem>(string nameMatcher, IJar<TItem> parser) {
+                if (nameMatcher == null) throw new ArgumentNullException("nameMatcher");
+                if (parser == null) throw new ArgumentNullException("parser");
                 Add(new JarForMember<TItem>(parser, new MemberMatchInfo(nameMatcher, typeof(TItem))));
             }
             IEnumerator<IJarForMember> IEnumerable<IJarForMember>.GetEnumerator() {
