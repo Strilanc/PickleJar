@@ -41,10 +41,11 @@ public class Program {
             canBeFollowed: false);
 
         var blitParser =
-            new Jar.Builder<Point3> {
+            new Jar.Builder {
                 {"x", Jar.Int32LittleEndian},
                 {"y", Jar.Int32LittleEndian},
-                {"z", Jar.Int32LittleEndian}}.Build()
+                {"z", Jar.Int32LittleEndian}
+            }.BuildJarForType<Point3>()
             .RepeatUntilEndOfData();
 
         //var dynamicParser =
@@ -55,10 +56,11 @@ public class Program {
         //    ).RepeatUntilEndOfData();
 
         var compiledParser =
-            new Jar.Builder<Point3> {
+            new Jar.Builder {
                 {"y", Jar.Int32LittleEndian},
                 {"x", Jar.Int32LittleEndian},
-                {"z", Jar.Int32LittleEndian}}.Build()
+                {"z", Jar.Int32LittleEndian}
+            }.BuildJarForType<Point3>()
             .RepeatUntilEndOfData();
 
         var data = new ArraySegment<byte>(Enumerable.Repeat(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, DataRepeatCount).SelectMany(e => e).ToArray());

@@ -10,24 +10,23 @@ namespace Strilanc.PickleJar {
         /// Use the Add method, or the collection initialization syntax, to add named parsers to the builder.
         /// Use the Build method to produce a dynamically optimized Jar for the type.
         /// </summary>
-        public sealed class Builder<T> : ICollection<IJarForMember>  {
+        public sealed class Builder : ICollection<IJarForMember>  {
             private readonly List<IJarForMember> _list = new List<IJarForMember>();
 
-            ///<summary>Returns a dynamically optimized Jar based on the field parsers that have been added so far.</summary>
-            public IJar<T> Build() {
-                return (IJar<T>)TypeJarBlit<T>.TryMake(_list)
-                       ?? new TypeJarCompiled<T>(_list);
-            }
 
+            /// <summary>Adds a jar, matched against a member via a MemberMatchInfo, to the builder.</summary>
             public void Add<TItem>(MemberMatchInfo memberMatchInfo, IJar<TItem> parser) {
                 if (parser == null) throw new ArgumentNullException("parser");
                 Add(new JarForMember<TItem>(parser, memberMatchInfo));
             }
+            /// <summary>Adds a jar, matched against a member via a MemberMatchInfo derived from the given name, to the builder.</summary>
+            /// <remarks>This method exists to enable easy use of the collection initializer syntax.</remarks>
             public void Add<TItem>(string nameMatcher, IJar<TItem> parser) {
                 if (nameMatcher == null) throw new ArgumentNullException("nameMatcher");
                 if (parser == null) throw new ArgumentNullException("parser");
                 Add(new JarForMember<TItem>(parser, new MemberMatchInfo(nameMatcher, typeof(TItem))));
             }
+
             IEnumerator<IJarForMember> IEnumerable<IJarForMember>.GetEnumerator() {
                 return _list.GetEnumerator();
             }
@@ -54,3 +53,4 @@ namespace Strilanc.PickleJar {
         }
     }
 }
+

@@ -26,7 +26,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
             var item = _itemJar.Parse(data.Skip(parsedSize.Consumed).Take(itemSize));
             if (parsedSize.Consumed + item.Consumed != data.Count) {
-                throw new ArgumentException("Leftover data");
+                throw new LeftoverDataException();
             }
 
             return new ParsedValue<T>(item.Value, parsedSize.Consumed + item.Consumed);

@@ -197,7 +197,7 @@ namespace Strilanc.PickleJar {
         /// <summary>
         /// Creates a jar that pickles values of type T into/outof the representations of the given members one after another.
         /// </summary>
-        public static IJar<T> BuildJarForType<T>(IEnumerable<IJarForMember> jarsForMembers) {
+        public static IJar<T> BuildJarForType<T>(this IEnumerable<IJarForMember> jarsForMembers) {
             if (jarsForMembers == null) throw new ArgumentNullException("jarsForMembers");
             var list = jarsForMembers.ToArray();
             return (IJar<T>)TypeJarBlit<T>.TryMake(list) 
