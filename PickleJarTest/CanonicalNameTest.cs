@@ -5,20 +5,20 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 public class CanonicalNameTest {
     [TestMethod]
     public void TestCanonize() {
-        var c = MemberMatchInfo.Canonize("name");
-        MemberMatchInfo.Canonize("Name").AssertEquals(c);
-        MemberMatchInfo.Canonize("_name").AssertEquals(c);
-        MemberMatchInfo.Canonize("_Name").AssertEquals(c);
-        MemberMatchInfo.Canonize("get_name").AssertEquals(c);
-        MemberMatchInfo.Canonize("_get_name").AssertEquals(c);
-        MemberMatchInfo.Canonize("getName").AssertEquals(c);
-        MemberMatchInfo.Canonize("setName").AssertEquals(c);
-        MemberMatchInfo.Canonize("setName").AssertEquals(c);
+        var c = MemberMatchInfo.Canonicalize("Name");
+        MemberMatchInfo.Canonicalize("Name").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("_name").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("_Name").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("get_name").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("_get_name").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("getName").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("setName").AssertEquals(c);
+        MemberMatchInfo.Canonicalize("setName").AssertEquals(c);
 
-        MemberMatchInfo.Canonize("NameStyle").AssertNotEqualTo(c);
-        MemberMatchInfo.Canonize("FirstName").AssertNotEqualTo(c);
-        MemberMatchInfo.Canonize("NameGet").AssertNotEqualTo(c);
-        MemberMatchInfo.Canonize("Namer").AssertNotEqualTo(c);
-        MemberMatchInfo.Canonize("NameName").AssertNotEqualTo(c);
+        MemberMatchInfo.Canonicalize("NameStyle").AssertNotEqualTo(c);
+        MemberMatchInfo.Canonicalize("FirstName").AssertNotEqualTo(c);
+        MemberMatchInfo.Canonicalize("NameGet").AssertNotEqualTo(c);
+        MemberMatchInfo.Canonicalize("Namer").AssertNotEqualTo(c);
+        MemberMatchInfo.Canonicalize("NameName").AssertNotEqualTo(c);
     }
 }

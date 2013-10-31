@@ -1,6 +1,9 @@
 ﻿using System;
 
 namespace Strilanc.PickleJar {
+    /// <summary>
+    /// Extension methods for jars.
+    /// </summary>
     public static class JarUtil {
         ///<summary>Parses a value from the data in an array.</summary>
         public static ParsedValue<T> Parse<T>(this IJar<T> jar, byte[] data) {

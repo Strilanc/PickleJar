@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Values {
     internal sealed class TextJar : IJar<string> {

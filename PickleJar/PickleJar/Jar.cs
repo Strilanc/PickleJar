@@ -214,5 +214,22 @@ namespace Strilanc.PickleJar {
 
             return new TupleJar<T1, T2>(jar1, jar2);
         }
+
+        /// <summary>
+        /// Creates an 'anonymous' jar, with methods implemented by the given delegates.
+        /// </summary>
+        /// <typeparam name="T">The type of values parsed by the created jar.</typeparam>
+        /// <param name="parse">The parse method, which deserializes data into a value, of the created jar.</param>
+        /// <param name="pack">The pack method, which serializes values, of the created jar.</param>
+        /// <param name="canBeFollowed">
+        /// True when the serialized data can still be parsed if it is followed by other serialized data.
+        /// For example, should be false if the jar always consumes all data when parsing (since appended data would be consumed, affecting the serialized value and breaking round-tripping).
+        /// </param>
+        /// <returns>The created anonymous jar.</returns>
+        public static IJar<T> Create<T>(Func<ArraySegment<byte>, ParsedValue<T>> parse, Func<T, byte[]> pack, bool canBeFollowed) {
+            if (parse == null) throw new ArgumentNullException("parse");
+            if (pack == null) throw new ArgumentNullException("pack");
+            return new AnonymousJar<T>(parse, pack, canBeFollowed);
+        }
     }
 }

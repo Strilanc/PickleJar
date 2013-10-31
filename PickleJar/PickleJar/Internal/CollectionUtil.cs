@@ -24,7 +24,7 @@ namespace Strilanc.PickleJar.Internal {
                 yield return ImmutableList.Create<T>();
                 yield break;
             }
-
+         
             var headChoices = sequenceOfChoices.Current;
             var tailChoices = sequenceOfChoices.AllChoiceCombinationsOfRemainder();
             using (var e = tailChoices) {

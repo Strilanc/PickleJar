@@ -35,7 +35,7 @@ public class Program {
     static void Main2() {
         const int DataRepeatCount = 10000;
 
-        var handrolledParser = new AnonymousJar<IReadOnlyList<Point3>>(
+        var handrolledParser = Jar.Create(
             HandrolledParse, 
             x => { throw new NotImplementedException(); },
             canBeFollowed: false);

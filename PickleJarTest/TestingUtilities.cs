@@ -74,7 +74,7 @@ public static class TestingUtilities {
     public static void AssertCanParse<T>(this IJar<T> jar, params byte[] data) {
         var surrounding = new[] {
             new byte[] {},
-            new byte[] {1,2,3},
+            new byte[] {1,2,3}
         };
         foreach (var s in surrounding) {
             var d = s.Concat(data).ToArray();
@@ -87,7 +87,7 @@ public static class TestingUtilities {
     public static void AssertCantParse<T>(this IJar<T> jar, params byte[] data) {
         var surrounding = new[] {
             new byte[] {},
-            new byte[] {1,2,3},
+            new byte[] {1,2,3}
         };
         foreach (var s in surrounding) {
             var d = s.Concat(data).ToArray();
