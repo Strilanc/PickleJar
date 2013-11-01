@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Strilanc.PickleJar {
+namespace Strilanc.PickleJar.Internal {
     internal sealed class AnonymousJar<T> : IJar<T> {
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parse;
         private readonly Func<T, byte[]> _pack;
