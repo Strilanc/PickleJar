@@ -26,8 +26,8 @@ public sealed class Point {
 }
 
 var pointJar = new Jar.Builder {
-    {"x", Jar.Float32},
-    {"y", Jar.Float32}
+    {"x", Jar.Float32LittleEndian},
+    {"y", Jar.Float32LittleEndian}
 }.BuildJarForType<Point>();
 
 var p = pointJar.Parse(new byte[]{0,0,0,0, 0,0,128,63}).Value;
