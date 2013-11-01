@@ -7,10 +7,11 @@ namespace PickleJarSample {
         public MainWindow() {
             InitializeComponent();
 
-            var dicParser = new Jar.NamedJarList {
+            var xxx = new Jar.NamedJarList {
                 {"test", Jar.Int32LittleEndian},
                 {"test2", Jar.Int32BigEndian},
-            }.ToDictionaryJar().RepeatCountPrefixTimes(Jar.Int32LittleEndian);
+            };
+            var dicParser = xxx.ToDictionaryJar().RepeatCountPrefixTimes(Jar.Int32LittleEndian);
             var x23 = dicParser.Parse(new byte[] { 1,0,0,0, 1, 0, 0, 0, 1, 0, 0, 0 });
             var zz = x23.Value.First()["test2"];
 

@@ -28,21 +28,19 @@ namespace Strilanc.PickleJar.Internal {
             return new ParsedValue<TOut>(projection(value.Value), value.Consumed);
         }
 
-        public static IJar<object> JarAsObjectJar(this NamedJar namedJar) {
-            if (namedJar == null) throw new ArgumentNullException("namedJar");
-
+        public static IJar<object> JarAsObjectJar(this Jar.NamedJarList.Entry namedJarEntry) {
             return (IJar<object>)typeof(ObjectJar<>)
-                .MakeGenericType(namedJar.JarValueType)
-                .GetConstructor(new[] { typeof(IJar<>).MakeGenericType(namedJar.JarValueType) })
+                .MakeGenericType(namedJarEntry.JarValueType)
+                .GetConstructor(new[] { typeof(IJar<>).MakeGenericType(namedJarEntry.JarValueType) })
                 .NotNull()
-                .Invoke(new[] { namedJar.Jar });
+                .Invoke(new[] { namedJarEntry.Jar });
         }
-        public static IJarForMember ToJarForMember(this NamedJar namedJar) {
+        public static IJarForMember ToJarForMember(this Jar.NamedJarList.Entry namedJarEntry) {
             return (IJarForMember)typeof(JarForMember<>)
-                .MakeGenericType(namedJar.JarValueType)
-                .GetConstructor(new[] { typeof(IJar<>).MakeGenericType(namedJar.JarValueType), typeof(MemberMatchInfo) })
+                .MakeGenericType(namedJarEntry.JarValueType)
+                .GetConstructor(new[] { typeof(IJar<>).MakeGenericType(namedJarEntry.JarValueType), typeof(MemberMatchInfo) })
                 .NotNull()
-                .Invoke(new[] { namedJar.Jar, new MemberMatchInfo(namedJar.Name, namedJar.JarValueType) });
+                .Invoke(new[] { namedJarEntry.Jar, new MemberMatchInfo(namedJarEntry.Name, namedJarEntry.JarValueType) });
         }
         public static IJar<object> JarAsObjectJar(this IJarForMember jarForMember) {
             if (jarForMember == null) throw new ArgumentNullException("jarForMember");

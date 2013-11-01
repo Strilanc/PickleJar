@@ -204,11 +204,11 @@ namespace Strilanc.PickleJar {
                 ?? new TypeJarCompiled<T>(list);
         }
 
-        public static IJar<T> BuildJarForType<T>(this IEnumerable<NamedJar> namedJars) {
+        public static IJar<T> BuildJarForType<T>(this IEnumerable<NamedJarList.Entry> namedJars) {
             return namedJars.Select(e => e.ToJarForMember()).BuildJarForType<T>();
         }
 
-        public static IJar<IReadOnlyDictionary<string, object>> ToDictionaryJar(this IEnumerable<NamedJar> keyedJars) {
+        public static IJar<IReadOnlyDictionary<string, object>> ToDictionaryJar(this IEnumerable<NamedJarList.Entry> keyedJars) {
             return keyedJars.Select(e => new KeyValuePair<string, IJar<object>>(e.Name, e.JarAsObjectJar())).ToDictionaryJar();
         }
         public static IJar<IReadOnlyDictionary<TKey, TValue>> ToDictionaryJar<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, IJar<TValue>>> keyedJars) {

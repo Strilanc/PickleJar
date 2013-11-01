@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Strilanc.PickleJar.Internal;
 using Strilanc.PickleJar.Internal.Structured;
+using Strilanc.PickleJar.Internal.Values;
 
 namespace Strilanc.PickleJar {
     public static partial class Jar {
@@ -54,42 +55,66 @@ namespace Strilanc.PickleJar {
         }
 
         [DebuggerDisplay("{ToString()}")]
-        public sealed class NamedJarList : ICollection<NamedJar> {
+        public sealed class NamedJarList : ICollection<NamedJarList.Entry> {
+            [DebuggerDisplay("{ToString()}")]
+            public struct Entry {
+                private readonly string _name;
+                private readonly object _jar;
+                private readonly Type _jarValueType;
+
+                public string Name { get { return _name ?? ""; } }
+                public object Jar { get { return _jar ?? new UInt8Jar(); } }
+                public Type JarValueType { get { return _jarValueType ?? typeof(byte); } }
+                
+                public Entry(string name, object jar, Type jarValueType) {
+                    if (name == null) throw new ArgumentNullException("name");
+                    if (jar == null) throw new ArgumentNullException("jar");
+                    if (jarValueType == null) throw new ArgumentNullException("jarValueType");
+                    if (!typeof(IJar<>).MakeGenericType(jarValueType).IsInstanceOfType(jar)) throw new ArgumentException("!(jar is IJar<jarValueType>)");
+                    this._name = name;
+                    this._jar = jar;
+                    this._jarValueType = jarValueType;
+                }
+                
+                public override string ToString() {
+                    return string.Format("{0}: {1}", _name, _jar);
+                }
+            }
+
             private readonly HashSet<string> _usedNames = new HashSet<string>();
-            private readonly List<NamedJar> _namedJars = new List<NamedJar>();
+            private readonly List<Entry> _namedJars = new List<Entry>();
 
             public void Add<TItem>(string name, IJar<TItem> jar) {
                 if (name == null) throw new ArgumentNullException("name");
                 if (jar == null) throw new ArgumentNullException("jar");
-                Add(new NamedJar(name, jar, typeof(TItem)));
+                Add(new Entry(name, jar, typeof(TItem)));
             }
 
-            IEnumerator<NamedJar> IEnumerable<NamedJar>.GetEnumerator() {
+            IEnumerator<Entry> IEnumerable<Entry>.GetEnumerator() {
                 return _namedJars.GetEnumerator();
             }
             IEnumerator IEnumerable.GetEnumerator() {
                 return _namedJars.GetEnumerator();
             }
-            public void Add(NamedJar item) {
-                if (item == null) throw new ArgumentNullException("item");
+            public void Add(Entry item) {
                 if (!_usedNames.Add(item.Name)) throw new InvalidOperationException("Duplicate name.");
                 _namedJars.Add(item);
             }
-            void ICollection<NamedJar>.Clear() {
+            void ICollection<Entry>.Clear() {
                 _namedJars.Clear();
                 _usedNames.Clear();
             }
-            bool ICollection<NamedJar>.Contains(NamedJar item) {
+            bool ICollection<Entry>.Contains(Entry item) {
                 return _namedJars.Contains(item);
             }
-            void ICollection<NamedJar>.CopyTo(NamedJar[] array, int arrayIndex) {
+            void ICollection<Entry>.CopyTo(Entry[] array, int arrayIndex) {
                 _namedJars.CopyTo(array, arrayIndex);
             }
-            bool ICollection<NamedJar>.Remove(NamedJar item) {
+            bool ICollection<Entry>.Remove(Entry item) {
                 return _namedJars.Remove(item) && _usedNames.Remove(item.Name);
             }
-            int ICollection<NamedJar>.Count { get { return _namedJars.Count; } }
-            bool ICollection<NamedJar>.IsReadOnly { get { return ((ICollection<NamedJar>)_namedJars).IsReadOnly; } }
+            int ICollection<Entry>.Count { get { return _namedJars.Count; } }
+            bool ICollection<Entry>.IsReadOnly { get { return ((ICollection<Entry>)_namedJars).IsReadOnly; } }
 
             public override string ToString() {
                 return _namedJars.StringJoinList("[", ", ", "]");
@@ -98,27 +123,7 @@ namespace Strilanc.PickleJar {
     }
 
     [DebuggerDisplay("{ToString()}")]
-    public sealed class NamedJar {
-        public readonly string Name;
-        public readonly object Jar;
-        public readonly Type JarValueType;
-        public NamedJar(string name, object jar, Type jarValueType) {
-            if (name == null) throw new ArgumentNullException("name");
-            if (jar == null) throw new ArgumentNullException("jar");
-            if (jarValueType == null) throw new ArgumentNullException("jarValueType");
-            if (!typeof(IJar<>).MakeGenericType(jarValueType).IsInstanceOfType(jar)) throw new ArgumentException("!(jar is IJar<jarValueType>)");
-
-            Name = name;
-            Jar = jar;
-            JarValueType = jarValueType;
-        }
-        public override string ToString() {
-            return string.Format("{0}: {1}", Name, Jar);
-        }
-    }
-
-    [DebuggerDisplay("{ToString()}")]
-    public sealed class ObjectJar<T> : IJar<object> {
+    internal sealed class ObjectJar<T> : IJar<object> {
         private readonly IJar<T> _jar;
         public ObjectJar(IJar<T> jar) {
             if (jar == null) throw new ArgumentNullException("jar");

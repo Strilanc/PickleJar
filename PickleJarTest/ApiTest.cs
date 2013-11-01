@@ -80,19 +80,21 @@ public class ApiTest {
         var matchingJar = ApiJarGetters.Where(type.IsInstanceOfType).ToArray();
         if (matchingJar.Length > 0) return matchingJar;
 
-        if (type == typeof(Func<ArraySegment<byte>, ParsedValue<int>>)) {
-            return new object[] { new Func<ArraySegment<byte>, ParsedValue<int>>(new Int32Jar(Endianess.BigEndian).Parse) };
-        }
-        if (type == typeof(Func<int, byte[]>)) {
-            return new object[] { new Func<int, byte[]>(new Int32Jar(Endianess.BigEndian).Pack) };
-        }
-        if (type == typeof(Func<ArraySegment<byte>, ParsedValue<string>>)) {
-            return new object[] { new Func<ArraySegment<byte>, ParsedValue<string>>(new TextJar(Encoding.UTF8).NullTerminated().Parse) };
-        }
-        if (type == typeof(Func<string, byte[]>)) {
-            return new object[] { new Func<string, byte[]>(new TextJar(Encoding.UTF8).NullTerminated().Pack) };
-        }
-        throw new Exception(type.ToString());
+        return new object[0];
+        // todo: decide whether or not to bother with all these specialized types
+        //if (type == typeof(Func<ArraySegment<byte>, ParsedValue<int>>)) {
+        //    return new object[] { new Func<ArraySegment<byte>, ParsedValue<int>>(new Int32Jar(Endianess.BigEndian).Parse) };
+        //}
+        //if (type == typeof(Func<int, byte[]>)) {
+        //    return new object[] { new Func<int, byte[]>(new Int32Jar(Endianess.BigEndian).Pack) };
+        //}
+        //if (type == typeof(Func<ArraySegment<byte>, ParsedValue<string>>)) {
+        //    return new object[] { new Func<ArraySegment<byte>, ParsedValue<string>>(new TextJar(Encoding.UTF8).NullTerminated().Parse) };
+        //}
+        //if (type == typeof(Func<string, byte[]>)) {
+        //    return new object[] { new Func<string, byte[]>(new TextJar(Encoding.UTF8).NullTerminated().Pack) };
+        //}
+        //throw new Exception(type.ToString());
     }
     private static IEnumerable<object> JarsExposedByPublicApi() {
         var derivedJars = (from jarMaker in ApiJarMakers
