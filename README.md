@@ -1,13 +1,13 @@
 PickleJar
 =========
 
-**PickleJar is not yet ready for usage.**
-
 PickleJar is a library for describing the binary serialized formats, and using that description to pack and parse values into and out of said format.
 
 PickleJar performs optimization and compilation of parsers/packers at runtime, to avoid the overhead of interpreting the descriptions anew each time.
 
 (The name comes from python, which refers to serialization as 'pickling', and the process of actually making pickles, which uses actual jars.)
+
+See [this blog post](http://twistedoakstudios.com/blog/Post4708_optimizing-a-parser-combinator-into-a-memcpy) for more discussion.
 
 ========
 Examples
