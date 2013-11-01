@@ -1,21 +1,45 @@
 PickleJar
 =========
 
-PickleJar is a library for describing the binary serialized formats, and using that description to pack and parse values into and out of said format.
+PickleJar is a library for describing simple binary formats, and using that description to parse and pack values.
 
-PickleJar performs optimization and compilation of parsers/packers at runtime, to avoid the overhead of interpreting the descriptions anew each time.
-
-(The name comes from python, which refers to serialization as 'pickling', and the process of actually making pickles, which uses actual jars.)
+You parse and pack values (a.k.a. 'pickling') using a 'Jar'.
+PickleJar includes basic jars, like `Jar.Int32LittleEndian` and `Jar.Utf8`, as well as methods to augment and combine jars, like `Jar.RepeatNTimes` and `Jar.NullTerminated`.
+Code for the combined and augmented jars is generated, optimized, and compiled at runtime (in cases where this has been implemented).
 
 See [this blog post](http://twistedoakstudios.com/blog/Post4708_optimizing-a-parser-combinator-into-a-memcpy) for more discussion.
 
-========
-Examples
-========
+=====
+Usage
+=====
 
-Parsing two contiguous floats into a point class. The library is smart enough to realize it must pass X and Y to the constructor:
+All functionality for making jars is present on the static `Strilanc.PickleJar.Jar`.
+The quickest way to see what's available is to "dot around" `Jar` with intellisense, or browse through the [NuDoq documentation](http://www.nudoq.org/#!/Packages/Strilanc.PickleJar/PickleJar/Jar).
+
+**Example #1: Pickling a string**
 
 ```CSharp
+// if the string is UTF8-encoded and null-terminated:
+var stringJar1 = Jar.Utf8.NullTerminated();
+
+// if the string is ASCII-encoded and prefixed by the byte length of the encoded characters:
+var stringJar2 = Jar.Ascii.DataSizePrefixed(Jar.Int32LittleEndian, includePrefixInSize: false);
+
+// packing:
+// returns new byte[] { 116,101,115,116,226,156,147,0 }
+byte[] data = stringJar1.Pack("test✓");
+
+// parsing:
+// returns value="aca", consumed=7
+ParsedValue<string> = stringJar2.Parse(new byte[] {3,0,0,0, 97,99,97,255,255,255});
+```
+
+**Example #2: Parsing a custom type**
+
+Parsing two contiguous floats into a point class.
+
+```CSharp
+// The type (the library is smart enough to realize it must pass X and Y to the constructor instead of setting them):
 public sealed class Point {
     public readonly float X;
     public readonly float Y;
@@ -25,18 +49,20 @@ public sealed class Point {
     }
 }
 
+// The jar, keying the component jars by name and then building the custom type jar:
 var pointJar = new Jar.Builder {
     {"x", Jar.Float32LittleEndian},
     {"y", Jar.Float32LittleEndian}
 }.BuildJarForType<Point>();
 
-var p = pointJar.Parse(new byte[]{0,0,0,0, 0,0,128,63}).Value;
-// p now contains a Point with X=0.0f and Y=1.0f
+// parsing:
+// returns value={X=0.0f, Y=1.0f}, consumed=8
+var p = pointJar.Parse(new byte[]{0,0,0,0, 0,0,128,63});
 ```
 
-Using StructLayoutAttribute to allow memcpy optimizations:
+**Example #3: Using StructLayoutAttribute to allow memcpy optimizations**
 
-```C#
+```CSharp
 // (the layout attribute forces a particular memory representation, which the library will notice and exploit)
 [StructLayoutAttribute(LayoutKind.Sequential, Pack = 1)]
 public struct Point3 {
