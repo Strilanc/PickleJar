@@ -16,13 +16,13 @@ Installation
 **NuGet Package**
 
 - Add the [Strilanc.PickleJar NuGet package](https://www.nuget.org/packages/Strilanc.PickleJar/) to your project's references.
-- `using Strilanc.PickleJar;`
+- Namespace: `using Strilanc.PickleJar;`
 
 =====
 Usage
 =====
 
-All functionality for making jars is present on the static `Strilanc.PickleJar.Jar`.
+All functionality for making jars is present on the static `Strilanc.PickleJar.Jar` class.
 The quickest way to see what's available is to "dot around" `Jar` with intellisense, or browse through the [NuDoq documentation](http://www.nudoq.org/#!/Packages/Strilanc.PickleJar/PickleJar/Jar).
 
 **Example #1: Pickling a string**
