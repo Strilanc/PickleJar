@@ -156,7 +156,7 @@ namespace Strilanc.PickleJar {
                     return new ParsedValue<int>(data.Count / itemLength, 0);
                 },
                 item => new byte[0],
-                canBeFollowed: false);
+                canBeFollowed: true);
             return new RepeatBasedOnPrefixJar<T>(
                 counter,
                 bulkItemJar);
@@ -220,7 +220,7 @@ namespace Strilanc.PickleJar {
             if (jars == null) throw new ArgumentNullException("jars");
             var jarsCached = jars.ToArray();
             if (jarsCached.Take(jarsCached.Length - 1).Any(e => !e.CanBeFollowed)) throw new ArgumentException("!jar.CanBeFollowed");
-            return new SequencedJar<T>(jarsCached);
+            return new SequencedJarCompiled<T>(jarsCached);
         }
 
         /// <summary>

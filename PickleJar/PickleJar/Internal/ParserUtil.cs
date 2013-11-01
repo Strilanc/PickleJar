@@ -83,15 +83,20 @@ namespace Strilanc.PickleJar.Internal {
                 });
 
             return new InlinedParserComponents(
-                performParse: Expression.Assign(resultVar, parse),
-                afterParseValueGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Value")),
-                afterParseConsumedGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
-                resultStorage: new[] {resultVar});
+                parseDoer: Expression.Assign(resultVar, parse),
+                valueGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Value")),
+                consumedCountGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
+                storage: new ParsedValueStorage(new[] {resultVar}, new[] { resultVar }));
         }
         public static InlinedParserComponents MakeInlinedParserComponents<T>(this IJar<T> jar, Expression array, Expression offset, Expression count) {
             var r = jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jar, typeof(T), array, offset, count);
+        }
+        public static InlinedParserComponents MakeInlinedParserComponents(this JarMeta jar, Expression array, Expression offset, Expression count) {
+            var r = jar.Jar as IJarMetadataInternal;
+            return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
+                   ?? MakeDefaultInlinedParserComponents(jar.Jar, jar.JarValueType, array, offset, count);
         }
         public static InlinedParserComponents MakeInlinedParserComponents(this IJarForMember jarForMember, Expression array, Expression offset, Expression count) {
             var r = jarForMember.Jar as IJarMetadataInternal;
@@ -102,10 +107,10 @@ namespace Strilanc.PickleJar.Internal {
         public static InlinedParserComponents MakeInlinedNumberParserComponents<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var varParsedNumber = Expression.Parameter(typeof(T));
             return new InlinedParserComponents(
-                performParse: Expression.Assign(varParsedNumber, MakeInlinedNumberParserExpression<T>(isSystemEndian, array, offset, count)),
-                afterParseValueGetter: varParsedNumber,
-                afterParseConsumedGetter: Expression.Constant(Marshal.SizeOf(typeof(T))),
-                resultStorage: new[] {varParsedNumber});
+                parseDoer: Expression.Assign(varParsedNumber, MakeInlinedNumberParserExpression<T>(isSystemEndian, array, offset, count)),
+                valueGetter: varParsedNumber,
+                consumedCountGetter: Expression.Constant(Marshal.SizeOf(typeof(T))),
+                storage: new ParsedValueStorage(new[] {varParsedNumber}, new ParameterExpression[0]));
         }
         private static Expression MakeInlinedNumberParserExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var numberTypes = new[] {

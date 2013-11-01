@@ -23,12 +23,12 @@ public static class TestingUtilities {
         if (inlined == null) return null;
 
         var parseBody = Expression.Block(
-            inlined.ResultStorage,
-            inlined.PerformParse,
+            inlined.Storage.ForBoth,
+            inlined.ParseDoer,
             Expression.New(
                 typeof(ParsedValue<T>).GetConstructor(new[] {typeof(T), typeof(int)}).NotNull(), 
-                inlined.AfterParseValueGetter,
-                inlined.AfterParseConsumedGetter));
+                inlined.ValueGetter,
+                inlined.ConsumedCountGetter));
         var parseMethod = Expression.Lambda<Func<byte[], int, int, ParsedValue<T>>>(
             parseBody,
             new[] {array, offset, count});

@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PickleJar\AnonymousJar.cs" />
+    <Compile Include="PickleJar\Internal\Structured\SequencedJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Structured\DictionaryJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\KeyValueJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\SequencedJar.cs" />

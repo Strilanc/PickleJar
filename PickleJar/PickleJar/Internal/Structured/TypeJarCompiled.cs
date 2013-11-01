@@ -61,12 +61,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
     
             var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
                 Expression.Block(
-                    bodyAndVars.ResultStorage,
+                    bodyAndVars.Storage.ForBoth,
                     new[] {
-                        bodyAndVars.PerformParse,
+                        bodyAndVars.ParseDoer,
                         Expression.New(typeof (ParsedValue<T>).GetConstructor(new[] {typeof (T), typeof (int)}).NotNull(),
-                                       bodyAndVars.AfterParseValueGetter,
-                                       bodyAndVars.AfterParseConsumedGetter)
+                                       bodyAndVars.ValueGetter,
+                                       bodyAndVars.ConsumedCountGetter)
                     }),
                 new[] {paramData});
 
@@ -120,8 +120,8 @@ namespace Strilanc.PickleJar.Internal.Structured {
             var performMemberParsesBlock = 
                 memberParsers
                 .Select(parser => Expression.Block(
-                    parser.inlinedParseComponents.PerformParse,
-                    Expression.AddAssign(varTotal, parser.inlinedParseComponents.AfterParseConsumedGetter)))
+                    parser.inlinedParseComponents.ParseDoer,
+                    Expression.AddAssign(varTotal, parser.inlinedParseComponents.ConsumedCountGetter)))
                 .Block();
 
             var parserMap = memberParsers.KeyedBy(parser => parser.memberJar.MemberMatchInfo);
@@ -129,17 +129,17 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
                 : Expression.New(chosenConstructor,
-                                 chosenConstructor.GetParameters().Select(e => parserMap[e.MatchInfo()].inlinedParseComponents.AfterParseValueGetter));
+                                 chosenConstructor.GetParameters().Select(e => parserMap[e.MatchInfo()].inlinedParseComponents.ValueGetter));
 
             var assignMutableMembersBlock =
                 memberJarMap
                 .Where(e => !parameterMap.ContainsKey(e.Key))
                 .Select(e => Expression.Assign(
                     Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
-                    parserMap[e.Key].inlinedParseComponents.AfterParseValueGetter))
+                    parserMap[e.Key].inlinedParseComponents.ValueGetter))
                 .Block();
 
-            var locals = memberParsers.SelectMany(e => e.inlinedParseComponents.ResultStorage);
+            var locals = memberParsers.SelectMany(e => e.inlinedParseComponents.Storage.ForBoth);
             var statements = new[] {
                 initLocals,
                 performMemberParsesBlock,
@@ -148,10 +148,10 @@ namespace Strilanc.PickleJar.Internal.Structured {
             };
 
             return new InlinedParserComponents(
-                performParse: Expression.Block(locals, statements),
-                afterParseValueGetter: varResultValue,
-                afterParseConsumedGetter: varTotal,
-                resultStorage: new[] {varTotal, varResultValue});
+                parseDoer: Expression.Block(locals, statements),
+                valueGetter: varResultValue,
+                consumedCountGetter: varTotal,
+                storage: new ParsedValueStorage(new[] {varResultValue}, new[] {varTotal }));
         }
 
         public bool IsBlittable { get { return false; } }

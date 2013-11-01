@@ -25,7 +25,8 @@ namespace Strilanc.PickleJar.Internal.Values {
             return new InlinedParserComponents(
                 Expression.Empty(),
                 Expression.Constant(ConstantValue),
-                Expression.Constant(0));
+                Expression.Constant(0),
+                new ParsedValueStorage(new ParameterExpression[0], new ParameterExpression[0]));
         }
         public override string ToString() {
             return string.Format(

@@ -45,15 +45,17 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             var loopExit = Expression.Label();
             var loopStatements = Expression.Loop(
                 Expression.Block(
-                    inlinedParseComponents.ResultStorage,
-                    Expression.IfThen(Expression.GreaterThanOrEqual(loopIndex, itemCount), Expression.Break(loopExit)),
-                    inlinedParseComponents.PerformParse,
-                    Expression.AddAssign(resultConsumed, inlinedParseComponents.AfterParseConsumedGetter),
-                    Expression.Assign(
-                        Expression.ArrayAccess(
-                            resultArray, 
-                            Expression.PostIncrementAssign(loopIndex)),
-                        inlinedParseComponents.AfterParseValueGetter)),
+                    inlinedParseComponents.Storage.ForBoth,
+                    new[] {
+                        Expression.IfThen(Expression.GreaterThanOrEqual(loopIndex, itemCount), Expression.Break(loopExit)),
+                        inlinedParseComponents.ParseDoer,
+                        Expression.AddAssign(resultConsumed, inlinedParseComponents.ConsumedCountGetter),
+                        Expression.Assign(
+                            Expression.ArrayAccess(
+                                resultArray,
+                                Expression.PostIncrementAssign(loopIndex)),
+                            inlinedParseComponents.ValueGetter)
+                    }),
                 loopExit);
 
             var result = Expression.New(

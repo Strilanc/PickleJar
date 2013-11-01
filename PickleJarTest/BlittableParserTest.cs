@@ -95,12 +95,12 @@ public class BlittableParserTest {
         var inlinedParseComponents = meta.TryMakeInlinedParserComponents(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
 
         var body = Expression.Block(
-            inlinedParseComponents.ResultStorage,
-            inlinedParseComponents.PerformParse,
+            inlinedParseComponents.Storage.ForBoth,
+            inlinedParseComponents.ParseDoer,
             Expression.New(
                 typeof(ParsedValue<T>).GetConstructor(new[] { typeof(T), typeof(int) }).NotNull(), 
-                inlinedParseComponents.AfterParseValueGetter, 
-                inlinedParseComponents.AfterParseConsumedGetter));
+                inlinedParseComponents.ValueGetter, 
+                inlinedParseComponents.ConsumedCountGetter));
         var method = Expression.Lambda<Func<ParsedValue<T>>>(body);
         var result = method.Compile()();
         var normal = parser.Parse(d);

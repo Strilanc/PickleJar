@@ -170,16 +170,16 @@ public class ApiTest {
 
                 var compiledValue = Expression.Lambda(
                     Expression.Block(
-                        inlined.ResultStorage,
-                        inlined.PerformParse,
-                        inlined.AfterParseValueGetter)).Compile().DynamicInvoke();
+                        inlined.Storage.ForBoth,
+                        inlined.ParseDoer,
+                        inlined.ValueGetter)).Compile().DynamicInvoke();
                 compiledValue.AssertSimilar(vs[i].Value.Value);
 
                 var compiledConsumed = Expression.Lambda(
                     Expression.Block(
-                        inlined.ResultStorage,
-                        inlined.PerformParse,
-                        inlined.AfterParseConsumedGetter)).Compile().DynamicInvoke();
+                        inlined.Storage.ForBoth,
+                        inlined.ParseDoer,
+                        inlined.ConsumedCountGetter)).Compile().DynamicInvoke();
                 compiledConsumed.AssertSimilar(vs[i].Value.Consumed);
             }
         }

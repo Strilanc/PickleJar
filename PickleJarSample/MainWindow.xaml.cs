@@ -7,6 +7,15 @@ namespace PickleJarSample {
         public MainWindow() {
             InitializeComponent();
 
+            var r = 
+                new[] {
+                    Jar.UInt8.RepeatNTimes(3),
+                    Jar.UInt8.RepeatNTimes(2),
+                    Jar.UInt8.RepeatCountPrefixTimes(Jar.Int32LittleEndian),
+                    Jar.UInt8.RepeatUntilEndOfData()
+                }.ToListJar();
+            var r2 = r.Parse(new byte[] {1, 2, 3, 1, 2, 4, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 6, 7, 8});
+
             var xxx = new Jar.NamedJarList {
                 {"test", Jar.Int32LittleEndian},
                 {"test2", Jar.Int32BigEndian},
