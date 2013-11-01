@@ -81,7 +81,6 @@ namespace Strilanc.PickleJar.Internal.Structured {
         }
         public InlinedParserComponents MakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             var varResultValue = Expression.Variable(typeof(T));
-            var varTotal = Expression.Variable(typeof(int));
             var memberJarMap = _memberJars.KeyedBy(e => e.MemberMatchInfo);
             var mutableMemberMap = GetMutableMemberMap();
 
@@ -107,51 +106,40 @@ namespace Strilanc.PickleJar.Internal.Structured {
                     typeof(T)));
             }
 
-            var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
+            var parseSequence = SequencedJarUtil.BuildComponentsOfParsingSequence(
+                _memberJars.Select(e => new JarMeta(e.Jar, e.MemberMatchInfo.MemberType)), 
+                array, 
+                offset, 
+                count);
 
-            var memberParsers = (from memberJar in _memberJars
-                                 let inlinedParseComponents = memberJar.MakeInlinedParserComponents(
-                                     array,
-                                     Expression.Add(offset, varTotal),
-                                     Expression.Subtract(count, varTotal))
-                                 select new { memberJar, inlinedParseComponents }
-                                 ).ToArray();
-
-            var performMemberParsesBlock = 
-                memberParsers
-                .Select(parser => Expression.Block(
-                    parser.inlinedParseComponents.ParseDoer,
-                    Expression.AddAssign(varTotal, parser.inlinedParseComponents.ConsumedCountGetter)))
-                .Block();
-
-            var parserMap = memberParsers.KeyedBy(parser => parser.memberJar.MemberMatchInfo);
+            var memberValueGetters = parseSequence.ValueGetters.Zip(_memberJars, Tuple.Create).ToDictionary(e => e.Item2.MemberMatchInfo, e => e.Item1);
             var valueConstructedFromParsedValues = 
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
                 : Expression.New(chosenConstructor,
-                                 chosenConstructor.GetParameters().Select(e => parserMap[e.MatchInfo()].inlinedParseComponents.ValueGetter));
+                                 chosenConstructor.GetParameters().Select(e => memberValueGetters[e.MatchInfo()]));
 
             var assignMutableMembersBlock =
                 memberJarMap
                 .Where(e => !parameterMap.ContainsKey(e.Key))
                 .Select(e => Expression.Assign(
                     Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
-                    parserMap[e.Key].inlinedParseComponents.ValueGetter))
+                    memberValueGetters[e.Key]))
                 .Block();
 
-            var locals = memberParsers.SelectMany(e => e.inlinedParseComponents.Storage.ForBoth);
-            var statements = new[] {
-                initLocals,
-                performMemberParsesBlock,
-                Expression.Assign(varResultValue, valueConstructedFromParsedValues),
-                assignMutableMembersBlock
-            };
+            var parseDoer = Expression.Block(
+                parseSequence.Storage.ForValueIfConsumedCountAlreadyInScope,
+                new[] {
+                    parseSequence.ParseDoer,
+                    Expression.Assign(varResultValue, valueConstructedFromParsedValues),
+                    assignMutableMembersBlock
+                });
 
             return new InlinedParserComponents(
-                parseDoer: Expression.Block(locals, statements),
+                parseDoer: parseDoer,
                 valueGetter: varResultValue,
-                consumedCountGetter: varTotal,
-                storage: new ParsedValueStorage(new[] {varResultValue}, new[] {varTotal }));
+                consumedCountGetter: parseSequence.ConsumedCountGetter,
+                storage: new ParsedValueStorage(new[] {varResultValue}, parseSequence.Storage.ForConsumedCount));
         }
 
         public bool IsBlittable { get { return false; } }

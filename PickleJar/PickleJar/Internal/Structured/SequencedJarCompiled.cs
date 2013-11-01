@@ -23,7 +23,11 @@ namespace Strilanc.PickleJar.Internal.Structured {
         }
 
         public static InlinedParserComponents MakeInlinedParserComponentsForJarSequence<T>(IJar<T>[] jars, Expression array, Expression offset, Expression count) {
-            var r = BuildSequenceParsing(jars.Select(e => new JarMeta(e, typeof(T))), array, offset, count);
+            if (array == null) throw new ArgumentNullException("array");
+            if (offset == null) throw new ArgumentNullException("offset");
+            if (count == null) throw new ArgumentNullException("count");
+
+            var r = BuildComponentsOfParsingSequence(jars.Select(e => new JarMeta(e, typeof(T))), array, offset, count);
 
             var resultArray = Expression.Variable(typeof(T[]), "resultArray");
             var cap = Expression.Constant(jars.Length);
@@ -44,7 +48,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 storage);
         }
 
-        public static InlinedMultiParserComponents BuildSequenceParsing(IEnumerable<JarMeta> jars, Expression array, Expression offset, Expression count) {
+        public static InlinedMultiParserComponents BuildComponentsOfParsingSequence(IEnumerable<JarMeta> jars, Expression array, Expression offset, Expression count) {
+            if (jars == null) throw new ArgumentNullException("jars");
+            if (array == null) throw new ArgumentNullException("array");
+            if (offset == null) throw new ArgumentNullException("offset");
+            if (count == null) throw new ArgumentNullException("count");
+
             var varConsumed = Expression.Variable(typeof(int), "listConsumed");
 
             var initLocals = Expression.Assign(varConsumed, Expression.Constant(0));
