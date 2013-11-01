@@ -9,6 +9,15 @@ Code for the combined and augmented jars is generated, optimized, and compiled a
 
 See [this blog post](http://twistedoakstudios.com/blog/Post4708_optimizing-a-parser-combinator-into-a-memcpy) for more discussion.
 
+============
+Installation
+============
+
+**NuGet Package**
+
+- Add the [Strilanc.PickleJar NuGet package](https://www.nuget.org/packages/Strilanc.PickleJar/) to your project's references.
+- `using Strilanc.PickleJar;`
+
 =====
 Usage
 =====
