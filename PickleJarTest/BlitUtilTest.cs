@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar.Internal.Bulk;
 using Strilanc.PickleJar.Internal.Structured;
+using Strilanc.PickleJar.Internal;
 
 [TestClass]
 public class BlitUtilTest {
@@ -21,6 +22,10 @@ public class BlitUtilTest {
         public Int16 v01;
         public Int32 v2345;
     }
+    public struct TestStruct3 {
+        public Int32 x;
+        public string NotBlittable;
+    }
 
     [TestMethod]
     public void TestValueParser() {
@@ -33,6 +38,14 @@ public class BlitUtilTest {
         var r = TypeJarBlit<TestStruct2>.MakeUnsafeBlitParser();
         var y = r(new byte[] { 0, 1, 2, 3, 4, 5 }, 0, 6);
         y.AssertEquals(new TestStruct2 {v01 = 0x0100, v2345 = 0x05040302});
+    }
+    [TestMethod]
+    public void TestIsBlittable() {
+        typeof(string).IsBlittable().AssertFalse();
+        typeof(int).IsBlittable().AssertTrue();
+        typeof(TestStruct).IsBlittable().AssertTrue();
+        typeof(TestStruct2).IsBlittable().AssertTrue();
+        typeof(TestStruct3).IsBlittable().AssertFalse();
     }
 
     [TestMethod]

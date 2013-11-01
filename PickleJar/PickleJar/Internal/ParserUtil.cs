@@ -117,18 +117,19 @@ namespace Strilanc.PickleJar.Internal {
         }
         public static bool IsBlittable(this Type type) {
             var blittablePrimitives = new[] {
-            typeof(byte),
-            typeof(sbyte),
-            typeof(short),
-            typeof(ushort),
-            typeof(int),
-            typeof(uint),
-            typeof(long),
-            typeof(ulong)
-        };
+                typeof(byte),
+                typeof(sbyte),
+                typeof(short),
+                typeof(ushort),
+                typeof(int),
+                typeof(uint),
+                typeof(long),
+                typeof(ulong)
+            };
+            if (type == typeof(string)) return false;
             return blittablePrimitives.Contains(type)
                    || (type.IsArray && type.GetElementType().IsValueType && type.GetElementType().IsBlittable())
-                   || type.GetFields().All(e => e.FieldType.IsBlittable());
+                   || type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).All(e => e.FieldType.IsValueType && e.FieldType.IsBlittable());
         }
         public static Expression Block(this IEnumerable<Expression> expressions) {
             var exp = expressions.ToArray();
