@@ -35,7 +35,7 @@ public static class TestingUtilities {
 
         var c = parseMethod.Compile();
 
-        return new AnonymousJar<T>(
+        return Jar.Create(
             e => c(e.Array, e.Offset, e.Count),
             jar.Pack,
             jar.CanBeFollowed);

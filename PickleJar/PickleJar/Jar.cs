@@ -156,7 +156,10 @@ namespace Strilanc.PickleJar {
                     return new ParsedValue<int>(data.Count / itemLength, 0);
                 },
                 item => new byte[0],
-                canBeFollowed: true);
+                canBeFollowed: true,
+                isBlittable: false,
+                optionalConstantSerializedLength: null,
+                tryInlinedParserComponents: null);
             return new RepeatBasedOnPrefixJar<T>(
                 counter,
                 bulkItemJar);
@@ -174,7 +177,10 @@ namespace Strilanc.PickleJar {
             return new AnonymousJar<TExposed>(
                 data => jar.Parse(data).Select(parseProjection),
                 e => jar.Pack(packProjection(e)),
-                jar.CanBeFollowed);
+                jar.CanBeFollowed,
+                isBlittable: false,
+                optionalConstantSerializedLength: jar.OptionalConstantSerializedLength(),
+                tryInlinedParserComponents: null);
         }
 
         /// <summary>
@@ -184,14 +190,20 @@ namespace Strilanc.PickleJar {
         public static IJar<T> Where<T>(this IJar<T> jar, Func<T, bool> constraint) {
             if (jar == null) throw new ArgumentNullException("jar");
             if (constraint == null) throw new ArgumentNullException("constraint");
-            return new AnonymousJar<T>(data => {
-                var v = jar.Parse(data);
-                if (!constraint(v.Value)) throw new InvalidOperationException("Data did not match Where constraint");
-                return v;
-            }, item => {
-                if (!constraint(item)) throw new InvalidOperationException("Data did not match Where constraint");
-                return jar.Pack(item);
-            }, jar.CanBeFollowed);
+            return new AnonymousJar<T>(
+                data => {
+                    var v = jar.Parse(data);
+                    if (!constraint(v.Value)) throw new InvalidOperationException("Data did not match Where constraint");
+                    return v;
+                },
+                item => {
+                    if (!constraint(item)) throw new InvalidOperationException("Data did not match Where constraint");
+                    return jar.Pack(item);
+                },
+                jar.CanBeFollowed,
+                isBlittable: false,
+                optionalConstantSerializedLength: jar.OptionalConstantSerializedLength(),
+                tryInlinedParserComponents: null);
         }
 
         /// <summary>
@@ -220,7 +232,7 @@ namespace Strilanc.PickleJar {
             if (jars == null) throw new ArgumentNullException("jars");
             var jarsCached = jars.ToArray();
             if (jarsCached.Take(jarsCached.Length - 1).Any(e => !e.CanBeFollowed)) throw new ArgumentException("!jar.CanBeFollowed");
-            return new SequencedJarCompiled<T>(jarsCached);
+            return SequencedJarUtil.MakeSequencedJar(jarsCached);
         }
 
         /// <summary>
@@ -248,7 +260,7 @@ namespace Strilanc.PickleJar {
         public static IJar<T> Create<T>(Func<ArraySegment<byte>, ParsedValue<T>> parse, Func<T, byte[]> pack, bool canBeFollowed) {
             if (parse == null) throw new ArgumentNullException("parse");
             if (pack == null) throw new ArgumentNullException("pack");
-            return new AnonymousJar<T>(parse, pack, canBeFollowed);
+            return new AnonymousJar<T>(parse, pack, canBeFollowed, isBlittable: false, optionalConstantSerializedLength: null, tryInlinedParserComponents: null);
         }
     }
 }

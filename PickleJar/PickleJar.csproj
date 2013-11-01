@@ -49,10 +49,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PickleJar\Internal\AnonymousJar.cs" />
+    <Compile Include="PickleJar\Internal\InlinedMultiParserComponents.cs" />
+    <Compile Include="PickleJar\Internal\ParsedValueStorage.cs" />
     <Compile Include="PickleJar\Internal\Structured\SequencedJarCompiled.cs" />
     <Compile Include="PickleJar\Internal\Structured\DictionaryJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\KeyValueJar.cs" />
-    <Compile Include="PickleJar\Internal\Structured\SequencedJar.cs" />
     <Compile Include="PickleJar\Internal\Values\TextJar.cs" />
     <Compile Include="PickleJar\MemberMatchInfo.cs" />
     <Compile Include="PickleJar\LeftoverDataException.cs" />

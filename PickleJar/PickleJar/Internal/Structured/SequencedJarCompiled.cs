@@ -4,48 +4,46 @@ using System.Linq;
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.Structured {
-    internal class SequencedJarCompiled<T> : IJar<IReadOnlyList<T>>, IJarMetadataInternal {
-        private readonly IJar<T>[] _jars;
-        private readonly Func<ArraySegment<byte>, ParsedValue<IReadOnlyList<T>>> _parser;
+    internal static class SequencedJarUtil {
+        public static IJar<IReadOnlyList<T>> MakeSequencedJar<T>(IEnumerable<IJar<T>> jars) {
+            if (jars == null) throw new ArgumentNullException("jars");
 
-        public SequencedJarCompiled(IJar<T>[] jars) {
-            this._jars = jars.ToArray();
-            _parser = InlinedParserComponents.MakeParser<IReadOnlyList<T>>(this.TryMakeInlinedParserComponents);
+            var jarsCopy = jars.ToArray();
+            if (jarsCopy.Any(jar => jar == null)) throw new ArgumentException("jars.Any(jar => jar == null)");
+            if (jarsCopy.SkipLast(1).Any(jar => !jar.CanBeFollowed)) throw new ArgumentException("jars.SkipLast(1).Any(jar => !jar.CanBeFollowed)");
+
+            return AnonymousJar.CreateFrom<IReadOnlyList<T>>(
+                parser: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),
+                packer: v => { throw new NotImplementedException(); },
+                canBeFollowed: jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed,
+                isBlittable: jarsCopy.All(jar => jar is IJarMetadataInternal && ((IJarMetadataInternal)jar).IsBlittable),
+                constLength: jarsCopy.Select(jar => jar.OptionalConstantSerializedLength()).Sum(),
+                desc: () => jarsCopy.StringJoinList("[", ", ", "].ToListJar()"),
+                components: jarsCopy);
         }
 
-        public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data) {
-            return _parser(data);
-        }
-        public byte[] Pack(IReadOnlyList<T> value) {
-            throw new NotImplementedException();
-        }
-        public bool CanBeFollowed { get { return _jars.Length == 0 || _jars.Last().CanBeFollowed; } }
-        public bool IsBlittable { get { return _jars.All(e => e is IJarMetadataInternal && ((IJarMetadataInternal)e).IsBlittable); } }
-        public int? OptionalConstantSerializedLength { get { return null; } }
-        
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            var r = SequencedJarUtil.BuildSequenceParsing(_jars.Select(e => new JarMeta(e, typeof (T))), array, offset, count);
+        public static InlinedParserComponents MakeInlinedParserComponentsForJarSequence<T>(IJar<T>[] jars, Expression array, Expression offset, Expression count) {
+            var r = BuildSequenceParsing(jars.Select(e => new JarMeta(e, typeof(T))), array, offset, count);
 
-            var resultArray = Expression.Variable(typeof (T[]), "resultArray");
-            var cap = Expression.Constant(_jars.Length);
+            var resultArray = Expression.Variable(typeof(T[]), "resultArray");
+            var cap = Expression.Constant(jars.Length);
 
             var parserDoer = Expression.Block(
                 r.Storage.ForValueIfConsumedCountAlreadyInScope,
                 new[] {
                     r.ParseDoer,
                     Expression.Assign(resultArray, Expression.NewArrayBounds(typeof(T), cap)),
-                    Enumerable.Range(0, _jars.Length).Select(i => Expression.Assign(Expression.ArrayAccess(resultArray, Expression.Constant(i)), r.ValueGetters[i])).Block(),
+                    Enumerable.Range(0, jars.Length).Select(i => Expression.Assign(Expression.ArrayAccess(resultArray, Expression.Constant(i)), r.ValueGetters[i])).Block(),
                 });
 
-            var storage = new ParsedValueStorage(r.Storage.ForConsumedCount, new[] {resultArray});
+            var storage = new ParsedValueStorage(r.Storage.ForConsumedCount, new[] { resultArray });
             return new InlinedParserComponents(
-                parserDoer, 
-                resultArray, 
-                r.ConsumedCountGetter, 
+                parserDoer,
+                resultArray,
+                r.ConsumedCountGetter,
                 storage);
         }
-    }
-    internal static class SequencedJarUtil {
+
         public static InlinedMultiParserComponents BuildSequenceParsing(IEnumerable<JarMeta> jars, Expression array, Expression offset, Expression count) {
             var varConsumed = Expression.Variable(typeof(int), "listConsumed");
 

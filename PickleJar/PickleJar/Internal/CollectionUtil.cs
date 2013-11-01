@@ -40,6 +40,18 @@ namespace Strilanc.PickleJar.Internal {
             return sequence.Aggregate((e1, e2) => comparer.Compare(compareSelector(e1), compareSelector(e2)) >= 0 ? e1 : e2);
         }
 
+        public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> sequence, int skipCount) {
+            if (sequence == null) throw new ArgumentNullException("sequence");
+            if (skipCount < 0) skipCount = 0;
+            var q = new Queue<T>(capacity: skipCount);
+            foreach (var e in sequence) {
+                q.Enqueue(e);
+                if (q.Count > skipCount) {
+                    yield return q.Dequeue();
+                }
+            }
+        }
+
         ///<summary>Returns an array segment over the same data, but with the start of the range advanced by the given count and the end kept fixed.</summary>
         public static ArraySegment<T> Skip<T>(this ArraySegment<T> segment, int count) {
             return new ArraySegment<T>(segment.Array, segment.Offset + count, segment.Count - count);

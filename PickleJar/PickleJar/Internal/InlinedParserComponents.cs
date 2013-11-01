@@ -1,45 +1,9 @@
 ﻿using System;
 using System.Linq.Expressions;
-using System.Linq;
 
 namespace Strilanc.PickleJar.Internal {
-    internal struct ParsedValueStorage {
-        public readonly ParameterExpression[] ForValue;
-        public readonly ParameterExpression[] ForConsumedCount;
-
-        public ParameterExpression[] ForConsumedCountIfValueAlreadyInScope {
-            get { return ForConsumedCount.Except(ForValue).ToArray(); }
-        }
-        public ParameterExpression[] ForValueIfConsumedCountAlreadyInScope {
-            get { return ForValue.Except(ForConsumedCount).ToArray(); }
-        }
-        public ParameterExpression[] ForBoth {
-            get { return ForConsumedCount.Concat(ForValue).Distinct().ToArray(); }
-        }
-
-        public ParsedValueStorage(ParameterExpression[] variablesNeededForValue, ParameterExpression[] variablesNeededForConsumedCount) {
-            ForValue = variablesNeededForValue;
-            ForConsumedCount = variablesNeededForConsumedCount;
-        }
-    }
-    internal sealed class InlinedMultiParserComponents {
-        public readonly Expression ParseDoer;
-        public readonly ParsedValueStorage Storage;
-        public readonly Expression[] ValueGetters;
-        public readonly Expression ConsumedCountGetter;
-
-        public InlinedMultiParserComponents(Expression parseDoer, Expression[] valueGetters, Expression consumedCountGetter, ParsedValueStorage storage) {
-            if (parseDoer == null) throw new ArgumentNullException("parseDoer");
-            if (valueGetters == null) throw new ArgumentNullException("valueGetters");
-            if (consumedCountGetter == null) throw new ArgumentNullException("consumedCountGetter");
-            ParseDoer = parseDoer;
-            ValueGetters = valueGetters;
-            ConsumedCountGetter = consumedCountGetter;
-            Storage = storage;
-        }
-    }
-
     internal delegate InlinedParserComponents InlinerMaker(Expression array, Expression offset, Expression count);
+
     internal sealed class InlinedParserComponents {
         public readonly Expression ParseDoer;
         public readonly ParsedValueStorage Storage;
