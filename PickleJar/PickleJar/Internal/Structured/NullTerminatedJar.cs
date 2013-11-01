@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Strilanc.Value;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     internal sealed class NullTerminatedJar<T> : IJar<T> {
@@ -13,10 +12,10 @@ namespace Strilanc.PickleJar.Internal.Structured {
         }
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
-            var index = data.IndexesOf((byte)0).MayFirst();
+            var index = data.IndexesOf((byte)0).NullableFirst();
             if (!index.HasValue) throw new ArgumentException("Null terminator not found.");
 
-            var itemDataLength = index.ForceGetValue();
+            var itemDataLength = index.Value;
             var parsedItem = _itemJar.Parse(data.Take(itemDataLength));
             if (parsedItem.Consumed != itemDataLength) throw new LeftoverDataException();
 

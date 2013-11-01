@@ -2,11 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
   <metadata minClientVersion="2.5">
     <id>Microsoft.Bcl.Immutable</id>
-    <version>1.0.12-beta</version>
+    <version>1.0.27</version>
     <title>Microsoft Immutable Collections</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=272980</licenseUrl>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=313707</licenseUrl>
     <projectUrl>http://go.microsoft.com/fwlink/?LinkID=310193</projectUrl>
     <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>

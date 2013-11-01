@@ -1,10 +1,95 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Strilanc.PickleJar.Internal;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+public static class CollectionUtilExtra {
+    /// <summary>
+    /// Enumerates all of the ways that it's possible one item from each collection in a sequence.
+    /// Enumerated items are volatile. They are invalidated when the enumeration continues.
+    /// For example, the choice combinations of [[1,2],[3,4,5]] are (in some order): {[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]}.
+    /// </summary>
+    public static IEnumerable<T[]> AllChoiceCombinationsVolatile<T>(this IEnumerable<IEnumerable<T>> sequenceOfChoices) {
+        using (var e = sequenceOfChoices.GetEnumerator().AllChoiceCombinationsOfRemainderVolatile(0)) {
+            while (e.MoveNext()) {
+                yield return e.Current;
+            }
+        }
+    }
+    private static IEnumerator<T[]> AllChoiceCombinationsOfRemainderVolatile<T>(this IEnumerator<IEnumerable<T>> sequenceOfChoices, int index) {
+        if (!sequenceOfChoices.MoveNext()) {
+            yield return new T[index];
+            yield break;
+        }
+
+        var headChoices = sequenceOfChoices.Current;
+        var tailChoices = sequenceOfChoices.AllChoiceCombinationsOfRemainderVolatile(index + 1);
+        using (var e = tailChoices) {
+            while (e.MoveNext()) {
+                var tailChoice = e.Current;
+                foreach (var headChoice in headChoices) {
+                    tailChoice[index] = headChoice;
+                    yield return tailChoice;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Enumerates all of the ways that it's possible one item from each collection in a sequence.
+    /// For example, the choice combinations of [[1,2],[3,4,5]] are (in some order): {[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]}.
+    /// </summary>
+    public static IEnumerable<IReadOnlyList<T>> AllChoiceCombinations<T>(this IEnumerable<IEnumerable<T>> sequenceOfChoices) {
+        using (var e = sequenceOfChoices.GetEnumerator().AllChoiceCombinationsOfRemainder()) {
+            while (e.MoveNext()) {
+                yield return e.Current;
+            }
+        }
+    }
+    private static IEnumerator<IImmutableList<T>> AllChoiceCombinationsOfRemainder<T>(this IEnumerator<IEnumerable<T>> sequenceOfChoices) {
+        if (!sequenceOfChoices.MoveNext()) {
+            yield return ImmutableList.Create<T>();
+            yield break;
+        }
+
+        var headChoices = sequenceOfChoices.Current;
+        var tailChoices = sequenceOfChoices.AllChoiceCombinationsOfRemainder();
+        using (var e = tailChoices) {
+            while (e.MoveNext()) {
+                var tailChoice = e.Current;
+                foreach (var headChoice in headChoices) {
+                    yield return tailChoice.Insert(0, headChoice);
+                }
+            }
+        }
+    }    
+}
+
 [TestClass]
 public class CollectionUtilTest {
+    [TestMethod]
+    public void TestNullableFirst() {
+        TestingUtilities.AssertThrows(() => ((IEnumerable<int>)null).NullableFirst());
+
+        new int[0].NullableFirst().AssertEquals((int?)null);
+        new[] { 1 }.NullableFirst().AssertEquals((int?)1);
+        new[] { 2, 3, 4 }.NullableFirst().AssertEquals((int?)2);
+    }
+    [TestMethod]
+    public void TestMaxBy() {
+        TestingUtilities.AssertThrows(() => ((IEnumerable<int>)null).MaxBy(e => e));
+        TestingUtilities.AssertThrows(() => new int[1].MaxBy((Func<int, int>)null));
+        TestingUtilities.AssertThrows(() => new int[0].MaxBy(e => e));
+
+        new[] { 1 }.MaxBy(e => e).AssertEquals(1);
+        new[] { 1, 2, 3 }.MaxBy(e => e).AssertEquals(3);
+        new[] { 1, 2, 3 }.MaxBy(e => e / 2).AssertEquals(2);
+        new[] { 1, 3, 2 }.MaxBy(e => e / 2).AssertEquals(3);
+        new[] { 1, 2, 3 }.MaxBy(e => -e).AssertEquals(1);
+        new[] { 1, 2, 3 }.MaxBy(e => e % 3).AssertEquals(2);
+    }
     [TestMethod]
     public void TestAllCombinations() {
         new int[0][]

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using MoreLinq;
-using Strilanc.Value;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
@@ -99,15 +97,15 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 .Where(e => memberJarMap.ContainsKey(e.Key))
                 .Where(e => memberJarMap[e.Key].MemberMatchInfo.MemberType != e.Value.GetMemberSettableType())
                 .Select(e => e.Key);
-            unmatched
+            var unmatchedValue = unmatched
                 .Concat(mismatched)
-                .MayFirst()
-                .IfHasValueThenDo(e => {
-                    throw new ArgumentException(string.Format(
-                        "Failed to find a member matching {0} on type {1}",
-                        e,
-                        typeof(T)));
-                });
+                .NullableFirst();
+            if (unmatchedValue.HasValue) {
+                throw new ArgumentException(string.Format(
+                    "Failed to find a member matching {0} on type {1}",
+                    unmatchedValue.Value,
+                    typeof(T)));
+            }
 
             var initLocals = Expression.Assign(varTotal, Expression.Constant(0));
 
