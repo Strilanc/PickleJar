@@ -42,6 +42,7 @@ public class BlitUtilTest {
     [TestMethod]
     public void TestIsBlittable() {
         typeof(string).IsBlittable().AssertFalse();
+        typeof(double).IsBlittable().AssertTrue();
         typeof(int).IsBlittable().AssertTrue();
         typeof(TestStruct).IsBlittable().AssertTrue();
         typeof(TestStruct2).IsBlittable().AssertTrue();

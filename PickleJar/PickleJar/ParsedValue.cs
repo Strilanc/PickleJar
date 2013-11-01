@@ -1,8 +1,11 @@
-﻿namespace Strilanc.PickleJar {
+﻿using System.Diagnostics;
+
+namespace Strilanc.PickleJar {
     /// <summary>
     /// A value that has been parsed out of some data, as well as how many bytes of data the value took up within the data.
     /// </summary>
     /// <typeparam name="T">The type of value that was parsed.</typeparam>
+    [DebuggerDisplay("{ToString()}")]
     public struct ParsedValue<T> {
         /// <summary>The value that was parsed out of data.</summary>
         public readonly T Value;
@@ -12,6 +15,9 @@
         public ParsedValue(T value, int consumed) {
             this.Value = value;
             this.Consumed = consumed;
+        }
+        public override string ToString() {
+            return string.Format("Consumed = {0}, Value = {1}", Consumed, Value);
         }
     }
 }

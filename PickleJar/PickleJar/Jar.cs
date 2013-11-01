@@ -204,6 +204,25 @@ namespace Strilanc.PickleJar {
                 ?? new TypeJarCompiled<T>(list);
         }
 
+        public static IJar<T> BuildJarForType<T>(this IEnumerable<NamedJar> namedJars) {
+            return namedJars.Select(e => e.ToJarForMember()).BuildJarForType<T>();
+        }
+
+        public static IJar<IReadOnlyDictionary<string, object>> ToDictionaryJar(this IEnumerable<NamedJar> keyedJars) {
+            return keyedJars.Select(e => new KeyValuePair<string, IJar<object>>(e.Name, e.JarAsObjectJar())).ToDictionaryJar();
+        }
+        public static IJar<IReadOnlyDictionary<TKey, TValue>> ToDictionaryJar<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, IJar<TValue>>> keyedJars) {
+            if (keyedJars == null) throw new ArgumentNullException("keyedJars");
+            return new DictionaryJar<TKey, TValue>(keyedJars.Select(e => new KeyValueJar<TKey, TValue>(e.Key, e.Value)));
+        }
+
+        public static IJar<IReadOnlyList<T>> ToListJar<T>(this IEnumerable<IJar<T>> jars) {
+            if (jars == null) throw new ArgumentNullException("jars");
+            var jarsCached = jars.ToArray();
+            if (jarsCached.Take(jarsCached.Length - 1).Any(e => !e.CanBeFollowed)) throw new ArgumentException("!jar.CanBeFollowed");
+            return new SequencedJar<T>(jarsCached);
+        }
+
         /// <summary>
         /// Creates a jar that pickles two values into/outof the representations of the given jars one after another.
         /// </summary>

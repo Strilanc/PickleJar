@@ -16,6 +16,10 @@ namespace Strilanc.PickleJar.Internal {
             }
         }
 
+        public static string StringJoinList<T>(this IEnumerable<T> sequence, string before, string between, string after) {
+            return before + string.Join(between, sequence) + after;
+        }
+
         public static T? NullableFirst<T>(this IEnumerable<T> sequence) where T : struct {
             return sequence.Select(e => (T?)e).FirstOrDefault();
         }

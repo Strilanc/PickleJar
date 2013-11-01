@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Strilanc.PickleJar;
 
-public class Program {
+public static class Program {
     [StructLayoutAttribute(LayoutKind.Sequential, Pack = 1)]
     public struct Point3 {
         public readonly int X;
@@ -39,6 +39,9 @@ public class Program {
             HandrolledParse, 
             x => { throw new NotImplementedException(); },
             canBeFollowed: false);
+
+        var stringParser1 = Jar.Utf8.NullTerminated();
+        var stringParser2 = Jar.Ascii.DataSizePrefixed(Jar.Int32LittleEndian, includePrefixInSize: false);
 
         var blitParser =
             new Jar.Builder {

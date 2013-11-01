@@ -32,8 +32,8 @@ namespace Strilanc.PickleJar.Internal.Values {
         }
         public override string ToString() {
             var end = _isSystemEndian ? ""
-                    : BitConverter.IsLittleEndian ? "[BigEndian]"
-                    : "[LittleEndian]";
+                    : BitConverter.IsLittleEndian ? "BigEndian"
+                    : "LittleEndian";
             return "Int16" + end;
         }
     }

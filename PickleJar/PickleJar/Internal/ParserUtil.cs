@@ -28,6 +28,33 @@ namespace Strilanc.PickleJar.Internal {
             return new ParsedValue<TOut>(projection(value.Value), value.Consumed);
         }
 
+        public static IJar<object> JarAsObjectJar(this NamedJar namedJar) {
+            if (namedJar == null) throw new ArgumentNullException("namedJar");
+
+            return (IJar<object>)typeof(ObjectJar<>)
+                .MakeGenericType(namedJar.JarValueType)
+                .GetConstructor(new[] { typeof(IJar<>).MakeGenericType(namedJar.JarValueType) })
+                .NotNull()
+                .Invoke(new[] { namedJar.Jar });
+        }
+        public static IJarForMember ToJarForMember(this NamedJar namedJar) {
+            return (IJarForMember)typeof(JarForMember<>)
+                .MakeGenericType(namedJar.JarValueType)
+                .GetConstructor(new[] { typeof(IJar<>).MakeGenericType(namedJar.JarValueType), typeof(MemberMatchInfo) })
+                .NotNull()
+                .Invoke(new[] { namedJar.Jar, new MemberMatchInfo(namedJar.Name, namedJar.JarValueType) });
+        }
+        public static IJar<object> JarAsObjectJar(this IJarForMember jarForMember) {
+            if (jarForMember == null) throw new ArgumentNullException("jarForMember");
+
+            var jarType = jarForMember.MemberMatchInfo.MemberType;
+            return (IJar<object>)typeof (ObjectJar<>)
+                .MakeGenericType(jarType)
+                .GetConstructor(new[] {typeof(IJar<>).MakeGenericType(jarType)})
+                .NotNull()
+                .Invoke(new[] {jarForMember.Jar});
+        }
+
         public static bool AreMemoryAndSerializedRepresentationsOfValueGuaranteedToMatch<T>(this IJar<T> parser) {
             var r = parser as IJarMetadataInternal;
             return r != null && r.IsBlittable;
@@ -124,12 +151,15 @@ namespace Strilanc.PickleJar.Internal {
                 typeof(int),
                 typeof(uint),
                 typeof(long),
-                typeof(ulong)
+                typeof(ulong),
+                typeof(float),
+                typeof(double)
             };
             if (type == typeof(string)) return false;
             return blittablePrimitives.Contains(type)
                    || (type.IsArray && type.GetElementType().IsValueType && type.GetElementType().IsBlittable())
-                   || type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).All(e => e.FieldType.IsValueType && e.FieldType.IsBlittable());
+                   || type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                          .All(e => e.FieldType != type && e.FieldType.IsValueType && e.FieldType.IsBlittable());
         }
         public static Expression Block(this IEnumerable<Expression> expressions) {
             var exp = expressions.ToArray();
