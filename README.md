@@ -13,7 +13,7 @@ See [this blog post](http://twistedoakstudios.com/blog/Post4708_optimizing-a-par
 Examples
 ========
 
-Parsing a 2d point, serialized as two contiguous floats:
+Parsing two contiguous floats into a point class. The library is smart enough to realize it must pass X and Y to the constructor:
 
 ```CSharp
 public sealed class Point {
@@ -25,10 +25,10 @@ public sealed class Point {
     }
 }
 
-var pointJar = new Jar.Builder<Point> {
+var pointJar = new Jar.Builder {
     {"x", Jar.Float32},
     {"y", Jar.Float32}
-}.Build();
+}.BuildJarForType<Point>();
 
 var p = pointJar.Parse(new byte[]{0,0,0,0, 0,0,128,63}).Value;
 // p now contains a Point with X=0.0f and Y=1.0f
@@ -45,12 +45,12 @@ public struct Point3 {
     public int Z;
 }
 
-var bulkPointParser = new Jar.Builder<Point3> {
+var bulkPointParser = new Jar.Builder {
     // notice that the fields come in the same order as they are declared
     {"x", Jar.Int32LittleEndian},
     {"y", Jar.Int32LittleEndian},
     {"z", Jar.Int32LittleEndian}
-}.Build()
+}.BuildJarForType<Point3>()
  .RepeatUntilEndOfData();
 
 // because an array of Point3 has the same representation as the serialized data, a memcpy is  valid parser
