@@ -212,8 +212,7 @@ namespace Strilanc.PickleJar {
         public static IJar<T> BuildJarForType<T>(this IEnumerable<IJarForMember> jarsForMembers) {
             if (jarsForMembers == null) throw new ArgumentNullException("jarsForMembers");
             var list = jarsForMembers.ToArray();
-            return (IJar<T>)TypeJarBlit<T>.TryMake(list) 
-                ?? new TypeJarCompiled<T>(list);
+            return TypeJarBlit<T>.TryMake(list) ?? TypeJarCompiled.MakeBySequenceAndInject<T>(list);
         }
 
         public static IJar<T> BuildJarForType<T>(this IEnumerable<NamedJarList.Entry> namedJars) {

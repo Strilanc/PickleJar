@@ -10,20 +10,8 @@ namespace Strilanc.PickleJar.Internal.Structured {
     /// Creates a method, dynamically optimized at runtime, that runs the field parsers and initializes the type with their results.
     /// Attempts to inline the expressions used to parse fields, in order to avoid intermediate values to increase efficiency.
     /// </summary>
-    internal sealed class TypeJarCompiled<T> : IJarMetadataInternal, IJar<T> {
-        private readonly IReadOnlyList<IJarForMember> _memberJars;
-        private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parser;
-        private readonly Func<T, byte[]> _packer;
-        public bool CanBeFollowed { get { return true; } }
-
-        public TypeJarCompiled(IReadOnlyList<IJarForMember> memberJars) {
-            if (memberJars == null) throw new ArgumentNullException("memberJars");
-            _memberJars = memberJars;
-            _parser = MakeParser();
-            _packer = MakePacker();
-        }
-
-        private static IReadOnlyDictionary<MemberMatchInfo, MemberInfo> GetMutableMemberMap() {
+    internal static class TypeJarCompiled {
+        private static IReadOnlyDictionary<MemberMatchInfo, MemberInfo> GetMutableMemberMap<T>() {
             var mutableFields = typeof(T).GetFields()
                                          .Where(e => e.IsPublic)
                                          .Where(e => !e.IsInitOnly)
@@ -35,7 +23,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
             return mutableFields.Concat(mutableProperties)
                                 .ToDictionary(e => e.key, e => e.value);
         }
-        private static ConstructorInfo ChooseCompatibleConstructor(IEnumerable<MemberMatchInfo> mutableMembers, IEnumerable<MemberMatchInfo> parsers) {
+        private static ConstructorInfo ChooseCompatibleConstructor<T>(IEnumerable<MemberMatchInfo> mutableMembers, IEnumerable<MemberMatchInfo> parsers) {
             var possibleConstructors = (from c in typeof(T).GetConstructors()
                                         where c.IsPublic
                                         let parameterNames = c.GetParameters().Select(e => e.MatchInfo()).ToArray()
@@ -51,43 +39,33 @@ namespace Strilanc.PickleJar.Internal.Structured {
             return possibleConstructors.MaxBy(e => e.GetParameters().Count());
         }
 
-        private Func<ArraySegment<byte>, ParsedValue<T>> MakeParser() {
-            var paramData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
-            var paramDataArray = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Array"));
-            var paramDataOffset = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Offset"));
-            var paramDataCount = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Count"));
+        public static IJar<T> MakeBySequenceAndInject<T>(IEnumerable<IJarForMember> memberJars) {
+            var jarsCopy = memberJars.ToArray();
+            var canBeFollowed = jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed();
 
-            var bodyAndVars = MakeInlinedParserComponents(paramDataArray, paramDataOffset, paramDataCount);
-    
-            var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
-                Expression.Block(
-                    bodyAndVars.Storage.ForBoth,
-                    new[] {
-                        bodyAndVars.ParseDoer,
-                        Expression.New(typeof (ParsedValue<T>).GetConstructor(new[] {typeof (T), typeof (int)}).NotNull(),
-                                       bodyAndVars.ValueGetter,
-                                       bodyAndVars.ConsumedCountGetter)
-                    }),
-                new[] {paramData});
+            return AnonymousJar.CreateFrom(
+                parser: (array, offset, count) => MakeInlinedParserComponents<T>(jarsCopy, array, offset, count),
+                packer: MakePacker<T>(jarsCopy),
+                canBeFollowed: canBeFollowed,
+                isBlittable: false,
+                constLength: jarsCopy.Select(e => e.OptionalConstantSerializedLength()).Sum(),
+                desc: () => string.Format("{0}.BuildForType<{1}>()", jarsCopy.StringJoinList("[", ", ", "]"), typeof(T)),
+                components: memberJars);
+        }
+        public static InlinedParserComponents MakeInlinedParserComponents<T>(IJarForMember[] memberJars, Expression array, Expression offset, Expression count) {
+            if (memberJars == null) throw new ArgumentNullException("memberJars");
+            if (array == null) throw new ArgumentNullException("array");
+            if (offset == null) throw new ArgumentNullException("offset");
+            if (count == null) throw new ArgumentNullException("count");
 
-            return method.Compile();
-        }
-
-        public ParsedValue<T> Parse(ArraySegment<byte> data) {
-            return _parser(data);
-        }
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            return MakeInlinedParserComponents(array, offset, count);
-        }
-        public InlinedParserComponents MakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             var varResultValue = Expression.Variable(typeof(T));
-            var memberJarMap = _memberJars.KeyedBy(e => e.MemberMatchInfo);
-            var mutableMemberMap = GetMutableMemberMap();
+            var memberJarMap = memberJars.KeyedBy(e => e.MemberMatchInfo);
+            var mutableMemberMap = GetMutableMemberMap<T>();
 
-            var chosenConstructor = ChooseCompatibleConstructor(mutableMemberMap.Keys, memberJarMap.Keys);
+            var chosenConstructor = ChooseCompatibleConstructor<T>(mutableMemberMap.Keys, memberJarMap.Keys);
             var parameterMap = (chosenConstructor == null ? new ParameterInfo[0] : chosenConstructor.GetParameters())
                 .KeyedBy(e => e.MatchInfo());
-            var unmatched = _memberJars
+            var unmatched = memberJars
                 .Where(e => !mutableMemberMap.ContainsKey(e.MemberMatchInfo))
                 .Where(e => !parameterMap.ContainsKey(e.MemberMatchInfo))
                 .Select(e => e.MemberMatchInfo);
@@ -107,12 +85,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
             }
 
             var parseSequence = SequencedJarUtil.BuildComponentsOfParsingSequence(
-                _memberJars.Select(e => new JarMeta(e.Jar, e.MemberMatchInfo.MemberType)), 
+                memberJars.Select(e => new JarMeta(e.Jar, e.MemberMatchInfo.MemberType)), 
                 array, 
                 offset, 
                 count);
 
-            var memberValueGetters = parseSequence.ValueGetters.Zip(_memberJars, Tuple.Create).ToDictionary(e => e.Item2.MemberMatchInfo, e => e.Item1);
+            var memberValueGetters = parseSequence.ValueGetters.Zip(memberJars, Tuple.Create).ToDictionary(e => e.Item2.MemberMatchInfo, e => e.Item1);
             var valueConstructedFromParsedValues = 
                 chosenConstructor == null 
                 ? (Expression)Expression.Default(typeof(T))
@@ -142,13 +120,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 storage: new ParsedValueStorage(new[] {varResultValue}, parseSequence.Storage.ForConsumedCount));
         }
 
-        public bool IsBlittable { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return _memberJars.Aggregate((int?)0, (a,e) => a + e.OptionalConstantSerializedLength()); } }
-        public byte[] Pack(T value) {
-            return _packer(value);
-        }
-
-        private Func<T, byte[]> MakePacker() {
+        private static Func<T, byte[]> MakePacker<T>(IJarForMember[] _memberJars) {
             var memberMap = _memberJars.ToDictionary(
                 e => e.MemberMatchInfo,
                 e => new { memberJar = e, memberGetter = e.PickMatchingMemberGetterForType(typeof (T))});
@@ -175,11 +147,6 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 new[] { param });
 
             return method.Compile();
-        }
-        public override string ToString() {
-            return string.Format(
-                "{0}[compiled]",
-                typeof(T));
         }
     }
 }

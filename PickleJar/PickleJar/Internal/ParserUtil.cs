@@ -28,6 +28,13 @@ namespace Strilanc.PickleJar.Internal {
             return new ParsedValue<TOut>(projection(value.Value), value.Consumed);
         }
 
+        public static bool CanBeFollowed(this IJarForMember jarForMember) {
+            return (bool)typeof(IJar<>)
+                .MakeGenericType(jarForMember.MemberMatchInfo.MemberType)
+                .GetProperty("CanBeFollowed").GetGetMethod()
+                .NotNull()
+                .Invoke(jarForMember.Jar, new object[0]);
+        }
         public static IJar<object> JarAsObjectJar(this Jar.NamedJarList.Entry namedJarEntry) {
             return (IJar<object>)typeof(ObjectJar<>)
                 .MakeGenericType(namedJarEntry.JarValueType)

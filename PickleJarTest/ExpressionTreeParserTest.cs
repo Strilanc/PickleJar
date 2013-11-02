@@ -34,13 +34,13 @@ public class ExpressionTreeParserTest {
     [TestMethod]
     public void TestBadParsers() {
         // all parsers must be matched to some sort of setter
-        TestingUtilities.AssertDoesNotThrow(() => new TypeJarCompiled<ClassWithInternalState>(new IJarForMember[0]));
-        TestingUtilities.AssertThrows(() => new TypeJarCompiled<ClassWithInternalState>(new[] {
+        TestingUtilities.AssertDoesNotThrow(() => TypeJarCompiled.MakeBySequenceAndInject<ClassWithInternalState>(new IJarForMember[0]));
+        TestingUtilities.AssertThrows(() => TypeJarCompiled.MakeBySequenceAndInject<ClassWithInternalState>(new[] {
             new Int16Jar(Endianess.LittleEndian).ForMember("InaccessibleValue")
         }));
 
         // types must match
-        TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestValidClass>(new[] {
+        TestingUtilities.AssertThrows(() => TypeJarCompiled.MakeBySequenceAndInject<TestValidClass>(new[] {
             new Int16Jar(Endianess.LittleEndian).ForMember("MutableField"),
             new Int32Jar(Endianess.LittleEndian).ForMember("ReadOnlyField"),
             new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField"),
@@ -48,7 +48,7 @@ public class ExpressionTreeParserTest {
         }));
 
         // must have all values needed to invoke a constructor
-        TestingUtilities.AssertThrows(() => new TypeJarCompiled<TestValidClass>(new[] {
+        TestingUtilities.AssertThrows(() => TypeJarCompiled.MakeBySequenceAndInject<TestValidClass>(new[] {
             new Int16Jar(Endianess.LittleEndian).ForMember("MutableField"),
             // missing constructor parameter
             new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField"),
@@ -56,7 +56,7 @@ public class ExpressionTreeParserTest {
         }));
 
         // mutable fields are not required to be initialized
-        TestingUtilities.AssertDoesNotThrow(() => new TypeJarCompiled<TestValidClass>(new[] {
+        TestingUtilities.AssertDoesNotThrow(() => TypeJarCompiled.MakeBySequenceAndInject<TestValidClass>(new[] {
             new Int32Jar(Endianess.LittleEndian).ForMember("ReadOnlyField"),
             new Int32Jar(Endianess.LittleEndian).ForMember("PrivateReadOnlyField")
         }));
@@ -64,7 +64,7 @@ public class ExpressionTreeParserTest {
 
     [TestMethod]
     public void TestReflectedParser() {
-        var r = new TypeJarCompiled<TestValidClass>(new[] {
+        var r = TypeJarCompiled.MakeBySequenceAndInject<TestValidClass>(new[] {
             new UInt8Jar().ForMember("MutableProperty"),
             new Int16Jar(Endianess.LittleEndian).ForMember("MutableField"),
             new Int32Jar(Endianess.LittleEndian).ForMember("ReadOnlyField"),
@@ -86,7 +86,7 @@ public class ExpressionTreeParserTest {
     }
     [TestMethod]
     public void TestNoConstructor() {
-        var r = new TypeJarCompiled<TestNoConstructorStruct>(new[] {
+        var r = TypeJarCompiled.MakeBySequenceAndInject<TestNoConstructorStruct>(new[] {
             Jar.Int32LittleEndian.ForMember("X"),
             Jar.Int32LittleEndian.ForMember("Y")
         });
