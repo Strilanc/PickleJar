@@ -51,7 +51,7 @@ public class BlitUtilTest {
 
     [TestMethod]
     public void TestArrayParser() {
-        var r = BulkJarBlit<TestStruct>.MakeUnsafeArrayBlitParser();
+        var r = BulkJarBlit.MakeUnsafeArrayBlitParser<TestStruct>();
         var y = r(Enumerable.Range(0, 20).Select(e => (byte)e).ToArray(), 3, 0, 3*6);
         y.Length.AssertEquals(3);
         y[0].AssertEquals(new TestStruct(0x0100, 0x05040302));

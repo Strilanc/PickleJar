@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Bulk {
@@ -8,45 +6,37 @@ namespace Strilanc.PickleJar.Internal.Bulk {
     /// BulkJarCompiled is an IBulkJar that specializes based on the given item jar by compiling code at runtime.
     /// For example, BulkJarCompiled will inline the item parsing method into the parse loop when possible.
     /// </summary>
-    internal sealed class BulkJarCompiled<T> : IBulkJar<T> {
-        public IJar<T> ItemJar { get; private set; }
-        public int? OptionalConstantSerializedValueLength { get { return ItemJar.OptionalConstantSerializedLength(); } }
-        private readonly Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>> _parser;
+    internal static class BulkJarCompiled {
+        public static IBulkJar<T> MakeBulkParser<T>(IJar<T> itemJar) {
+            InlinerBulkMaker parseCompMaker = (array, offset, count, itemCount) => MakeAndCompileSpecializedParserComponents(itemJar, array, offset, count, itemCount);
+            return AnonymousBulkJar.CreateFrom(
+                itemJar,
+                parseCompMaker,
+                // todo: compile at runtime
+                values => values.SelectMany(itemJar.Pack).ToArray(),
+                () => string.Format("{0}", itemJar),
+                null);
 
-        public BulkJarCompiled(IJar<T> itemJar) {
-            if (itemJar == null) throw new ArgumentNullException("itemJar");
-            if (!itemJar.CanBeFollowed) throw new ArgumentException("!itemJar.CanBeFollowed");
-            ItemJar = itemJar;
-            _parser = MakeAndCompileSpecializedParser();
         }
 
-        public ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count) {
-            return _parser(data.Array, data.Offset, data.Count, count);
-        }
-        private Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>> MakeAndCompileSpecializedParser() {
-            var dataArray = Expression.Parameter(typeof(byte[]), "dataArray");
-            var dataOffset = Expression.Parameter(typeof(int), "dataOffset");
-            var dataCount = Expression.Parameter(typeof(int), "dataCount");
-            var itemCount = Expression.Parameter(typeof(int), "itemCount");
-            var parameters = new[] { dataArray, dataOffset, dataCount, itemCount };
-
+        public static InlinedParserComponents MakeAndCompileSpecializedParserComponents<T>(IJar<T> itemJar, Expression array, Expression offset, Expression count, Expression itemCount) {
             var resultArray = Expression.Variable(typeof(T[]), "resultArray");
             var resultConsumed = Expression.Variable(typeof(int), "totalConsumed");
             var loopIndex = Expression.Variable(typeof(int), "i");
 
-            var inlinedParseComponents = ItemJar.MakeInlinedParserComponents(dataArray, Expression.Add(dataOffset, resultConsumed), Expression.Subtract(dataCount, resultConsumed));
+            var inlinedParseComponents = itemJar.MakeInlinedParserComponents(array, Expression.Add(offset, resultConsumed), Expression.Subtract(count, resultConsumed));
 
-            var locals = new[] { resultArray, resultConsumed, loopIndex };
             var initStatements = Expression.Block(
-                Expression.Assign(resultArray, Expression.NewArrayBounds(typeof (T), itemCount)),
+                Expression.Assign(resultArray, Expression.NewArrayBounds(typeof(T), itemCount)),
                 Expression.Assign(resultConsumed, Expression.Constant(0)),
                 Expression.Assign(loopIndex, Expression.Constant(0)));
-            
+
             var loopExit = Expression.Label();
-            var loopStatements = Expression.Loop(
-                Expression.Block(
-                    inlinedParseComponents.Storage.ForBoth,
-                    new[] {
+            var parseDoer = Expression.Block(
+                inlinedParseComponents.Storage.ForBoth.Concat(new[] {loopIndex}),
+                initStatements,
+                Expression.Loop(
+                    Expression.Block(
                         Expression.IfThen(Expression.GreaterThanOrEqual(loopIndex, itemCount), Expression.Break(loopExit)),
                         inlinedParseComponents.ParseDoer,
                         Expression.AddAssign(resultConsumed, inlinedParseComponents.ConsumedCountGetter),
@@ -54,35 +44,17 @@ namespace Strilanc.PickleJar.Internal.Bulk {
                             Expression.ArrayAccess(
                                 resultArray,
                                 Expression.PostIncrementAssign(loopIndex)),
-                            inlinedParseComponents.ValueGetter)
-                    }),
-                loopExit);
+                            inlinedParseComponents.ValueGetter)),
+                    loopExit));
 
-            var result = Expression.New(
-                typeof(ParsedValue<IReadOnlyList<T>>).GetConstructor(new[] { typeof(IReadOnlyList<T>), typeof(int) }).NotNull(),
-                resultArray,
-                resultConsumed);
-
-            var body = Expression.Block(
-                locals,
-                initStatements,
-                loopStatements,
-                result);
-
-            var method = Expression.Lambda<Func<byte[], int, int, int, ParsedValue<IReadOnlyList<T>>>>(
-                body,
-                parameters);
-
-            return method.Compile();
-        }
-
-        public byte[] Pack(IReadOnlyCollection<T> values) {
-            // todo: compile at runtime
-            return values.SelectMany(ItemJar.Pack).ToArray();
-        }
-
-        public override string ToString() {
-            return string.Format("BulkCompiled[{0}]", ItemJar);
+            var storage = new ParsedValueStorage(
+                variablesNeededForValue: new[] {resultArray},
+                variablesNeededForConsumedCount: new[] {resultConsumed});
+            return new InlinedParserComponents(
+                parseDoer: parseDoer,
+                valueGetter: resultArray,
+                consumedCountGetter: resultConsumed,
+                storage: storage);
         }
     }
 }

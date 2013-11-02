@@ -21,9 +21,9 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
         public override string ToString() {
             return string.Format(
-                "{0} for {1}",
-                Jar,
-                MemberMatchInfo);
+                "{0}: {1}",
+                MemberMatchInfo,
+                Jar);
         }
     }
 }

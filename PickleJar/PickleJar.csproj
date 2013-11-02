@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PickleJar\Internal\AnonymousJar.cs" />
+    <Compile Include="PickleJar\Internal\Bulk\AnonymousBulkJar.cs" />
     <Compile Include="PickleJar\Internal\InlinedMultiParserComponents.cs" />
     <Compile Include="PickleJar\Internal\ParsedValueStorage.cs" />
     <Compile Include="PickleJar\Internal\Structured\SequencedJarCompiled.cs" />

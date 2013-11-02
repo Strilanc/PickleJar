@@ -65,7 +65,7 @@ namespace Strilanc.PickleJar {
             return _canonicalMemberName == null ? 0 : _canonicalMemberName.GetHashCode();
         }
         public override string ToString() {
-            return string.Format("Member of type {1} with name like '{0}'", _rawRawMemberName, _memberType);
+            return _rawRawMemberName;
         }
     }
 }

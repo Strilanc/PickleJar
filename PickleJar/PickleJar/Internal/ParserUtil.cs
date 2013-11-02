@@ -18,8 +18,11 @@ namespace Strilanc.PickleJar.Internal {
         public static IBulkJar<T> Bulk<T>(this IJar<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
 
-            return (IBulkJar<T>)BulkJarBlit<T>.TryMake(itemParser)
-                   ?? new BulkJarCompiled<T>(itemParser);
+            return BulkJarBlit.TryMake(itemParser) ?? BulkJarCompiled.MakeBulkParser(itemParser);
+        }
+        public static bool IsBlittable<T>(this IJar<T> jar) {
+            var data = jar as IJarMetadataInternal;
+            return data != null && data.IsBlittable;
         }
         public static ParsedValue<T> AsParsed<T>(this T value, int consumed) {
             return new ParsedValue<T>(value, consumed);

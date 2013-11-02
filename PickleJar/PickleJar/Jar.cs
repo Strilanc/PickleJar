@@ -142,27 +142,7 @@ namespace Strilanc.PickleJar {
             if (!itemJar.CanBeFollowed) throw new ArgumentException("!itemJar.CanBeFollowed", "itemJar");
 
             var bulkItemJar = itemJar.Bulk();
-
-            var n = itemJar.OptionalConstantSerializedLength();
-            if (!n.HasValue) {
-                return new RepeatUntilEndOfDataJar<T>(bulkItemJar);
-            }
-
-            // when the serialized item always has the same size, we can compute the count ahead of time
-            var itemLength = n.Value;
-            var counter = new AnonymousJar<int>(
-                data => {
-                    if (data.Count % itemLength != 0) throw new InvalidOperationException("Fragment");
-                    return new ParsedValue<int>(data.Count / itemLength, 0);
-                },
-                item => new byte[0],
-                canBeFollowed: true,
-                isBlittable: false,
-                optionalConstantSerializedLength: null,
-                tryInlinedParserComponents: null);
-            return new RepeatBasedOnPrefixJar<T>(
-                counter,
-                bulkItemJar);
+            return RepeatUntilEndOfDataJarUtil.MakeRepeatUntilEndOfDataJar(bulkItemJar);
         }
 
         /// <summary>

@@ -1,9 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
-using Strilanc.PickleJar.Internal;
 using Strilanc.PickleJar.Internal.Bulk;
-using Strilanc.PickleJar.Internal.Values;
 
 [TestClass]
 public class ExpressionArrayParserTest {
@@ -14,7 +12,7 @@ public class ExpressionArrayParserTest {
 
     [TestMethod]
     public void TestArrayParse() {
-        var r = new BulkJarCompiled<TestValidClass>(
+        var r = BulkJarCompiled.MakeBulkParser(
             new Jar.Builder {
                 {"A", Jar.Int16BigEndian},
                 {"B", Jar.Int16LittleEndian}
