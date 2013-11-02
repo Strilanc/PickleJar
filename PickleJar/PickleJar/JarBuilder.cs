@@ -63,7 +63,7 @@ namespace Strilanc.PickleJar {
                 private readonly Type _jarValueType;
 
                 public string Name { get { return _name ?? ""; } }
-                public object Jar { get { return _jar ?? new UInt8Jar(); } }
+                public object Jar { get { return _jar ?? new ConstantJar<byte>(0); } }
                 public Type JarValueType { get { return _jarValueType ?? typeof(byte); } }
                 
                 public Entry(string name, object jar, Type jarValueType) {

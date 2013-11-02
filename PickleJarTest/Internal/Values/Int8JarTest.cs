@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Strilanc.PickleJar.Internal.Values;
+using Strilanc.PickleJar;
 
 [TestClass]
 public class Int8JarTest {
     [TestMethod]
     public void TestByte() {
-        var jar = new Int8Jar();
+        var jar = Jar.Int8;
         jar.AssertPicklesNoMoreNoLess((sbyte)0, 0);
         jar.AssertPicklesNoMoreNoLess((sbyte)1, 1);
         jar.AssertPicklesNoMoreNoLess((sbyte)-1, 0xFF);

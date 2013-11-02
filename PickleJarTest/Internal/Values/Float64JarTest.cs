@@ -1,12 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.Values;
+using Strilanc.PickleJar;
 
 [TestClass]
 public class Float64JarTest {
     [TestMethod]
     public void TestLittleEndian() {
-        var jar = new Float64Jar(Endianess.LittleEndian);
+        var jar = Jar.Float64LittleEndian;
 
         jar.AssertPicklesNoMoreNoLess(+0.0, 0, 0, 0, 0, 0, 0, 0, 0);
         jar.AssertPicklesNoMoreNoLess(-0.0, 0, 0, 0, 0, 0, 0, 0, 0x80);
@@ -22,7 +21,7 @@ public class Float64JarTest {
     }
     [TestMethod]
     public void TestBigEndian() {
-        var jar = new Float64Jar(Endianess.BigEndian);
+        var jar = Jar.Float64BigEndian;
 
         jar.AssertPicklesNoMoreNoLess(+0.0, 0, 0, 0, 0, 0, 0, 0, 0);
         jar.AssertPicklesNoMoreNoLess(-0.0, 0x80, 0, 0, 0, 0, 0, 0, 0);

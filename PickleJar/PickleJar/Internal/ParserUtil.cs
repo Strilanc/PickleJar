@@ -111,36 +111,6 @@ namespace Strilanc.PickleJar.Internal {
                    ?? MakeDefaultInlinedParserComponents(jarForMember.Jar, jarForMember.MemberMatchInfo.MemberType, array, offset, count);
         }
 
-        public static InlinedParserComponents MakeInlinedNumberParserComponents<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
-            var varParsedNumber = Expression.Parameter(typeof(T));
-            return new InlinedParserComponents(
-                parseDoer: Expression.Assign(varParsedNumber, MakeInlinedNumberParserExpression<T>(isSystemEndian, array, offset, count)),
-                valueGetter: varParsedNumber,
-                consumedCountGetter: Expression.Constant(Marshal.SizeOf(typeof(T))),
-                storage: new ParsedValueStorage(new[] {varParsedNumber}, new ParameterExpression[0]));
-        }
-        private static Expression MakeInlinedNumberParserExpression<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
-            var numberTypes = new[] {
-                typeof (byte), typeof (short), typeof (int), typeof (long),
-                typeof (sbyte), typeof (ushort), typeof (uint), typeof (ulong),
-                typeof(float), typeof(double)
-            };
-            if (!numberTypes.Contains(typeof(T))) throw new ArgumentException("Unrecognized number type.");
-
-            if (typeof(T) == typeof(byte) || typeof(T) == typeof(sbyte)) {
-                var v = (Expression)Expression.ArrayIndex(array, offset);
-                v = typeof (T) == typeof (byte) ? v : Expression.Convert(Expression.ArrayIndex(array, offset), typeof (sbyte));
-                return v;
-            }
-
-            var boundsCheck = Expression.IfThen(Expression.LessThan(count, Expression.Constant(Marshal.SizeOf(typeof(T)))), DataFragmentException.CachedThrowExpression);
-            var value = Expression.Call(typeof(BitConverter).GetMethod("To" + typeof(T).Name), array, offset);
-            var result = isSystemEndian
-                       ? value 
-                       : Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] { typeof(T) }), value);
-            return Expression.Block(boundsCheck, result);
-        }
-
         public static T NotNull<T>(this T value) where T : class {
             if (value == null) throw new NullReferenceException();
             return value;

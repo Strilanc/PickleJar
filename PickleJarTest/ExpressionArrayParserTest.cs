@@ -16,8 +16,8 @@ public class ExpressionArrayParserTest {
     public void TestArrayParse() {
         var r = new BulkJarCompiled<TestValidClass>(
             new Jar.Builder {
-                {"A", new Int16Jar(Endianess.BigEndian)},
-                {"B", new Int16Jar(Endianess.LittleEndian)}
+                {"A", Jar.Int16BigEndian},
+                {"B", Jar.Int16LittleEndian}
             }.BuildJarForType<TestValidClass>());
         var d = new ArraySegment<byte>(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 0xFF}, 0, 9);
         var x0 = r.Parse(d, 0);

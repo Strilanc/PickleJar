@@ -89,9 +89,11 @@ public static class TestingUtilities {
             new byte[] {},
             new byte[] {1,2,3}
         };
-        foreach (var s in surrounding) {
-            var d = s.Concat(data).ToArray();
-            AssertThrows(() => jar.Parse(new ArraySegment<byte>(d, s.Length, data.Length)));
+        foreach (var p1 in surrounding) {
+            foreach (var p2 in surrounding) {
+                var d = p1.Concat(data).Concat(p2).ToArray();
+                AssertThrows(() => jar.Parse(new ArraySegment<byte>(d, p1.Length, data.Length)));
+            }
         }
 
         var optimized = jar.TryCompileInlined();

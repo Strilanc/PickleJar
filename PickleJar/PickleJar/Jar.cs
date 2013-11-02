@@ -13,45 +13,45 @@ namespace Strilanc.PickleJar {
     /// </summary>
     public static partial class Jar {
         /// <summary>Pickles 8-bit signed integers against their 1 byte 2s-complement representation.</summary>
-        public static IJar<sbyte> Int8 { get { return new Int8Jar(); } }
+        public static IJar<sbyte> Int8 { get { return NumericJarUtil.MakeStandardNumericJar<sbyte>(0); } }
         /// <summary>Pickles 8-bit unsigned integers against their 1 byte 2s-complement representation.</summary>
-        public static IJar<byte> UInt8 { get { return new UInt8Jar(); } }
+        public static IJar<byte> UInt8 { get { return NumericJarUtil.MakeStandardNumericJar<byte>(0); } }
 
         /// <summary>Pickles 16-bit signed integers against their 2 byte 2s-complement representation, with the least significant byte first.</summary>
-        public static IJar<Int16> Int16LittleEndian { get { return new Int16Jar(Endianess.LittleEndian); } }
+        public static IJar<Int16> Int16LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<Int16>(Endianess.LittleEndian); } }
         /// <summary>Pickles 16-bit signed integers against their 2 byte 2s-complement representation, with the most significant byte first.</summary>
-        public static IJar<Int16> Int16BigEndian { get { return new Int16Jar(Endianess.BigEndian); } }
+        public static IJar<Int16> Int16BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<Int16>(Endianess.BigEndian); } }
         /// <summary>Pickles 16-bit unsigned integers against their 2 byte 2s-complement representation, with the least significant byte first.</summary>
-        public static IJar<UInt16> UInt16LittleEndian { get { return new UInt16Jar(Endianess.LittleEndian); } }
+        public static IJar<UInt16> UInt16LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<UInt16>(Endianess.LittleEndian); } }
         /// <summary>Pickles 16-bit unsigned integers against their 2 byte 2s-complement representation, with the most significant byte first.</summary>
-        public static IJar<UInt16> UInt16BigEndian { get { return new UInt16Jar(Endianess.BigEndian); } }
+        public static IJar<UInt16> UInt16BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<UInt16>(Endianess.BigEndian); } }
 
         /// <summary>Pickles 32-bit signed integers against their 4 byte 2s-complement representation, with the least significant byte first.</summary>
-        public static IJar<Int32> Int32LittleEndian { get { return new Int32Jar(Endianess.LittleEndian); } }
+        public static IJar<Int32> Int32LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<Int32>(Endianess.LittleEndian); } }
         /// <summary>Pickles 32-bit signed integers against their 4 byte 2s-complement representation, with the most significant byte first.</summary>
-        public static IJar<Int32> Int32BigEndian { get { return new Int32Jar(Endianess.BigEndian); } }
+        public static IJar<Int32> Int32BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<Int32>(Endianess.BigEndian); } }
         /// <summary>Pickles 32-bit unsigned integers against their 4 byte 2s-complement representation, with the least significant byte first.</summary>
-        public static IJar<UInt32> UInt32LittleEndian { get { return new UInt32Jar(Endianess.LittleEndian); } }
+        public static IJar<UInt32> UInt32LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<UInt32>(Endianess.LittleEndian); } }
         /// <summary>Pickles 32-bit unsigned integers against their 4 byte 2s-complement representation, with the most significant byte first.</summary>
-        public static IJar<UInt32> UInt32BigEndian { get { return new UInt32Jar(Endianess.BigEndian); } }
+        public static IJar<UInt32> UInt32BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<UInt32>(Endianess.BigEndian); } }
 
         /// <summary>Pickles 64-bit signed integers against their 8 byte 2s-complement representation, with the least significant byte first.</summary>
-        public static IJar<Int64> Int64LittleEndian { get { return new Int64Jar(Endianess.LittleEndian); } }
+        public static IJar<Int64> Int64LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<Int64>(Endianess.LittleEndian); } }
         /// <summary>Pickles 64-bit signed integers against their 8 byte 2s-complement representation, with the most significant byte first.</summary>
-        public static IJar<Int64> Int64BigEndian { get { return new Int64Jar(Endianess.BigEndian); } }
+        public static IJar<Int64> Int64BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<Int64>(Endianess.BigEndian); } }
         /// <summary>Pickles 64-bit unsigned integers against their 8 byte 2s-complement representation, with the least significant byte first.</summary>
-        public static IJar<UInt64> UInt64LittleEndian { get { return new UInt64Jar(Endianess.LittleEndian); } }
+        public static IJar<UInt64> UInt64LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<UInt64>(Endianess.LittleEndian); } }
         /// <summary>Pickles 64-bit unsigned integers against their 8 byte 2s-complement representation, with the most significant byte first.</summary>
-        public static IJar<UInt64> UInt64BigEndian { get { return new UInt64Jar(Endianess.BigEndian); } }
+        public static IJar<UInt64> UInt64BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<UInt64>(Endianess.BigEndian); } }
 
         /// <summary>Pickles IEEE 32-bit single-precision floating point numbers into/outof the standard 4 byte representation, with the least significant byte first.</summary>
-        public static IJar<float> Float32LittleEndian { get { return new Float32Jar(Endianess.LittleEndian); } }
+        public static IJar<float> Float32LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<float>(Endianess.LittleEndian); } }
         /// <summary>Pickles IEEE 32-bit single-precision floating point numbers into/outof the standard 4 byte representation, with the most significant byte first.</summary>
-        public static IJar<float> Float32BigEndian { get { return new Float32Jar(Endianess.BigEndian); } }
+        public static IJar<float> Float32BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<float>(Endianess.BigEndian); } }
         /// <summary>Pickles IEEE 64-bit double-precision floating point numbers into/outof the standard 8 byte representation, with the least significant byte first.</summary>
-        public static IJar<double> Float64LittleEndian { get { return new Float64Jar(Endianess.LittleEndian); } }
+        public static IJar<double> Float64LittleEndian { get { return NumericJarUtil.MakeStandardNumericJar<double>(Endianess.LittleEndian); } }
         /// <summary>Pickles IEEE 64-bit double-precision floating point numbers into/outof the standard 8 byte representation, with the most significant byte first.</summary>
-        public static IJar<double> Float64BigEndian { get { return new Float64Jar(Endianess.BigEndian); } }
+        public static IJar<double> Float64BigEndian { get { return NumericJarUtil.MakeStandardNumericJar<double>(Endianess.BigEndian); } }
 
         /// <summary>
         /// Pickles exactly one value into/outof no data.

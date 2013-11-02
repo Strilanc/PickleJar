@@ -189,8 +189,7 @@ public class ApiTest {
         ParsedValue<T> v;
         try {
             v = parser.Parse(data);
-        }
-        catch (Exception) {
+        } catch {
             return null;
         }
         (v.Consumed <= data.Count).AssertTrue();
