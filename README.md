@@ -10,6 +10,16 @@ Code for the combined and augmented jars is generated, optimized, and compiled a
 See [this blog post](http://twistedoakstudios.com/blog/Post4708_optimizing-a-parser-combinator-into-a-memcpy) for more discussion.
 
 ============
+Current Work
+============
+
+I am currently working on:
+
+- Adding more optimization cases (e.g. inlining bits of RepeatNTimes, packing by blitting).
+- Adding support for building anonymous type parsers, or using a dictionary instead of a type.
+- Testing error cases.
+
+============
 Installation
 ============
 
