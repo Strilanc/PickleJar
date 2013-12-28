@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Strilanc.PickleJar.Internal;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
+using Strilanc.PickleJar.Internal.Unsafe;
 using Strilanc.PickleJar.Internal.Values;
 using Strilanc.PickleJar.Internal.Repeated;
 using Strilanc.PickleJar.Internal.Structured;
@@ -192,7 +194,7 @@ namespace Strilanc.PickleJar {
         public static IJar<T> BuildJarForType<T>(this IEnumerable<IJarForMember> jarsForMembers) {
             if (jarsForMembers == null) throw new ArgumentNullException("jarsForMembers");
             var list = jarsForMembers.ToArray();
-            return TypeJarBlit<T>.TryMake(list) ?? TypeJarCompiled.MakeBySequenceAndInject<T>(list);
+            return BlitJar<T>.TryMake(list) ?? RuntimeSpecializedJar.MakeBySequenceAndInject<T>(list);
         }
 
         public static IJar<T> BuildJarForType<T>(this IEnumerable<NamedJarList.Entry> namedJars) {
@@ -208,10 +210,7 @@ namespace Strilanc.PickleJar {
         }
 
         public static IJar<IReadOnlyList<T>> ToListJar<T>(this IEnumerable<IJar<T>> jars) {
-            if (jars == null) throw new ArgumentNullException("jars");
-            var jarsCached = jars.ToArray();
-            if (jarsCached.Take(jarsCached.Length - 1).Any(e => !e.CanBeFollowed)) throw new ArgumentException("!jar.CanBeFollowed");
-            return SequencedJarUtil.MakeSequencedJar(jarsCached);
+            return SequencedJarUtil.MakeSequencedJar(jars);
         }
 
         /// <summary>
@@ -236,10 +235,18 @@ namespace Strilanc.PickleJar {
         /// For example, should be false if the jar always consumes all data when parsing (since appended data would be consumed, affecting the serialized value and breaking round-tripping).
         /// </param>
         /// <returns>The created anonymous jar.</returns>
-        public static IJar<T> Create<T>(Func<ArraySegment<byte>, ParsedValue<T>> parse, Func<T, byte[]> pack, bool canBeFollowed) {
+        public static IJar<T> Create<T>(Func<ArraySegment<byte>, ParsedValue<T>> parse,
+                                        Func<T, byte[]> pack,
+                                        bool canBeFollowed) {
             if (parse == null) throw new ArgumentNullException("parse");
             if (pack == null) throw new ArgumentNullException("pack");
-            return new AnonymousJar<T>(parse, pack, canBeFollowed, isBlittable: false, optionalConstantSerializedLength: null, tryInlinedParserComponents: null);
+            return new AnonymousJar<T>(
+                parse: parse,
+                pack: pack,
+                canBeFollowed: canBeFollowed,
+                isBlittable: false,
+                optionalConstantSerializedLength: null,
+                tryInlinedParserComponents: null);
         }
     }
 }

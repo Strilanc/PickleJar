@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal {
     /// <summary>
@@ -23,7 +24,7 @@ namespace Strilanc.PickleJar.Internal {
         /// <summary>
         /// Returns the components used to inline a parser, or else null if this parser doesn't support inlining.
         /// </summary>
-        InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count);
+        SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count);
     }
 
     internal struct JarMeta {

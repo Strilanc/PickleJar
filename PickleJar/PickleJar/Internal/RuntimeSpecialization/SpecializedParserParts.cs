@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Strilanc.PickleJar.Internal {
-    internal delegate InlinedParserComponents InlinerMaker(Expression array, Expression offset, Expression count);
-    internal delegate InlinedParserComponents InlinerBulkMaker(Expression array, Expression offset, Expression count, Expression itemCount);
+namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
+    internal delegate SpecializedParserParts InlinerMaker(Expression array, Expression offset, Expression count);
+    internal delegate SpecializedParserParts InlinerBulkMaker(Expression array, Expression offset, Expression count, Expression itemCount);
 
-    internal sealed class InlinedParserComponents {
+    internal sealed class SpecializedParserParts {
         public readonly Expression ParseDoer;
-        public readonly ParsedValueStorage Storage;
+        public readonly SpecializedParserResultStorageParts Storage;
         public readonly Expression ValueGetter;
         public readonly Expression ConsumedCountGetter;
 
-        public InlinedParserComponents(Expression parseDoer, Expression valueGetter, Expression consumedCountGetter, ParsedValueStorage storage) {
+        public SpecializedParserParts(Expression parseDoer, Expression valueGetter, Expression consumedCountGetter, SpecializedParserResultStorageParts storage) {
             if (parseDoer == null) throw new ArgumentNullException("parseDoer");
             if (valueGetter == null) throw new ArgumentNullException("valueGetter");
             if (consumedCountGetter == null) throw new ArgumentNullException("consumedCountGetter");
@@ -42,10 +42,6 @@ namespace Strilanc.PickleJar.Internal {
             var method = Expression.Lambda<Func<ArraySegment<byte>, ParsedValue<T>>>(
                 parseAndBuild,
                 new[] { paramData });
-
-            if (new object() == new object()) {
-                ReflectionUtil.WriteMethodToAssembly(method, "test");
-            }
 
             return method.Compile();
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Values {
     /// <summary>
@@ -21,12 +22,12 @@ namespace Strilanc.PickleJar.Internal.Values {
             if (!Equals(value, ConstantValue)) throw new ArgumentException("!Equals(value, ConstantValue)");
             return new byte[0];
         }
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            return new InlinedParserComponents(
+        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+            return new SpecializedParserParts(
                 Expression.Empty(),
                 Expression.Constant(ConstantValue),
                 Expression.Constant(0),
-                new ParsedValueStorage(new ParameterExpression[0], new ParameterExpression[0]));
+                new SpecializedParserResultStorageParts(new ParameterExpression[0], new ParameterExpression[0]));
         }
         public override string ToString() {
             return string.Format(

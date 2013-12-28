@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.Bulk;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Repeated {
     internal static class RepeatUntilEndOfDataJarUtil {
@@ -14,7 +15,7 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                     canBeFollowed: false,
                     isBlittable: false,
                     constLength: null,
-                    desc: () => string.Format("{0}.RepeatUntilEndOfData_KnownItemLength()", bulkItemJar),
+                    desc: () => string.Format("{0}.RepeatUntilEndOfDatah()", bulkItemJar),
                     components: bulkItemJar);
             }
 
@@ -28,7 +29,7 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                 components: bulkItemJar.ItemJar);
         }
 
-        public static InlinedParserComponents MakeInlinedParserComponentsForConstantLength<T>(IBulkJar<T> bulkItemJar, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedParserComponentsForConstantLength<T>(IBulkJar<T> bulkItemJar, Expression array, Expression offset, Expression count) {
             if (bulkItemJar == null) throw new ArgumentNullException("bulkItemJar");
             if (array == null) throw new ArgumentNullException("array");
             if (offset == null) throw new ArgumentNullException("offset");
@@ -41,20 +42,20 @@ namespace Strilanc.PickleJar.Internal.Repeated {
             var itemCount = Expression.Block(
                 Expression.IfThen(Expression.NotEqual(Expression.Modulo(count, itemLength), Expression.Constant(0)), DataFragmentException.CachedThrowExpression),
                 Expression.Divide(count, itemLength));
-            ;
+            
             var itemsComp = bulkItemJar.MakeInlinedParserComponents(array, offset, count, varItemCount);
-            return new InlinedParserComponents(
+            return new SpecializedParserParts(
                 parseDoer: Expression.Block(
                     new[] {varItemCount}.Concat(itemsComp.Storage.ForConsumedCountIfValueAlreadyInScope), 
                     Expression.Assign(varItemCount, itemCount), 
                     itemsComp.ParseDoer),
                 valueGetter: itemsComp.ValueGetter,
                 consumedCountGetter: count,
-                storage: new ParsedValueStorage(
+                storage: new SpecializedParserResultStorageParts(
                     variablesNeededForValue: itemsComp.Storage.ForValue,
                     variablesNeededForConsumedCount: new ParameterExpression[0]));
         }
-        public static InlinedParserComponents MakeInlinedParserComponentsForVaryingLength<T>(IBulkJar<T> bulkItemJar, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedParserComponentsForVaryingLength<T>(IBulkJar<T> bulkItemJar, Expression array, Expression offset, Expression count) {
             if (bulkItemJar == null) throw new ArgumentNullException("bulkItemJar");
             if (array == null) throw new ArgumentNullException("array");
             if (offset == null) throw new ArgumentNullException("offset");
@@ -80,11 +81,11 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                         Expression.AddAssign(varConsumed, itemComps.ConsumedCountGetter)),
                     b));
 
-            return new InlinedParserComponents(
+            return new SpecializedParserParts(
                 parseDoer: parseDoer,
                 valueGetter: varResult,
                 consumedCountGetter: varConsumed,
-                storage: new ParsedValueStorage(
+                storage: new SpecializedParserResultStorageParts(
                     variablesNeededForValue: new[] {varResult},
                     variablesNeededForConsumedCount: new[] {varConsumed}));
         }

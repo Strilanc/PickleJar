@@ -12,7 +12,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
         }
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
-            var index = data.IndexesOf((byte)0).NullableFirst();
+            var index = data.IndexesOf((byte)0).FirstOrNull();
             if (!index.HasValue) throw new ArgumentException("Null terminator not found.");
 
             var itemDataLength = index.Value;

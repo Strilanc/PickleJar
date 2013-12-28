@@ -1,12 +1,13 @@
 ﻿using System.Linq.Expressions;
 using System.Linq;
+using Strilanc.PickleJar.Internal.Bulk;
 
-namespace Strilanc.PickleJar.Internal.Bulk {
+namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     /// <summary>
-    /// BulkJarCompiled is an IBulkJar that specializes based on the given item jar by compiling code at runtime.
-    /// For example, BulkJarCompiled will inline the item parsing method into the parse loop when possible.
+    /// RuntimeSpecializedBulkJar is an IBulkJar that specializes based on the given item jar by compiling code at runtime.
+    /// For example, RuntimeSpecializedBulkJar will inline the item parsing method into the parse loop when possible.
     /// </summary>
-    internal static class BulkJarCompiled {
+    internal static class RuntimeSpecializedBulkJar {
         public static IBulkJar<T> MakeBulkParser<T>(IJar<T> itemJar) {
             InlinerBulkMaker parseCompMaker = (array, offset, count, itemCount) => MakeAndCompileSpecializedParserComponents(itemJar, array, offset, count, itemCount);
             return AnonymousBulkJar.CreateFrom(
@@ -19,7 +20,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
 
         }
 
-        public static InlinedParserComponents MakeAndCompileSpecializedParserComponents<T>(IJar<T> itemJar, Expression array, Expression offset, Expression count, Expression itemCount) {
+        public static SpecializedParserParts MakeAndCompileSpecializedParserComponents<T>(IJar<T> itemJar, Expression array, Expression offset, Expression count, Expression itemCount) {
             var resultArray = Expression.Variable(typeof(T[]), "resultArray");
             var resultConsumed = Expression.Variable(typeof(int), "totalConsumed");
             var loopIndex = Expression.Variable(typeof(int), "i");
@@ -47,10 +48,10 @@ namespace Strilanc.PickleJar.Internal.Bulk {
                             inlinedParseComponents.ValueGetter)),
                     loopExit));
 
-            var storage = new ParsedValueStorage(
+            var storage = new SpecializedParserResultStorageParts(
                 variablesNeededForValue: new[] {resultArray},
                 variablesNeededForConsumedCount: new[] {resultConsumed});
-            return new InlinedParserComponents(
+            return new SpecializedParserParts(
                 parseDoer: parseDoer,
                 valueGetter: resultArray,
                 consumedCountGetter: resultConsumed,

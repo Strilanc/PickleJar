@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     internal static class SequencedJarUtil {
@@ -22,7 +23,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 components: jarsCopy);
         }
 
-        public static InlinedParserComponents MakeInlinedParserComponentsForJarSequence<T>(IJar<T>[] jars, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedParserComponentsForJarSequence<T>(IJar<T>[] jars, Expression array, Expression offset, Expression count) {
             if (array == null) throw new ArgumentNullException("array");
             if (offset == null) throw new ArgumentNullException("offset");
             if (count == null) throw new ArgumentNullException("count");
@@ -40,15 +41,15 @@ namespace Strilanc.PickleJar.Internal.Structured {
                     Enumerable.Range(0, jars.Length).Select(i => Expression.Assign(Expression.ArrayAccess(resultArray, Expression.Constant(i)), r.ValueGetters[i])).Block(),
                 });
 
-            var storage = new ParsedValueStorage(r.Storage.ForConsumedCount, new[] { resultArray });
-            return new InlinedParserComponents(
+            var storage = new SpecializedParserResultStorageParts(r.Storage.ForConsumedCount, new[] { resultArray });
+            return new SpecializedParserParts(
                 parserDoer,
                 resultArray,
                 r.ConsumedCountGetter,
                 storage);
         }
 
-        public static InlinedMultiParserComponents BuildComponentsOfParsingSequence(IEnumerable<JarMeta> jars, Expression array, Expression offset, Expression count) {
+        public static SpecializedMultiValueParserParts BuildComponentsOfParsingSequence(IEnumerable<JarMeta> jars, Expression array, Expression offset, Expression count) {
             if (jars == null) throw new ArgumentNullException("jars");
             if (array == null) throw new ArgumentNullException("array");
             if (offset == null) throw new ArgumentNullException("offset");
@@ -77,13 +78,13 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 initLocals,
                 jarParseComponents.Select(e => e.parseStatement).Block());
 
-            var storage = new ParsedValueStorage(
-                variablesNeededForValue: jarParseComponents.SelectMany(e => e.inlinedParse.Storage.ForValue).ToArray(),
+            var storage = new SpecializedParserResultStorageParts(
+                variablesNeededForValue: jarParseComponents.SelectMany(e => e.inlinedParse.Storage.ForValue),
                 variablesNeededForConsumedCount: new[] {varConsumed});
 
-            var resultGetters = jarParseComponents.Select(e => e.inlinedParse.ValueGetter).ToArray();
+            var resultGetters = jarParseComponents.Select(e => e.inlinedParse.ValueGetter);
 
-            return new InlinedMultiParserComponents(
+            return new SpecializedMultiValueParserParts(
                 fullParseStatement, 
                 resultGetters, 
                 varConsumed,

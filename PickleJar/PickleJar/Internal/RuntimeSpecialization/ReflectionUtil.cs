@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Strilanc.PickleJar.Internal {
+namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     internal delegate Expression MemberGetter(Expression instance);
     internal delegate Expression MemberSetter(Expression instance, Expression newValue);
     internal static class ReflectionUtil {

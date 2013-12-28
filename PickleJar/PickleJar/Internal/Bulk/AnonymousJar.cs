@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal {
     [DebuggerDisplay("{ToString()}")]
@@ -40,7 +41,7 @@ namespace Strilanc.PickleJar.Internal {
         public byte[] Pack(T value) {
             return _pack(value);
         }
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             if (_tryInlinedParserComponents == null) return null;
             return _tryInlinedParserComponents(array, offset, count);
         }
@@ -50,7 +51,7 @@ namespace Strilanc.PickleJar.Internal {
     }
     internal static class AnonymousJar {
         public static AnonymousJar<T> CreateFrom<T>(InlinerMaker parser, Func<T, byte[]> packer, bool canBeFollowed, bool isBlittable, int? constLength, Func<string> desc, object components) {
-            return new AnonymousJar<T>(InlinedParserComponents.MakeParser<T>(parser), packer, canBeFollowed, isBlittable, constLength, parser, desc, components);
+            return new AnonymousJar<T>(SpecializedParserParts.MakeParser<T>(parser), packer, canBeFollowed, isBlittable, constLength, parser, desc, components);
         }
     }
 }

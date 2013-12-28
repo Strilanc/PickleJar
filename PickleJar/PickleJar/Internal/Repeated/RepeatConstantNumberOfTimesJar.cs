@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.Bulk;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Repeated {
     internal sealed class RepeatConstantNumberOfTimesJar<T> : IJarMetadataInternal, IJar<IReadOnlyList<T>> {
@@ -27,7 +28,7 @@ namespace Strilanc.PickleJar.Internal.Repeated {
             return _bulkItemJar.Pack(value);
         }
 
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return _bulkItemJar.MakeInlinedParserComponents(array, offset, count, Expression.Constant(_constantCount));
         }
         public override string ToString() {

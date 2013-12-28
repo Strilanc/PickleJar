@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Bulk {
     /// <summary>
@@ -11,6 +12,6 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         ParsedValue<IReadOnlyList<T>> Parse(ArraySegment<byte> data, int count);
         int? OptionalConstantSerializedValueLength { get; }
         byte[] Pack(IReadOnlyCollection<T> values);
-        InlinedParserComponents MakeInlinedParserComponents(Expression array, Expression offset, Expression count, Expression itemCount);
+        SpecializedParserParts MakeInlinedParserComponents(Expression array, Expression offset, Expression count, Expression itemCount);
     }
 }

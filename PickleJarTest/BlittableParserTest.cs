@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
 using Strilanc.PickleJar.Internal;
+using Strilanc.PickleJar.Internal.Unsafe;
 using Strilanc.PickleJar.Internal.Values;
 using Strilanc.PickleJar.Internal.Structured;
 
@@ -27,7 +28,7 @@ public class BlittableParserTest {
 
     [TestMethod]
     public void TestValueParser() {
-        var r = TypeJarBlit<TestStruct>.TryMake(new List<IJarForMember> {
+        var r = BlitJar<TestStruct>.TryMake(new List<IJarForMember> {
             Jar.Int16LittleEndian.ForMember("v01"),
             Jar.Int32LittleEndian.ForMember("v2345")
         });
@@ -37,7 +38,7 @@ public class BlittableParserTest {
     }
     [TestMethod]
     public void TestValueParser2() {
-        var r = TypeJarBlit<TestStruct2>.TryMake(new List<IJarForMember> {
+        var r = BlitJar<TestStruct2>.TryMake(new List<IJarForMember> {
             Jar.Int16LittleEndian.ForMember("v01"),
             Jar.Int32LittleEndian.ForMember("v2345")
         });

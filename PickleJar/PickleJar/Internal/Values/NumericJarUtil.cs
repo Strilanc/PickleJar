@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Values {
     internal static class NumericJarUtil {
@@ -56,13 +57,13 @@ namespace Strilanc.PickleJar.Internal.Values {
                 components: null);
         }
 
-        public static InlinedParserComponents MakeInlinedNumberParserComponents<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedNumberParserComponents<T>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var varParsedNumber = Expression.Parameter(typeof(T));
-            return new InlinedParserComponents(
+            return new SpecializedParserParts(
                 parseDoer: Expression.Assign(varParsedNumber, MakeInlinedNumberParserExpression<T>(isSystemEndian, array, offset, count)),
                 valueGetter: varParsedNumber,
                 consumedCountGetter: Expression.Constant(Marshal.SizeOf(typeof(T))),
-                storage: new ParsedValueStorage(new[] { varParsedNumber }, new ParameterExpression[0]));
+                storage: new SpecializedParserResultStorageParts(new[] { varParsedNumber }, new ParameterExpression[0]));
         }
 
         private static Func<T, byte[]> MakeInlinedNumberPacker<T>(bool isSystemEndian) {

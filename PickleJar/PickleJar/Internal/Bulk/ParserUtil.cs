@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Linq;
 using Strilanc.PickleJar.Internal.Bulk;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 using Strilanc.PickleJar.Internal.Structured;
+using Strilanc.PickleJar.Internal.Unsafe;
 
 namespace Strilanc.PickleJar.Internal {
     /// <summary>
@@ -18,7 +20,7 @@ namespace Strilanc.PickleJar.Internal {
         public static IBulkJar<T> Bulk<T>(this IJar<T> itemParser) {
             if (itemParser == null) throw new ArgumentNullException("itemParser");
 
-            return BulkJarBlit.TryMake(itemParser) ?? BulkJarCompiled.MakeBulkParser(itemParser);
+            return BlitBulkJar.TryMake(itemParser) ?? RuntimeSpecializedBulkJar.MakeBulkParser(itemParser);
         }
         public static bool IsBlittable<T>(this IJar<T> jar) {
             var data = jar as IJarMetadataInternal;
@@ -81,7 +83,7 @@ namespace Strilanc.PickleJar.Internal {
             return r == null ? null : r.OptionalConstantSerializedLength;
         }
 
-        private static InlinedParserComponents MakeDefaultInlinedParserComponents(object parser, Type valueType, Expression array, Expression offset, Expression count) {
+        private static SpecializedParserParts MakeDefaultInlinedParserComponents(object parser, Type valueType, Expression array, Expression offset, Expression count) {
             var resultVar = Expression.Variable(typeof(ParsedValue<>).MakeGenericType(valueType), "parsed");
             var parse = Expression.Call(
                 Expression.Constant(parser),
@@ -92,23 +94,23 @@ namespace Strilanc.PickleJar.Internal {
                         new[] {array, offset, count})
                 });
 
-            return new InlinedParserComponents(
+            return new SpecializedParserParts(
                 parseDoer: Expression.Assign(resultVar, parse),
                 valueGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Value")),
                 consumedCountGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
-                storage: new ParsedValueStorage(new[] {resultVar}, new[] { resultVar }));
+                storage: new SpecializedParserResultStorageParts(new[] {resultVar}, new[] { resultVar }));
         }
-        public static InlinedParserComponents MakeInlinedParserComponents<T>(this IJar<T> jar, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedParserComponents<T>(this IJar<T> jar, Expression array, Expression offset, Expression count) {
             var r = jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jar, typeof(T), array, offset, count);
         }
-        public static InlinedParserComponents MakeInlinedParserComponents(this JarMeta jar, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedParserComponents(this JarMeta jar, Expression array, Expression offset, Expression count) {
             var r = jar.Jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jar.Jar, jar.JarValueType, array, offset, count);
         }
-        public static InlinedParserComponents MakeInlinedParserComponents(this IJarForMember jarForMember, Expression array, Expression offset, Expression count) {
+        public static SpecializedParserParts MakeInlinedParserComponents(this IJarForMember jarForMember, Expression array, Expression offset, Expression count) {
             var r = jarForMember.Jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jarForMember.Jar, jarForMember.MemberMatchInfo.MemberType, array, offset, count);

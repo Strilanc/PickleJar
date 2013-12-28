@@ -71,11 +71,11 @@ public static class CollectionUtilExtra {
 public class CollectionUtilTest {
     [TestMethod]
     public void TestNullableFirst() {
-        TestingUtilities.AssertThrows(() => ((IEnumerable<int>)null).NullableFirst());
+        TestingUtilities.AssertThrows(() => ((IEnumerable<int>)null).FirstOrNull());
 
-        new int[0].NullableFirst().AssertEquals((int?)null);
-        new[] { 1 }.NullableFirst().AssertEquals((int?)1);
-        new[] { 2, 3, 4 }.NullableFirst().AssertEquals((int?)2);
+        new int[0].FirstOrNull().AssertEquals((int?)null);
+        new[] { 1 }.FirstOrNull().AssertEquals((int?)1);
+        new[] { 2, 3, 4 }.FirstOrNull().AssertEquals((int?)2);
     }
     [TestMethod]
     public void TestMaxBy() {

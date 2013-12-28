@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Linq;
+using Strilanc.PickleJar.Internal.Bulk;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Bulk {
+namespace Strilanc.PickleJar.Internal.Unsafe {
     /// <summary>
-    /// BulkJarBlit is used to parse arrays of values when memcpy'ing them is valid.
+    /// BlitBulkJar is used to parse arrays of values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
-    /// BulkJarBlit uses unsafe code, but is an order of magnitude (or two!) faster than other parsers.
+    /// BlitBulkJar uses unsafe code, but is an order of magnitude (or two!) faster than other parsers.
     /// </summary>
-    internal static class BulkJarBlit {
+    internal static class BlitBulkJar {
         public delegate T[] BlitParser<T>(byte[] data, int itemCount, int offset, int length);
 
         public static IBulkJar<T> TryMake<T>(IJar<T> itemJar) {
@@ -33,7 +34,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
                 null);
         }
 
-        public static InlinedParserComponents BuildBlitBulkParserComponents<T>(IJar<T> itemJar,
+        public static SpecializedParserParts BuildBlitBulkParserComponents<T>(IJar<T> itemJar,
                                                                                Expression array,
                                                                                Expression offset,
                                                                                Expression count,
@@ -54,8 +55,8 @@ namespace Strilanc.PickleJar.Internal.Bulk {
                 Expression.Assign(lengthVar, Expression.MultiplyChecked(itemCount, Expression.Constant(itemLength.Value))),
                 boundsCheck,
                 Expression.Assign(resultVar, MakeUnsafeArrayBlitParserExpression<T>(array, offset, count, itemCount)));
-            var storage = new ParsedValueStorage(new[] {resultVar}, new[] {lengthVar});
-            return new InlinedParserComponents(
+            var storage = new SpecializedParserResultStorageParts(new[] {resultVar}, new[] {lengthVar});
+            return new SpecializedParserParts(
                 parseDoer: parseDoer,
                 valueGetter: resultVar,
                 consumedCountGetter: lengthVar,
@@ -73,7 +74,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         }
         public static Expression MakeUnsafeArrayBlitParserExpression<T>(Expression array, Expression offset, Expression count, Expression itemCount) {
             if (typeof (T) == typeof (byte))
-                return Expression.Call(typeof (BulkJarBlit).GetMethod("BlitBytes"), array, itemCount, offset, count);
+                return Expression.Call(typeof (BlitBulkJar).GetMethod("BlitBytes"), array, itemCount, offset, count);
 
             var blitParser = MakeUnsafeArrayBlitParser<T>();
             return Expression.Invoke(Expression.Constant(blitParser), array, itemCount, offset, count);

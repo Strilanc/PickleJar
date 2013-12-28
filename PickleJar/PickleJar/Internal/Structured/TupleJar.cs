@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Linq;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     /// <summary>
@@ -29,7 +30,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
         }
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return SubJar1.OptionalConstantSerializedLength() + SubJar2.OptionalConstantSerializedLength(); } }
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
         }
         public override string ToString() {

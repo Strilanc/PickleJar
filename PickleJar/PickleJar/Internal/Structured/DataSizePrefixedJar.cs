@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Structured {
@@ -32,7 +33,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
             return new ParsedValue<T>(item.Value, parsedSize.Consumed + item.Consumed);
         }
 
-        private byte[] PackSize(int size) {
+        private IEnumerable<byte> PackSize(int size) {
             if (!_includePrefixInSize) return _dataSizePrefixJar.Pack(size);
 
             var constantSize = _dataSizePrefixJar.OptionalConstantSerializedLength();

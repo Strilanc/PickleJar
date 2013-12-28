@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Bulk {
     [DebuggerDisplay("{ToString()}")]
@@ -35,7 +36,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
             _components = components;
         }
 
-        public InlinedParserComponents MakeInlinedParserComponents(Expression array, Expression offset, Expression count, Expression itemCount) {
+        public SpecializedParserParts MakeInlinedParserComponents(Expression array, Expression offset, Expression count, Expression itemCount) {
             return _makeInlinedParserComponents(array, offset, count, itemCount);
         }
         public override string ToString() {
@@ -51,7 +52,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
 
     internal static class AnonymousBulkJar {
         public static AnonymousBulkJar<T> CreateFrom<T>(IJar<T> itemJar, InlinerBulkMaker parser, Func<IReadOnlyCollection<T>, byte[]> packer, Func<string> desc, object components) {
-            return new AnonymousBulkJar<T>(itemJar, InlinedParserComponents.MakeBulkParser<T>(parser), packer, parser, desc, components);
+            return new AnonymousBulkJar<T>(itemJar, SpecializedParserParts.MakeBulkParser<T>(parser), packer, parser, desc, components);
         }
     }
 }

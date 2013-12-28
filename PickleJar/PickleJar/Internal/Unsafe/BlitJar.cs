@@ -5,20 +5,21 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Structured {
+namespace Strilanc.PickleJar.Internal.Unsafe {
     /// <summary>
-    /// TypeJarBlit is used to parse values when memcpy'ing them is valid.
+    /// BlitJar is used to parse values when memcpy'ing them is valid.
     /// Using memcpy is possible when the in-memory representation exactly matches the serialized representation.
-    /// TypeJarBlit uses unsafe code, but is slightly faster than other parsers.
+    /// BlitJar uses unsafe code, but is slightly faster than other parsers.
     /// </summary>
-    internal sealed class TypeJarBlit<T> : IJarMetadataInternal, IJar<T> {
+    internal sealed class BlitJar<T> : IJarMetadataInternal, IJar<T> {
         public delegate T BlitParser(byte[] data, int offset, int length);
         public bool CanBeFollowed { get { return true; } }
 
         private readonly int _length;
         private readonly BlitParser _parser;
-        private TypeJarBlit(IEnumerable<IJarForMember> fieldParsers) {
+        private BlitJar(IEnumerable<IJarForMember> fieldParsers) {
             var len = fieldParsers.Aggregate((int?)0, (a, e) => a + e.OptionalConstantSerializedLength());
             if (!len.HasValue) throw new ArgumentException();
             _parser = MakeUnsafeBlitParser();
@@ -33,9 +34,9 @@ namespace Strilanc.PickleJar.Internal.Structured {
         public bool IsBlittable { get { return true; } }
         public int? OptionalConstantSerializedLength { get { return _length; } }
 
-        public static TypeJarBlit<T> TryMake(IReadOnlyList<IJarForMember> fieldParsers) {
+        public static BlitJar<T> TryMake(IReadOnlyList<IJarForMember> fieldParsers) {
             if (!CanBlitParseWith(fieldParsers)) return null;
-            return new TypeJarBlit<T>(fieldParsers);
+            return new BlitJar<T>(fieldParsers);
         }
 
         private static bool CanBlitParseWith(IReadOnlyList<IJarForMember> fieldParsers) {
@@ -66,14 +67,14 @@ namespace Strilanc.PickleJar.Internal.Structured {
                     e => (int?)typeof(T).FieldOffsetOf(e));
             var serialOffsets =
                 fieldParsers
-                    .StreamZip((int?)0, (a, e) => a + e.OptionalConstantSerializedLength())
+                    .StreamAggregateZip((int?)0, (a, e) => a + e.OptionalConstantSerializedLength())
                     .ToDictionary(e => e.Item1.MemberMatchInfo, e => e.Item2 - e.Item1.OptionalConstantSerializedLength());
             if (!serialOffsets.HasSameKeyValuesAs(memoryOffsets)) return false;
 
             return true;
         }
 
-        public InlinedParserComponents TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
         }
 
