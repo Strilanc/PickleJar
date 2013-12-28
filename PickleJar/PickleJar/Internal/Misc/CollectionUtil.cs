@@ -139,6 +139,18 @@ namespace Strilanc.PickleJar.Internal {
         }
 
         /// <summary>
+        /// Returns a dictionary containing the key value pairs from the given sequence.
+        /// </summary>
+        /// <remarks>
+        /// Used via reflection by DictionaryJar.
+        /// Do not rename without updating references via reflections.
+        /// </remarks>
+        public static IReadOnlyDictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> keyValueSequence) {
+            if (keyValueSequence == null) throw new ArgumentNullException("keyValueSequence");
+            return keyValueSequence.ToDictionary(e => e.Key, e => e.Value);
+        }
+
+        /// <summary>
         /// Removes one of the given prefixes from the given text, returning the result.
         /// If the string is not prefixed by any of the prefixes, it is returned unchanged.
         /// </summary>

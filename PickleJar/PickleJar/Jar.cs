@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Strilanc.PickleJar.Internal;
+using Strilanc.PickleJar.Internal.Basic;
+using Strilanc.PickleJar.Internal.Misc;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 using Strilanc.PickleJar.Internal.Unsafe;
-using Strilanc.PickleJar.Internal.Values;
 using Strilanc.PickleJar.Internal.Repeated;
 using Strilanc.PickleJar.Internal.Structured;
 using System.Linq;
@@ -216,11 +217,14 @@ namespace Strilanc.PickleJar {
         /// Creates a jar that pickles two values into/outof the representations of the given itemJars one after another.
         /// </summary>
         public static IJar<Tuple<T1, T2>> Then<T1, T2>(this IJar<T1> jar1, IJar<T2> jar2) {
-            if (jar1 == null) throw new ArgumentNullException("jar1");
-            if (jar2 == null) throw new ArgumentNullException("jar2");
-            if (!jar1.CanBeFollowed) throw new ArgumentException("!jar1.CanBeFollowed", "jar1");
+            return TupleJar.Create(jar1, jar2);
+        }
 
-            return new TupleJar<T1, T2>(jar1, jar2);
+        /// <summary>
+        /// Creates a jar that pickles three values into/outof the representations of the given itemJars one after another.
+        /// </summary>
+        public static IJar<Tuple<T1, T2, T3>> Then<T1, T2, T3>(this IJar<T1> jar1, IJar<T2> jar2, IJar<T3> jar3) {
+            return TupleJar.Create(jar1, jar2, jar3);
         }
 
         /// <summary>

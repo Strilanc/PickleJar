@@ -3,7 +3,10 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal {
+namespace Strilanc.PickleJar.Internal.Basic {
+    /// <summary>
+    /// Uses delegates and values given to its constructor to implement a jar.
+    /// </summary>
     [DebuggerDisplay("{ToString()}")]
     internal sealed class AnonymousJar<T> : IJar<T>, IJarMetadataInternal {
         private readonly Func<ArraySegment<byte>, ParsedValue<T>> _parse;

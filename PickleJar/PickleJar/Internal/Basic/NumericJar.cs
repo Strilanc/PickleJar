@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
+using Strilanc.PickleJar.Internal.Misc;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Values {
+namespace Strilanc.PickleJar.Internal.Basic {
     internal static class NumericJar {
         private static HashSet<Type> StandardNumericTypes {
             get {

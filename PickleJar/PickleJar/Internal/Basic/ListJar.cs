@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Values {
+namespace Strilanc.PickleJar.Internal.Basic {
     internal static class ListJar {
         public static IJar<IReadOnlyList<T>> Create<T>(IEnumerable<IJar<T>> itemJars) {
             if (itemJars == null) throw new ArgumentNullException("itemJars");
@@ -28,7 +28,7 @@ namespace Strilanc.PickleJar.Internal.Values {
             if (offset == null) throw new ArgumentNullException("offset");
             if (count == null) throw new ArgumentNullException("count");
 
-            var r = BuildComponentsOfParsingSequence(jars.Select(e => new JarMeta(e, typeof(T))), array, offset, count);
+            var r = SpecializedMultiValueParserParts.BuildComponentsOfParsingSequence(jars.Select(e => new JarMeta(e, typeof(T))), array, offset, count);
 
             var resultArray = Expression.Variable(typeof(T[]), "resultArray");
             var cap = Expression.Constant(jars.Length);
@@ -38,56 +38,16 @@ namespace Strilanc.PickleJar.Internal.Values {
                 new[] {
                     r.ParseDoer,
                     Expression.Assign(resultArray, Expression.NewArrayBounds(typeof(T), cap)),
-                    Enumerable.Range(0, jars.Length).Select(i => Expression.Assign(Expression.ArrayAccess(resultArray, Expression.Constant(i)), r.ValueGetters[i])).Block(),
+                    Enumerable.Range(0, jars.Length)
+                              .Select(i => Expression.Assign(Expression.ArrayAccess(resultArray, Expression.Constant(i)), r.ValueGetters[i]))
+                              .Block(),
                 });
 
-            var storage = new SpecializedParserResultStorageParts(r.Storage.ForConsumedCount, new[] { resultArray });
+            var storage = new SpecializedParserResultStorageParts(r.Storage.ForConsumedCount, new[] {resultArray});
             return new SpecializedParserParts(
                 parserDoer,
                 resultArray,
                 r.ConsumedCountGetter,
-                storage);
-        }
-
-        public static SpecializedMultiValueParserParts BuildComponentsOfParsingSequence(IEnumerable<JarMeta> jars, Expression array, Expression offset, Expression count) {
-            if (jars == null) throw new ArgumentNullException("jars");
-            if (array == null) throw new ArgumentNullException("array");
-            if (offset == null) throw new ArgumentNullException("offset");
-            if (count == null) throw new ArgumentNullException("count");
-
-            var varConsumed = Expression.Variable(typeof(int), "listConsumed");
-
-            var initLocals = Expression.Assign(varConsumed, Expression.Constant(0));
-
-            var jarParseComponents =
-                (from jar in jars
-                 let inlinedParseComponents = jar.MakeInlinedParserComponents(
-                     array,
-                     Expression.Add(offset, varConsumed),
-                     Expression.Subtract(count, varConsumed))
-                 let parseStatement = Expression.Block(
-                     inlinedParseComponents.Storage.ForConsumedCountIfValueAlreadyInScope,
-                     new[] {
-                         inlinedParseComponents.ParseDoer,
-                         Expression.AddAssign(varConsumed, inlinedParseComponents.ConsumedCountGetter)
-                     })
-                 select new { jar, inlinedParse = inlinedParseComponents, parseStatement}
-                ).ToArray();
-
-            var fullParseStatement = Expression.Block(
-                initLocals,
-                jarParseComponents.Select(e => e.parseStatement).Block());
-
-            var storage = new SpecializedParserResultStorageParts(
-                variablesNeededForValue: jarParseComponents.SelectMany(e => e.inlinedParse.Storage.ForValue),
-                variablesNeededForConsumedCount: new[] {varConsumed});
-
-            var resultGetters = jarParseComponents.Select(e => e.inlinedParse.ValueGetter);
-
-            return new SpecializedMultiValueParserParts(
-                fullParseStatement, 
-                resultGetters, 
-                varConsumed,
                 storage);
         }
     }

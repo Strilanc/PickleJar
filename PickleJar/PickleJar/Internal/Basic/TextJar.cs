@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Strilanc.PickleJar.Internal.Values {
+namespace Strilanc.PickleJar.Internal.Basic {
     internal sealed class TextJar : IJar<string> {
         private readonly Encoding _encoding;
         public bool CanBeFollowed { get { return false; } }

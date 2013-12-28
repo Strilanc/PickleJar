@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Strilanc.PickleJar.Internal;
+using Strilanc.PickleJar.Internal.Basic;
 using Strilanc.PickleJar.Internal.Structured;
-using Strilanc.PickleJar.Internal.Values;
 
 namespace Strilanc.PickleJar {
     public static partial class Jar {

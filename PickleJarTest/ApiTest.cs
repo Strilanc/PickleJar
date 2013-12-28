@@ -7,7 +7,6 @@ using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.Values;
 
 [TestClass]
 public class ApiTest {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Strilanc.PickleJar.Internal;
-using Strilanc.PickleJar.Internal.Values;
+using Strilanc.PickleJar.Internal.Basic;
+using Strilanc.PickleJar.Internal.Misc;
 
 [TestClass]
 public class Float32JarTest {

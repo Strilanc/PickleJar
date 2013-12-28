@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Strilanc.PickleJar.Internal.Values;
+using Strilanc.PickleJar.Internal.Basic;
 
 [TestClass]
 public class ConstantJarTest {

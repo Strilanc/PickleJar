@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Values {
+namespace Strilanc.PickleJar.Internal.Basic {
     /// <summary>
     /// A jar that consumes no data, and always returns the same fixed value.
     /// </summary>

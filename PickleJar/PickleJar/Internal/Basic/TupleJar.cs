@@ -1,43 +1,29 @@
 ﻿using System;
-using System.Linq.Expressions;
-using System.Linq;
-using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Structured {
-    /// <summary>
-    /// TupleJar is used to parse consecutive values that have different types.
-    /// </summary>
-    internal sealed class TupleJar<T1, T2> : IJarMetadataInternal, IJar<Tuple<T1, T2>> {
-        public readonly IJar<T1> SubJar1;
-        public readonly IJar<T2> SubJar2;
-        public bool CanBeFollowed { get { return SubJar2.CanBeFollowed; } }
-        public TupleJar(IJar<T1> subJar1, IJar<T2> subJar2) {
-            if (subJar1 == null) throw new ArgumentNullException("subJar1");
-            if (!subJar1.CanBeFollowed) throw new ArgumentException("!subJar1.CanBeFollowed");
-            if (subJar2 == null) throw new ArgumentNullException("subJar2");
-            SubJar1 = subJar1;
-            SubJar2 = subJar2;
+namespace Strilanc.PickleJar.Internal.Basic {
+    internal static class TupleJar {
+        public static IJar<Tuple<T1, T2>> Create<T1, T2>(IJar<T1> itemJar1, IJar<T2> itemJar2) {
+            if (itemJar1 == null) throw new ArgumentNullException("itemJar1");
+            if (itemJar2 == null) throw new ArgumentNullException("itemJar2");
+            if (!itemJar1.CanBeFollowed) throw new ArgumentException("!itemJar1.CanBeFollowed", "itemJar1");
+
+            return new Jar.NamedJarList {
+                {"Item1", itemJar1},
+                {"Item2", itemJar2}
+            }.BuildJarForType<Tuple<T1, T2>>();
         }
-        public ParsedValue<Tuple<T1, T2>> Parse(ArraySegment<byte> data) {
-            var r1 = SubJar1.Parse(data);
-            var r2 = SubJar2.Parse(new ArraySegment<byte>(data.Array, data.Offset + r1.Consumed, data.Count - r1.Consumed));
-            return new ParsedValue<Tuple<T1, T2>>(Tuple.Create(r1.Value, r2.Value), r1.Consumed + r2.Consumed);
-        }
-        public byte[] Pack(Tuple<T1, T2> value) {
-            var r1 = SubJar1.Pack(value.Item1);
-            var r2 = SubJar2.Pack(value.Item2);
-            return r1.Concat(r2).ToArray();
-        }
-        public bool IsBlittable { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return SubJar1.OptionalConstantSerializedLength() + SubJar2.OptionalConstantSerializedLength(); } }
-        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            return null;
-        }
-        public override string ToString() {
-            return string.Format(
-                "{0}.Then({1})",
-                SubJar1,
-                SubJar2);
+        public static IJar<Tuple<T1, T2, T3>> Create<T1, T2, T3>(IJar<T1> itemJar1, IJar<T2> itemJar2, IJar<T3> itemJar3) {
+            if (itemJar1 == null) throw new ArgumentNullException("itemJar1");
+            if (itemJar2 == null) throw new ArgumentNullException("itemJar2");
+            if (itemJar3 == null) throw new ArgumentNullException("itemJar3");
+            if (!itemJar1.CanBeFollowed) throw new ArgumentException("!itemJar1.CanBeFollowed", "itemJar1");
+            if (!itemJar2.CanBeFollowed) throw new ArgumentException("!jar2.CanBeFollowed", "itemJar2");
+
+            return new Jar.NamedJarList {
+                {"Item1", itemJar1},
+                {"Item2", itemJar2},
+                {"Item3", itemJar3}
+            }.BuildJarForType<Tuple<T1, T2, T3>>();
         }
     }
 }

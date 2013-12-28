@@ -48,21 +48,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PickleJar\Internal\Bulk\AnonymousJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\AnonymousJar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\AnonymousBulkJar.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedMultiValueParserParts.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedParserResultStorageParts.cs" />
-    <Compile Include="PickleJar\Internal\Structured\ProjectionJar.cs" />
-    <Compile Include="PickleJar\Internal\Values\ListJar.cs" />
-    <Compile Include="PickleJar\Internal\Values\DictionaryJar.cs" />
-    <Compile Include="PickleJar\Internal\Values\TextJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\ProjectionJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\ListJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\DictionaryJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\TextJar.cs" />
+    <Compile Include="PickleJar\Internal\Misc\Endianess.cs" />
     <Compile Include="PickleJar\MemberMatchInfo.cs" />
     <Compile Include="PickleJar\LeftoverDataException.cs" />
-    <Compile Include="PickleJar\Internal\Values\ConstantJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\ConstantJar.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\ReflectionUtil.cs" />
-    <Compile Include="PickleJar\Internal\Values\NumericJar.cs" />
-    <Compile Include="PickleJar\Internal\Structured\NullTerminatedJar.cs" />
-    <Compile Include="PickleJar\Internal\Structured\DataSizePrefixedJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\NumericJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\NullTerminatedJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\DataSizePrefixedJar.cs" />
     <Compile Include="PickleJar\JarUtil.cs" />
     <Compile Include="PickleJar\DataFragmentException.cs" />
     <Compile Include="PickleJar\Internal\Misc\CollectionUtil.cs" />
@@ -70,22 +71,22 @@
     <Compile Include="PickleJar\Internal\Bulk\IJarMetadataInternal.cs" />
     <Compile Include="PickleJar\Jar.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\RuntimeSpecializedBulkJar.cs" />
-    <Compile Include="PickleJar\Internal\Repeated\RepeatUntilEndOfDataJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\RepeatUntilEndOfDataJar.cs" />
     <Compile Include="PickleJar\IJarForMember.cs" />
     <Compile Include="PickleJar\Internal\Bulk\ParserUtil.cs" />
-    <Compile Include="PickleJar\Internal\Repeated\RepeatBasedOnPrefixJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\RepeatBasedOnPrefixJar.cs" />
     <Compile Include="PickleJar\Internal\Unsafe\BlitBulkJar.cs" />
-    <Compile Include="PickleJar\Internal\Repeated\RepeatConstantNumberOfTimesJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\RepeatConstantNumberOfTimesJar.cs" />
     <Compile Include="PickleJar\Internal\Unsafe\BlitJar.cs" />
     <Compile Include="PickleJar\JarBuilder.cs" />
-    <Compile Include="PickleJar\Internal\Structured\JarForMember.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\JarForMember.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\RuntimeSpecializedJar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\IBulkJar.cs" />
-    <Compile Include="PickleJar\Internal\Unsafe\TwiddleUtil.cs" />
+    <Compile Include="PickleJar\Internal\Misc\TwiddleUtil.cs" />
     <Compile Include="PickleJar\IJar.cs" />
     <Compile Include="PickleJar\ParsedValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PickleJar\Internal\Values\TupleJar.cs" />
+    <Compile Include="PickleJar\Internal\Basic\TupleJar.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

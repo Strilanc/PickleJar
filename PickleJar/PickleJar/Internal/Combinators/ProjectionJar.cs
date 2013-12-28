@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.Basic;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Structured {

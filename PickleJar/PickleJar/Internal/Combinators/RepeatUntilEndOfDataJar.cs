@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.Basic;
 using Strilanc.PickleJar.Internal.Bulk;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
