@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Strilanc.PickleJar.Internal.Structured;
+using Strilanc.PickleJar.Internal.Values;
 
 namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     /// <summary>
@@ -85,7 +86,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                     typeof(T)));
             }
 
-            var parseSequence = SequencedJarUtil.BuildComponentsOfParsingSequence(
+            var parseSequence = ListJar.BuildComponentsOfParsingSequence(
                 memberJars.Select(e => new JarMeta(e.Jar, e.MemberMatchInfo.MemberType)), 
                 array, 
                 offset, 

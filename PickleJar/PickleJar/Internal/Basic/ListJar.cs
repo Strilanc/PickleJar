@@ -4,14 +4,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Structured {
-    internal static class SequencedJarUtil {
-        public static IJar<IReadOnlyList<T>> MakeSequencedJar<T>(IEnumerable<IJar<T>> jars) {
-            if (jars == null) throw new ArgumentNullException("jars");
+namespace Strilanc.PickleJar.Internal.Values {
+    internal static class ListJar {
+        public static IJar<IReadOnlyList<T>> Create<T>(IEnumerable<IJar<T>> itemJars) {
+            if (itemJars == null) throw new ArgumentNullException("itemJars");
 
-            var jarsCopy = jars.ToArray();
-            if (jarsCopy.Any(jar => jar == null)) throw new ArgumentException("jars.Any(jar => jar == null)");
-            if (jarsCopy.SkipLast(1).Any(jar => !jar.CanBeFollowed)) throw new ArgumentException("jars.SkipLast(1).Any(jar => !jar.CanBeFollowed)");
+            var jarsCopy = itemJars.ToArray();
+            if (jarsCopy.Any(jar => jar == null)) throw new ArgumentException("itemJars.Any(jar => jar == null)");
+            if (jarsCopy.SkipLast(1).Any(jar => !jar.CanBeFollowed)) throw new ArgumentException("itemJars.SkipLast(1).Any(jar => !jar.CanBeFollowed)");
 
             return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
                 specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),

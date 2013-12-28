@@ -171,5 +171,9 @@ namespace Strilanc.PickleJar.Internal {
             }
         }
 
+        public static bool HasDuplicates<T>(this IEnumerable<T> sequence) {
+            var known = new HashSet<T>();
+            return sequence.All(known.Add);
+        }
     }
 }

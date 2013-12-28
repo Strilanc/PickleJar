@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Strilanc.PickleJar {
     /// <summary>
-    /// The Jar class exposes utilities for accessing, creating, and combining jars for pickling data (i.e. serialization and deserialization).
+    /// The Jar class exposes utilities for accessing, creating, and combining itemJars for pickling data (i.e. serialization and deserialization).
     /// </summary>
     public static partial class Jar {
         /// <summary>Pickles 8-bit signed integers against their 1 byte 2s-complement representation.</summary>
@@ -205,16 +205,15 @@ namespace Strilanc.PickleJar {
             return keyedJars.Select(e => new KeyValuePair<string, IJar<object>>(e.Name, e.JarAsObjectJar())).ToDictionaryJar();
         }
         public static IJar<IReadOnlyDictionary<TKey, TValue>> ToDictionaryJar<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, IJar<TValue>>> keyedJars) {
-            if (keyedJars == null) throw new ArgumentNullException("keyedJars");
-            return new DictionaryJar<TKey, TValue>(keyedJars.Select(e => new KeyValueJar<TKey, TValue>(e.Key, e.Value)));
+            return DictionaryJar.Create(keyedJars);
         }
 
         public static IJar<IReadOnlyList<T>> ToListJar<T>(this IEnumerable<IJar<T>> jars) {
-            return SequencedJarUtil.MakeSequencedJar(jars);
+            return ListJar.Create(jars);
         }
 
         /// <summary>
-        /// Creates a jar that pickles two values into/outof the representations of the given jars one after another.
+        /// Creates a jar that pickles two values into/outof the representations of the given itemJars one after another.
         /// </summary>
         public static IJar<Tuple<T1, T2>> Then<T1, T2>(this IJar<T1> jar1, IJar<T2> jar2) {
             if (jar1 == null) throw new ArgumentNullException("jar1");
