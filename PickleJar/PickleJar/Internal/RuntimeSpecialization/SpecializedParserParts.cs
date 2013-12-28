@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
-    internal delegate SpecializedParserParts InlinerMaker(Expression array, Expression offset, Expression count);
+    internal delegate SpecializedParserParts SpecializedParserMaker(Expression array, Expression offset, Expression count);
     internal delegate SpecializedParserParts InlinerBulkMaker(Expression array, Expression offset, Expression count, Expression itemCount);
 
     internal sealed class SpecializedParserParts {
@@ -22,7 +22,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             Storage = storage;
         }
 
-        public static Func<ArraySegment<byte>, ParsedValue<T>> MakeParser<T>(InlinerMaker inlineMaker) {
+        public static Func<ArraySegment<byte>, ParsedValue<T>> MakeParser<T>(SpecializedParserMaker inlineMaker) {
             var paramData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
             var paramDataArray = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Array"));
             var paramDataOffset = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Offset"));

@@ -44,8 +44,8 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             var jarsCopy = memberJars.ToArray();
             var canBeFollowed = jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed();
 
-            return AnonymousJar.CreateFrom(
-                parser: (array, offset, count) => MakeInlinedParserComponents<T>(jarsCopy, array, offset, count),
+            return AnonymousJar.CreateSpecialized(
+                specializedParserMaker: (array, offset, count) => MakeInlinedParserComponents<T>(jarsCopy, array, offset, count),
                 packer: MakePacker<T>(jarsCopy),
                 canBeFollowed: canBeFollowed,
                 isBlittable: false,

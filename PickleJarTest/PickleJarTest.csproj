@@ -59,7 +59,8 @@
   <ItemGroup>
     <Compile Include="BlittableParserTest.cs" />
     <Compile Include="BlitUtilTest.cs" />
-    <Compile Include="CollectionUtilTest.cs" />
+    <Compile Include="Internal\Misc\CollectionUtilExtra.cs" />
+    <Compile Include="Internal\Misc\CollectionUtilTest.cs" />
     <Compile Include="CanonicalNameTest.cs" />
     <Compile Include="ApiTest.cs" />
     <Compile Include="ExpressionArrayParserTest.cs" />

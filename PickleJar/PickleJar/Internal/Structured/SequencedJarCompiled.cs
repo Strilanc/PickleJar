@@ -13,8 +13,8 @@ namespace Strilanc.PickleJar.Internal.Structured {
             if (jarsCopy.Any(jar => jar == null)) throw new ArgumentException("jars.Any(jar => jar == null)");
             if (jarsCopy.SkipLast(1).Any(jar => !jar.CanBeFollowed)) throw new ArgumentException("jars.SkipLast(1).Any(jar => !jar.CanBeFollowed)");
 
-            return AnonymousJar.CreateFrom<IReadOnlyList<T>>(
-                parser: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),
+            return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
+                specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),
                 packer: v => { throw new NotImplementedException(); },
                 canBeFollowed: jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed,
                 isBlittable: jarsCopy.All(jar => jar is IJarMetadataInternal && ((IJarMetadataInternal)jar).IsBlittable),

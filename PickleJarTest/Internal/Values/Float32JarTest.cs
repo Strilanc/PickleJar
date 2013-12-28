@@ -6,7 +6,7 @@ using Strilanc.PickleJar.Internal.Values;
 public class Float32JarTest {
     [TestMethod]
     public void TestLittleEndian() {
-        var jar = NumericJarUtil.MakeStandardNumericJar<float>(Endianess.LittleEndian);
+        var jar = NumericJar.CreateForType<float>(Endianess.LittleEndian);
 
         jar.AssertPicklesNoMoreNoLess(+0.0f, 0, 0, 0, 0);
         jar.AssertPicklesNoMoreNoLess(-0.0f, 0, 0, 0, 0x80);
@@ -22,7 +22,7 @@ public class Float32JarTest {
     }
     [TestMethod]
     public void TestBigEndian() {
-        var jar = NumericJarUtil.MakeStandardNumericJar<float>(Endianess.BigEndian);
+        var jar = NumericJar.CreateForType<float>(Endianess.BigEndian);
 
         jar.AssertPicklesNoMoreNoLess(+0.0f, 0, 0, 0, 0);
         jar.AssertPicklesNoMoreNoLess(-0.0f, 0x80, 0, 0, 0);

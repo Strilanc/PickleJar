@@ -9,8 +9,8 @@ namespace Strilanc.PickleJar.Internal.Repeated {
     internal static class RepeatUntilEndOfDataJarUtil {
         public static IJar<IReadOnlyList<T>> MakeRepeatUntilEndOfDataJar<T>(IBulkJar<T> bulkItemJar) {
             if (bulkItemJar.ItemJar.OptionalConstantSerializedLength().GetValueOrDefault() > 0) {
-                return AnonymousJar.CreateFrom<IReadOnlyList<T>>(
-                    parser: (array, offset, count) => MakeInlinedParserComponentsForConstantLength(bulkItemJar, array, offset, count),
+                return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
+                    specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForConstantLength(bulkItemJar, array, offset, count),
                     packer: bulkItemJar.Pack,
                     canBeFollowed: false,
                     isBlittable: false,
@@ -19,8 +19,8 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                     components: bulkItemJar);
             }
 
-            return AnonymousJar.CreateFrom<IReadOnlyList<T>>(
-                parser: (array, offset, count) => MakeInlinedParserComponentsForVaryingLength(bulkItemJar, array, offset, count),
+            return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
+                specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForVaryingLength(bulkItemJar, array, offset, count),
                 packer: bulkItemJar.Pack,
                 canBeFollowed: false,
                 isBlittable: false,

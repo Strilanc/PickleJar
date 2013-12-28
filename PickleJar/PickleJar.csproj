@@ -60,7 +60,7 @@
     <Compile Include="PickleJar\LeftoverDataException.cs" />
     <Compile Include="PickleJar\Internal\Values\ConstantJar.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\ReflectionUtil.cs" />
-    <Compile Include="PickleJar\Internal\Values\NumericJarUtil.cs" />
+    <Compile Include="PickleJar\Internal\Values\NumericJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\NullTerminatedJar.cs" />
     <Compile Include="PickleJar\Internal\Structured\DataSizePrefixedJar.cs" />
     <Compile Include="PickleJar\JarUtil.cs" />

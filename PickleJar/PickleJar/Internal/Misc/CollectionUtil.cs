@@ -170,5 +170,6 @@ namespace Strilanc.PickleJar.Internal {
                 yield return curPartition;
             }
         }
+
     }
 }

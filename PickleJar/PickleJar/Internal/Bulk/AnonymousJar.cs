@@ -11,7 +11,7 @@ namespace Strilanc.PickleJar.Internal {
         public bool CanBeFollowed { get; private set; }
         public bool IsBlittable { get; private set; }
         public int? OptionalConstantSerializedLength { get; private set; }
-        private readonly InlinerMaker _tryInlinedParserComponents;
+        private readonly SpecializedParserMaker _tryInlinedParserComponents;
         private readonly Func<string> _desc;
         private readonly object _components;
 
@@ -20,7 +20,7 @@ namespace Strilanc.PickleJar.Internal {
                             bool canBeFollowed,
                             bool isBlittable,
                             int? optionalConstantSerializedLength,
-                            InlinerMaker tryInlinedParserComponents,
+                            SpecializedParserMaker tryInlinedParserComponents,
                             Func<string> desc = null,
                             object components = null) {
             if (parse == null) throw new ArgumentNullException("parse");
@@ -49,9 +49,25 @@ namespace Strilanc.PickleJar.Internal {
             return _desc == null ? base.ToString() : _desc();
         }
     }
+
     internal static class AnonymousJar {
-        public static AnonymousJar<T> CreateFrom<T>(InlinerMaker parser, Func<T, byte[]> packer, bool canBeFollowed, bool isBlittable, int? constLength, Func<string> desc, object components) {
-            return new AnonymousJar<T>(SpecializedParserParts.MakeParser<T>(parser), packer, canBeFollowed, isBlittable, constLength, parser, desc, components);
+        public static AnonymousJar<T> CreateSpecialized<T>(SpecializedParserMaker specializedParserMaker,
+                                                           Func<T, byte[]> packer,
+                                                           bool canBeFollowed,
+                                                           bool isBlittable,
+                                                           int? constLength,
+                                                           Func<string> desc = null,
+                                                           object components = null) {
+            if (specializedParserMaker == null) throw new ArgumentNullException("specializedParserMaker");
+            if (packer == null) throw new ArgumentNullException("packer");
+            return new AnonymousJar<T>(SpecializedParserParts.MakeParser<T>(specializedParserMaker),
+                                       packer,
+                                       canBeFollowed,
+                                       isBlittable,
+                                       constLength,
+                                       specializedParserMaker,
+                                       desc,
+                                       components);
         }
     }
 }
