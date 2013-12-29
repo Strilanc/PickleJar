@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using Strilanc.PickleJar.Internal;
 using Strilanc.PickleJar.Internal.Basic;
@@ -164,6 +165,10 @@ namespace Strilanc.PickleJar {
         /// </summary>
         public static IJar<T> Where<T>(this IJar<T> jar, Func<T, bool> constraint) {
             return ConstraintJar.Create(jar, constraint);
+        }
+
+        public static IJar<T> WhereExpression<T>(this IJar<T> jar, Expression<Func<T, bool>> constraint) {
+            return ConstraintJar.CreateSpecialized(jar, constraint);
         }
 
         /// <summary>

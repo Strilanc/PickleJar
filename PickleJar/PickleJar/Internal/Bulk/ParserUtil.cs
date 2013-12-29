@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -101,19 +102,22 @@ namespace Strilanc.PickleJar.Internal {
                 storage: new SpecializedParserResultStorageParts(new[] {resultVar}, new[] { resultVar }));
         }
         private static SpecializedPackerParts MakeDefaulPackerComponents(object jar, Type valueType, Expression value) {
-            var resultVar = Expression.Variable(typeof(byte[]), "packed");
-            var doPack = resultVar.AssignTo(jar.ConstExpr().CallInstanceMethod(
-                typeof(IJar<>).MakeGenericType(valueType).GetMethod("Pack"),
-                value));
-            var resultLength = resultVar.AccessMember(typeof(byte[]).GetProperty("Length"));
+            var capacityVar = Expression.Variable(typeof(byte[]), "packed");
+            var computePack = jar.ConstExpr().CallInstanceMethod(
+                "Pack",
+                value);
             
             return new SpecializedPackerParts(
-                capacityComputer: doPack,
-                capacityGetter: resultLength,
-                capacityStorage: new[] {resultVar},
+                capacityComputer: capacityVar.AssignTo(computePack.AccessMember("Length")),
+                capacityGetter: capacityVar,
+                capacityStorage: new[] { capacityVar },
                 packDoer: (array, offset) => {
                     var copyMethod = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(Array), typeof(int) });
-                    return Expression.Call(copyMethod, resultVar, array, resultLength);
+                    var varArray = Expression.Variable(typeof(byte[]), "result");
+                    return Expression.Block(
+                        new[] {varArray},
+                        varArray.AssignTo(computePack),
+                        Expression.Call(copyMethod, computePack, array, varArray.AccessMember("Length")));
                 });
         }
         public static SpecializedPackerParts MakeSpecializedPacker<T>(this IJar<T> jar, Expression value) {
@@ -180,6 +184,12 @@ namespace Strilanc.PickleJar.Internal {
         public static Expression Plus(this Expression expression, Expression other) {
             return Expression.Add(expression, other);
         }
+        public static Expression Times(this Expression expression, Expression other) {
+            return Expression.Multiply(expression, other);
+        }
+        public static Expression Times(this Expression expression, int other) {
+            return expression.Times(other.ConstExpr());
+        }
         public static Expression IsLessThan(this Expression expression, Expression other) {
             return Expression.LessThan(expression, other);
         }
@@ -196,8 +206,39 @@ namespace Strilanc.PickleJar.Internal {
         public static Expression CallInstanceMethod(this Expression expression, MethodInfo method, params Expression[] arguments) {
             return Expression.Call(expression, method, arguments);
         }
+        public static Expression CallInstanceMethod(this Expression expression, string unambiguousMethodName, params Expression[] arguments) {
+            return expression.CallInstanceMethod(expression.Type.GetMethod(unambiguousMethodName), arguments);
+        }
+        public static Expression ForEach(this Expression collection, Func<Expression, Expression> currentValueToBody) {
+            if (collection == null) throw new ArgumentNullException("collection");
+            if (currentValueToBody == null) throw new ArgumentNullException("currentValueToBody");
+
+            var itemType = collection.Type
+                                     .GetInterfaces()
+                                     .Single(e => e.IsGenericType && e.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                                     .GetGenericArguments()
+                                     .Single();
+            var enumeratorType = typeof(IEnumerator<>).MakeGenericType(itemType);
+            var breakTarget = Expression.Label("forEachBreak");
+            var varEnumerator = Expression.Variable(enumeratorType, "forEachEnumerator");
+            var disposeMethod = typeof(IDisposable).GetMethod("Dispose");
+            var moveNextMethod = typeof(IEnumerator).GetMethod("MoveNext");
+            var currentProperty = enumeratorType.GetProperty("Current");
+            return Expression.Block(
+                new[] {varEnumerator},
+                Expression.TryFinally(
+                    Expression.Loop(
+                        Expression.IfThenElse(varEnumerator.CallInstanceMethod(moveNextMethod),
+                                              currentValueToBody(varEnumerator.AccessMember(currentProperty)),
+                                              Expression.Break(breakTarget)),
+                        breakTarget),
+                    varEnumerator.CallInstanceMethod(disposeMethod)));
+        }
         public static Expression AccessMember(this Expression expression, MemberInfo memberInfo) {
             return Expression.MakeMemberAccess(expression, memberInfo);
+        }
+        public static Expression AccessMember(this Expression expression, string unambiguousMemberName) {
+            return Expression.MakeMemberAccess(expression, expression.Type.GetMember(unambiguousMemberName).Single());
         }
         public static Expression AssignTo(this Expression expression, Expression other) {
             return Expression.Assign(expression, other);

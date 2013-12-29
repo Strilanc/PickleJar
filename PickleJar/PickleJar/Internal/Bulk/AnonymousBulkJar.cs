@@ -13,6 +13,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         private readonly Func<string> _desc;
         public IJar<T> ItemJar { get; private set; }
         private readonly object _components;
+        private readonly SpecializedPackerMaker _makeSpecializedCollectionPacker; 
 
         public bool CanBeFollowed { get { return true; } }
         public bool IsBlittable { get { return false; } }
@@ -22,23 +23,29 @@ namespace Strilanc.PickleJar.Internal.Bulk {
                                 Func<ArraySegment<byte>, int, ParsedValue<IReadOnlyList<T>>> parse,
                                 Func<IReadOnlyCollection<T>, byte[]> pack,
                                 InlinerBulkMaker makeInlinedParserComponents,
+                                SpecializedPackerMaker makeSpecializedCollectionPacker,
                                 Func<string> desc = null,
                                 object components = null) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
             if (parse == null) throw new ArgumentNullException("parse");
             if (pack == null) throw new ArgumentNullException("pack");
             if (makeInlinedParserComponents == null) throw new ArgumentNullException("makeInlinedParserComponents");
+            if (makeSpecializedCollectionPacker == null) throw new ArgumentNullException("makeSpecializedCollectionPacker");
             _parse = parse;
             _pack = pack;
             ItemJar = itemJar;
             _makeInlinedParserComponents = makeInlinedParserComponents;
             _desc = desc;
             _components = components;
+            _makeSpecializedCollectionPacker = makeSpecializedCollectionPacker;
         }
 
         public SpecializedParserParts MakeInlinedParserComponents(Expression array, Expression offset, Expression count, Expression itemCount) {
             return _makeInlinedParserComponents(array, offset, count, itemCount);
         }
+        public SpecializedPackerParts MakeSpecializedCollectionPacker(Expression collection) {
+            return _makeSpecializedCollectionPacker(collection);
+        } 
         public override string ToString() {
             return _desc == null ? base.ToString() : _desc();
         }
@@ -51,8 +58,18 @@ namespace Strilanc.PickleJar.Internal.Bulk {
     }
 
     internal static class AnonymousBulkJar {
-        public static AnonymousBulkJar<T> CreateFrom<T>(IJar<T> itemJar, InlinerBulkMaker parser, Func<IReadOnlyCollection<T>, byte[]> packer, Func<string> desc, object components) {
-            return new AnonymousBulkJar<T>(itemJar, SpecializedParserParts.MakeBulkParser<T>(parser), packer, parser, desc, components);
+        public static AnonymousBulkJar<T> CreateSpecialized<T>(IJar<T> itemJar,
+                                                               InlinerBulkMaker parser,
+                                                               SpecializedPackerMaker collectionPacker,
+                                                               Func<string> desc,
+                                                               object components) {
+            return new AnonymousBulkJar<T>(itemJar,
+                                           SpecializedParserParts.MakeBulkParser<T>(parser),
+                                           SpecializedPackerParts.MakePacker<IReadOnlyCollection<T>>(collectionPacker),
+                                           parser,
+                                           collectionPacker,
+                                           desc,
+                                           components);
         }
     }
 }

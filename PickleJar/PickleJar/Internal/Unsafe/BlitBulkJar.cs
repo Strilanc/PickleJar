@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using System.Linq;
 using Strilanc.PickleJar.Internal.Bulk;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
@@ -14,7 +13,7 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
     /// BlitBulkJar uses unsafe code, but is an order of magnitude (or two!) faster than other parsers.
     /// </summary>
     internal static class BlitBulkJar {
-        public delegate T[] BlitParser<T>(byte[] data, int itemCount, int offset, int length);
+        public delegate T[] BulkBlitParser<out T>(byte[] data, int itemCount, int offset, int length);
 
         public static IBulkJar<T> TryMake<T>(IJar<T> itemJar) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
@@ -25,12 +24,12 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
             if (r.OptionalConstantSerializedLength.GetValueOrDefault() == 0) return null;
             InlinerBulkMaker c = (array, offset, count, itemCount) => BuildBlitBulkParserComponents(itemJar, array, offset, count, itemCount);
 
-            return AnonymousBulkJar.CreateFrom(
+            return AnonymousBulkJar.CreateSpecialized(
                 itemJar,
                 c,
-                // todo: optimize into blit
-                values => values.SelectMany(itemJar.Pack).ToArray(),
-                () => string.Format("{0}.Blit", itemJar),
+                // todo: use just blitting when possible
+                collection => RuntimeSpecializedBulkJar.MakeSpecializedPackerParts(itemJar, collection),
+                () => string.Format("{0}[memcpy]", itemJar),
                 null);
         }
 
@@ -74,7 +73,7 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
         }
         public static Expression MakeUnsafeArrayBlitParserExpression<T>(Expression array, Expression offset, Expression count, Expression itemCount) {
             if (typeof (T) == typeof (byte))
-                return Expression.Call(typeof (BlitBulkJar).GetMethod("BlitBytes"), array, itemCount, offset, count);
+                return Expression.Call(typeof(BlitBulkJar).GetMethod("BlitBytes"), array, itemCount, offset, count);
 
             var blitParser = MakeUnsafeArrayBlitParser<T>();
             return Expression.Invoke(Expression.Constant(blitParser), array, itemCount, offset, count);
@@ -82,7 +81,7 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
         /// <summary>
         /// Emits a method that copies the contents of an array segment over the memory representation of anew  returned array of values.
         /// </summary>
-        public static BlitParser<T> MakeUnsafeArrayBlitParser<T>() {
+        public static BulkBlitParser<T> MakeUnsafeArrayBlitParser<T>() {
             var d = new DynamicMethod(
                 name: "BlitParseArray" + typeof (T),
                 returnType: typeof (T[]),
@@ -122,7 +121,7 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
             g.Emit(OpCodes.Ldloc_0);
             g.Emit(OpCodes.Ret);
 
-            return (BlitParser<T>)d.CreateDelegate(typeof (BlitParser<T>));
+            return (BulkBlitParser<T>)d.CreateDelegate(typeof(BulkBlitParser<T>));
         }
     }
 }

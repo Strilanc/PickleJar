@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Strilanc.PickleJar.Internal.Basic;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
+using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Structured {
     internal static class ProjectionJar {
@@ -29,11 +30,14 @@ namespace Strilanc.PickleJar.Internal.Structured {
 
             SpecializedParserMaker specializedParserMaker = (array, offset, count) => {
                 var sub = internalJar.MakeInlinedParserComponents(array, offset, count);
+                var resultVar = Expression.Variable(typeof(TExposed), "result_projected");
                 return new SpecializedParserParts(
-                    parseDoer: sub.ParseDoer,
-                    valueGetter: getParsedValueProjection(sub.ValueGetter),
+                    parseDoer: sub.ParseDoer.FollowedBy(resultVar.AssignTo(getParsedValueProjection(sub.ValueGetter))),
+                    valueGetter: resultVar,
                     consumedCountGetter: sub.ConsumedCountGetter,
-                    storage: sub.Storage);
+                    storage: new SpecializedParserResultStorageParts(
+                        variablesNeededForValue: sub.Storage.ForValue.Concat(new[] {resultVar}),
+                        variablesNeededForConsumedCount: sub.Storage.ForConsumedCount));
             };
 
             SpecializedPackerMaker packerMaker = value => {

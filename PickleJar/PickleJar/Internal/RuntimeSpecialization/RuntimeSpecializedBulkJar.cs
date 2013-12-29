@@ -10,11 +10,10 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     internal static class RuntimeSpecializedBulkJar {
         public static IBulkJar<T> MakeBulkParser<T>(IJar<T> itemJar) {
             InlinerBulkMaker parseCompMaker = (array, offset, count, itemCount) => MakeAndCompileSpecializedParserComponents(itemJar, array, offset, count, itemCount);
-            return AnonymousBulkJar.CreateFrom(
+            return AnonymousBulkJar.CreateSpecialized(
                 itemJar,
                 parseCompMaker,
-                // todo: compile at runtime
-                values => values.SelectMany(itemJar.Pack).ToArray(),
+                collection => MakeSpecializedPackerParts(itemJar, collection),
                 () => string.Format("{0}", itemJar),
                 null);
 
@@ -53,6 +52,34 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                 valueGetter: resultArray,
                 consumedCountGetter: resultConsumed,
                 storage: storage);
+        }
+
+        public static SpecializedPackerParts MakeSpecializedPackerParts<T>(IJar<T> itemJar, Expression collection) {
+            var varItem = Expression.Variable(typeof(T), "item");
+            var itemPacker = itemJar.MakeSpecializedPacker(varItem);
+            var varSpaceNeeded = Expression.Variable(typeof(int), "bufferSize");
+            var knownLength = itemJar.OptionalConstantSerializedLength();
+
+            Expression consumedCountComputer;
+            if (knownLength.HasValue) {
+                consumedCountComputer = varSpaceNeeded.AssignTo(collection.AccessMember("Count").Times(knownLength.Value));
+            } else {
+                consumedCountComputer = collection.ForEach(item => Expression.Block(
+                    itemPacker.CapacityStorage.Concat(new[] {varItem}),
+                    varItem.AssignTo(item),
+                    itemPacker.CapacityComputer,
+                    varSpaceNeeded.PlusEqual(itemPacker.CapacityGetter)));
+            }
+
+            PackDoer packDoer = (array, offset) => Expression.Block(
+                new[] {varItem}, 
+                collection.ForEach(item => itemPacker.PackDoer(array, offset)));
+
+            return new SpecializedPackerParts(
+                capacityComputer: consumedCountComputer,
+                capacityGetter: varSpaceNeeded,
+                capacityStorage: new[] { varSpaceNeeded },
+                packDoer: packDoer);
         }
     }
 }
