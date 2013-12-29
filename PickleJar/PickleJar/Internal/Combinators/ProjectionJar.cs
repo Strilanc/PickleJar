@@ -34,7 +34,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
                     parseDoer: sub.ParseDoer.FollowedBy(resultVar.AssignTo(getParsedValueProjection(sub.ValueGetter))),
                     valueGetter: resultVar,
                     consumedCountGetter: sub.ConsumedCountGetter,
-                    storage: new SpecializedParserResultStorageParts(
+                    storage: new SpecializedParserStorageParts(
                         variablesNeededForValue: sub.Storage.ForValue.Concat(new[] {resultVar}),
                         variablesNeededForConsumedCount: sub.Storage.ForConsumedCount));
             };

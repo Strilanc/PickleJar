@@ -54,7 +54,7 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
                 lengthVar.AssignTo(Expression.MultiplyChecked(itemCount, Expression.Constant(itemLength.Value))),
                 boundsCheck,
                 resultVar.AssignTo(MakeUnsafeArrayBlitParserExpression<T>(array, offset, count, itemCount)));
-            var storage = new SpecializedParserResultStorageParts(new[] {resultVar}, new[] {lengthVar});
+            var storage = new SpecializedParserStorageParts(new[] {resultVar}, new[] {lengthVar});
             return new SpecializedParserParts(
                 parseDoer: parseDoer,
                 valueGetter: resultVar,

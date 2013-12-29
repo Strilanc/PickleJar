@@ -44,7 +44,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                                    .AssignTo(inlinedParseComponents.ValueGetter)),
                     loopExit));
 
-            var storage = new SpecializedParserResultStorageParts(
+            var storage = new SpecializedParserStorageParts(
                 variablesNeededForValue: new[] {resultArray},
                 variablesNeededForConsumedCount: new[] {resultConsumed});
             return new SpecializedParserParts(

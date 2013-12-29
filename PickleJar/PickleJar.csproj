@@ -54,7 +54,7 @@
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\PackBuilder.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedPackerParts.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedMultiValueParserParts.cs" />
-    <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedParserResultStorageParts.cs" />
+    <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedParserStorageParts.cs" />
     <Compile Include="PickleJar\Internal\Combinators\ProjectionJar.cs" />
     <Compile Include="PickleJar\Internal\Basic\ListJar.cs" />
     <Compile Include="PickleJar\Internal\Basic\DictionaryJar.cs" />

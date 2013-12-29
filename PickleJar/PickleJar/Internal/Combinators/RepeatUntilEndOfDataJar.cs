@@ -55,7 +55,7 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                     itemsComp.ParseDoer),
                 valueGetter: itemsComp.ValueGetter,
                 consumedCountGetter: count,
-                storage: new SpecializedParserResultStorageParts(
+                storage: new SpecializedParserStorageParts(
                     variablesNeededForValue: itemsComp.Storage.ForValue,
                     variablesNeededForConsumedCount: new ParameterExpression[0]));
         }
@@ -92,7 +92,7 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                 parseDoer: parseDoer,
                 valueGetter: varResult,
                 consumedCountGetter: varConsumed,
-                storage: new SpecializedParserResultStorageParts(
+                storage: new SpecializedParserStorageParts(
                     variablesNeededForValue: new[] {varResult},
                     variablesNeededForConsumedCount: new[] {varConsumed}));
         }

@@ -118,7 +118,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                 parseDoer: parseDoer,
                 valueGetter: varResultValue,
                 consumedCountGetter: parseSequence.ConsumedCountGetter,
-                storage: new SpecializedParserResultStorageParts(new[] {varResultValue}, parseSequence.Storage.ForConsumedCount));
+                storage: new SpecializedParserStorageParts(new[] {varResultValue}, parseSequence.Storage.ForConsumedCount));
         }
 
         private static SpecializedPackerParts MakeSpecializedPackerParts<T>(Expression value, IEnumerable<IJarForMember> memberJars) {
