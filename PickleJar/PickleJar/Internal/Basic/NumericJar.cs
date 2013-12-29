@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using Strilanc.PickleJar.Internal.Misc;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
+using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.Basic {
     internal static class NumericJar {
@@ -50,9 +51,9 @@ namespace Strilanc.PickleJar.Internal.Basic {
             var isLittleEndian = endianess == Endianess.LittleEndian;
             var isSystemEndian = size == 1 || isLittleEndian == BitConverter.IsLittleEndian;
 
-            return AnonymousJar.CreateSpecialized(
+            return AnonymousJar.CreateSpecialized<TNumber>(
                 specializedParserMaker: (array, offset, count) => SpecializedNumberParserPartsForType<TNumber>(isSystemEndian, array, offset, count),
-                packer: SpecializedNumberPackerForType<TNumber>(isSystemEndian),
+                specializedPacker: v => SpecializedNumberPackerPartsForType<TNumber>(v, endianess),
                 canBeFollowed: true,
                 isBlittable: isSystemEndian,
                 constLength: size,
@@ -63,22 +64,38 @@ namespace Strilanc.PickleJar.Internal.Basic {
         private static SpecializedParserParts SpecializedNumberParserPartsForType<TNumber>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
             var varParsedNumber = Expression.Parameter(typeof(TNumber));
             return new SpecializedParserParts(
-                parseDoer: Expression.Assign(varParsedNumber, SpecializedNumberParseExpressionForType<TNumber>(isSystemEndian, array, offset, count)),
+                parseDoer: varParsedNumber.AssignTo(SpecializedNumberParseExpressionForType<TNumber>(isSystemEndian, array, offset, count)),
                 valueGetter: varParsedNumber,
-                consumedCountGetter: Expression.Constant(Marshal.SizeOf(typeof(TNumber))),
+                consumedCountGetter: SizeOf<TNumber>().ConstExpr(),
                 storage: new SpecializedParserResultStorageParts(new[] {varParsedNumber}, new ParameterExpression[0]));
         }
 
-        private static Func<TNumber, byte[]> SpecializedNumberPackerForType<TNumber>(bool isSystemEndian) {
-            var input = Expression.Parameter(typeof(TNumber));
-            var body = SpecializedNumberPackExpressionForType<TNumber>(isSystemEndian, input);
-            var method = Expression.Lambda<Func<TNumber, byte[]>>(body, input);
-            return method.Compile();
+        private static SpecializedPackerParts SpecializedNumberPackerPartsForType<TNumber>(Expression value, Endianess endianess) {
+            PackDoer packDoer;
+            if (typeof(TNumber) == typeof(float) || typeof(TNumber) == typeof(double)) {
+                packDoer = (array, offset) => {
+                    var input = value.ReverseBytesIf<TNumber>(!endianess.IsSystemEndian());
+                    var getByteMethods = typeof(BitConverter).GetMethod("GetBytes", new[] {typeof(TNumber)});
+                    var output = Expression.Call(getByteMethods, input);
+                    var copyMethod = typeof(Array).GetMethod("Copy", new[] {typeof(Array), typeof(Array), typeof(int)});
+                    return Expression.Call(copyMethod, output, array, SizeOf<TNumber>().ConstExpr());
+                };
+            } else {
+                packDoer = (array, offset) => SizeOf<TNumber>()
+                                                  .Range()
+                                                  .Select(i => array.AccessIndex(offset.Plus(i)).AssignTo(value.ExtractByte<TNumber>(i, endianess)))
+                                                  .Block();
+            }
+
+            return new SpecializedPackerParts(
+                capacityComputer: Expression.Empty(),
+                capacityGetter: SizeOf<TNumber>().ConstExpr(),
+                capacityStorage: new ParameterExpression[0],
+                packDoer: packDoer);
         }
 
         private static Expression SpecializedNumberParseExpressionForType<TNumber>(bool isSystemEndian, Expression array, Expression offset, Expression count) {
-            var boundsCheck = Expression.IfThen(Expression.LessThan(count, Expression.Constant(Marshal.SizeOf(typeof(TNumber)))),
-                                                DataFragmentException.CachedThrowExpression);
+            var boundsCheck = count.IsLessThan(SizeOf<TNumber>().ConstExpr()).IfThenDo(DataFragmentException.CachedThrowExpression);
 
             if (typeof(TNumber) == typeof(byte) || typeof(TNumber) == typeof(sbyte)) {
                 var v = Expression.ArrayIndex(array, offset).ConvertIfNecessary<TNumber>();
@@ -94,11 +111,14 @@ namespace Strilanc.PickleJar.Internal.Basic {
                 return Expression.NewArrayInit(typeof(byte), value.ConvertIfNecessary<byte>());
             }
 
-            var input = ReverseBytesIf<TNumber>(value, !isSystemEndian);
+            var input = value.ReverseBytesIf<TNumber>(!isSystemEndian);
             var getByteMethods = typeof(BitConverter).GetMethod("GetBytes", new[] {typeof(TNumber)});
             return Expression.Call(getByteMethods, input);
         }
 
+        private static int SizeOf<TNumber>() {
+            return Marshal.SizeOf(typeof(TNumber));
+        }
         private static Expression ConvertIfNecessary<TDesired>(this Expression expression) {
             return expression.Type == typeof(TDesired)
                  ? expression
@@ -108,6 +128,15 @@ namespace Strilanc.PickleJar.Internal.Basic {
             return doReverse
                  ? Expression.Call(typeof(TwiddleUtil).GetMethod("ReverseBytes", new[] {typeof(T)}), expression)
                  : expression;
+        }
+        private static Expression ExtractByte<TNumber>(this Expression expression, int littleEndianOffset, Endianess endianess) {
+            if (!endianess.IsLittleEndian()) {
+                return expression.ExtractByte<TNumber>(SizeOf<TNumber>() - littleEndianOffset - 1, Endianess.LittleEndian);
+            }
+            if (littleEndianOffset > 0) {
+                return Expression.RightShift(expression, (littleEndianOffset * 8).ConstExpr()).ExtractByte<TNumber>(0, endianess);
+            }
+            return expression.ConvertIfNecessary<byte>();
         }
     }
 }

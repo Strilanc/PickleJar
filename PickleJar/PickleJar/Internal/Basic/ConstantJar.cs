@@ -29,6 +29,9 @@ namespace Strilanc.PickleJar.Internal.Basic {
                 Expression.Constant(0),
                 new SpecializedParserResultStorageParts(new ParameterExpression[0], new ParameterExpression[0]));
         }
+        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+            return default(SpecializedPackerParts);
+        }
         public override string ToString() {
             return string.Format(
                 "Constant[{0}]",

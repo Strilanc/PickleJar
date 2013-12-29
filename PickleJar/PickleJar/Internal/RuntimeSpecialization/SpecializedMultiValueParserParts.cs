@@ -39,7 +39,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
 
             var varConsumed = Expression.Variable(typeof(int), "listConsumed");
 
-            var initLocals = Expression.Assign(varConsumed, Expression.Constant(0));
+            var initLocals = varConsumed.AssignTo(Expression.Constant(0));
 
             var jarParseComponents =
                 (from jar in jars
@@ -51,7 +51,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                      inlinedParseComponents.Storage.ForConsumedCountIfValueAlreadyInScope,
                      new[] {
                          inlinedParseComponents.ParseDoer,
-                         Expression.AddAssign(varConsumed, inlinedParseComponents.ConsumedCountGetter)
+                         varConsumed.PlusEqual(inlinedParseComponents.ConsumedCountGetter)
                      })
                  select new { jar, inlinedParse = inlinedParseComponents, parseStatement }
                 ).ToArray();

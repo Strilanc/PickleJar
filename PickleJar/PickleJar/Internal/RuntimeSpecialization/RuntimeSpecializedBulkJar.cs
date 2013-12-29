@@ -28,9 +28,9 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             var inlinedParseComponents = itemJar.MakeInlinedParserComponents(array, Expression.Add(offset, resultConsumed), Expression.Subtract(count, resultConsumed));
 
             var initStatements = Expression.Block(
-                Expression.Assign(resultArray, Expression.NewArrayBounds(typeof(T), itemCount)),
-                Expression.Assign(resultConsumed, Expression.Constant(0)),
-                Expression.Assign(loopIndex, Expression.Constant(0)));
+                resultArray.AssignTo(Expression.NewArrayBounds(typeof(T), itemCount)),
+                resultConsumed.AssignTo(0.ConstExpr()),
+                loopIndex.AssignTo(0.ConstExpr()));
 
             var loopExit = Expression.Label();
             var parseDoer = Expression.Block(
@@ -41,11 +41,8 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                         Expression.IfThen(Expression.GreaterThanOrEqual(loopIndex, itemCount), Expression.Break(loopExit)),
                         inlinedParseComponents.ParseDoer,
                         Expression.AddAssign(resultConsumed, inlinedParseComponents.ConsumedCountGetter),
-                        Expression.Assign(
-                            Expression.ArrayAccess(
-                                resultArray,
-                                Expression.PostIncrementAssign(loopIndex)),
-                            inlinedParseComponents.ValueGetter)),
+                        resultArray.AccessIndex(Expression.PostIncrementAssign(loopIndex))
+                                   .AssignTo(inlinedParseComponents.ValueGetter)),
                     loopExit));
 
             var storage = new SpecializedParserResultStorageParts(

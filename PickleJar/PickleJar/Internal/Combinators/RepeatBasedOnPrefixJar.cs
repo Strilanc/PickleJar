@@ -50,5 +50,8 @@ namespace Strilanc.PickleJar.Internal.Repeated {
                     variablesNeededForValue: itemsComp.Storage.ForValue,
                     variablesNeededForConsumedCount: itemsComp.Storage.ForConsumedCount.Concat(countComp.Storage.ForConsumedCount).ToArray()));
         }
+        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+            throw new NotImplementedException();
+        }
     }
 }

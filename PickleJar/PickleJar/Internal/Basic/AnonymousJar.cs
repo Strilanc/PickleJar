@@ -15,6 +15,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
         public bool IsBlittable { get; private set; }
         public int? OptionalConstantSerializedLength { get; private set; }
         private readonly SpecializedParserMaker _tryInlinedParserComponents;
+        private readonly Func<Expression, SpecializedPackerParts?> _tryMakeSpecializedPackerParts;
         private readonly Func<string> _desc;
         private readonly object _components;
 
@@ -25,7 +26,8 @@ namespace Strilanc.PickleJar.Internal.Basic {
                             int? optionalConstantSerializedLength,
                             SpecializedParserMaker tryInlinedParserComponents,
                             Func<string> desc = null,
-                            object components = null) {
+                            object components = null,
+                            Func<Expression, SpecializedPackerParts?> tryMakeSpecializedPackerParts = null) {
             if (parse == null) throw new ArgumentNullException("parse");
             if (pack == null) throw new ArgumentNullException("pack");
             _parse = parse;
@@ -36,6 +38,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
             _tryInlinedParserComponents = tryInlinedParserComponents;
             _desc = desc;
             _components = components;
+            _tryMakeSpecializedPackerParts = tryMakeSpecializedPackerParts;
         }
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
@@ -48,6 +51,10 @@ namespace Strilanc.PickleJar.Internal.Basic {
             if (_tryInlinedParserComponents == null) return null;
             return _tryInlinedParserComponents(array, offset, count);
         }
+        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+            if (_tryMakeSpecializedPackerParts == null) return null;
+            return _tryMakeSpecializedPackerParts(value);
+        }
         public override string ToString() {
             return _desc == null ? base.ToString() : _desc();
         }
@@ -55,22 +62,23 @@ namespace Strilanc.PickleJar.Internal.Basic {
 
     internal static class AnonymousJar {
         public static AnonymousJar<T> CreateSpecialized<T>(SpecializedParserMaker specializedParserMaker,
-                                                           Func<T, byte[]> packer,
+                                                           SpecializedPackerMaker specializedPacker,
                                                            bool canBeFollowed,
                                                            bool isBlittable,
                                                            int? constLength,
                                                            Func<string> desc = null,
                                                            object components = null) {
             if (specializedParserMaker == null) throw new ArgumentNullException("specializedParserMaker");
-            if (packer == null) throw new ArgumentNullException("packer");
+            if (specializedPacker == null) throw new ArgumentNullException("specializedPacker");
             return new AnonymousJar<T>(SpecializedParserParts.MakeParser<T>(specializedParserMaker),
-                                       packer,
+                                       SpecializedPackerParts.MakePacker<T>(specializedPacker),
                                        canBeFollowed,
                                        isBlittable,
                                        constLength,
                                        specializedParserMaker,
                                        desc,
-                                       components);
+                                       components,
+                                       e => specializedPacker(e));
         }
     }
 }

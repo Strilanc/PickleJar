@@ -77,6 +77,9 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
         public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return null;
         }
+        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Emits a method that copies the contents of an array segment over the memory representation of a value.

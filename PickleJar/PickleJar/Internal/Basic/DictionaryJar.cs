@@ -19,10 +19,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
                     typeof(KeyValuePair<TKey, TValue>).GetConstructor(new[] { typeof(TKey), typeof(TValue) }).NotNull(),
                     Expression.Constant(key),
                     parsedValueExpression),
-                packProjection: e => {
-                    if (!Equals(e.Key, key)) throw new ArgumentException("value.Key != key");
-                    return e.Value;
-                },
+                packProjection: e => e.AccessMember(typeof(KeyValuePair<TKey, TValue>).GetProperty("Value")),
                 desc: () => string.Format("{0}: {1}", key, valueJar),
                 components: null);
         }
@@ -43,9 +40,14 @@ namespace Strilanc.PickleJar.Internal.Basic {
                         consumedCountGetter: sub.ConsumedCountGetter,
                         storage: sub.Storage);
                 },
-                packer: value => {
-                    if (value.Count != _keyedJars.Length) throw new ArgumentException("value.Count != _keyedJars.Length");
-                    return subJar.Pack(_keyedJars.Select(e => new KeyValuePair<TKey, TValue>(e.Key, value[e.Key])).ToArray());                    
+                specializedPacker: value => {
+                    // todo: check keys
+                    //if (value.Count != _keyedJars.Length) throw new ArgumentException("value.Count != _keyedJars.Length");
+                    return SpecializedPackerParts.FromSequence(keyedJars.Select(keyedSubJar => {
+                        var indexProperty = typeof(IReadOnlyDictionary<TKey, TValue>).GetProperty("Item");
+                        var val = Expression.MakeIndex(value, indexProperty, new[] { keyedSubJar.Key.ConstExpr() });
+                        return keyedSubJar.Value.MakeSpecializedPacker(val);
+                    }).ToArray());
                 },
                 canBeFollowed: subJar.CanBeFollowed,
                 isBlittable: subJar.IsBlittable(),

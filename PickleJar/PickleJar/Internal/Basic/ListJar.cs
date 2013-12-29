@@ -15,7 +15,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
 
             return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
                 specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),
-                packer: v => { throw new NotImplementedException(); },
+                specializedPacker: v => MakePackerComponents(jarsCopy, v),
                 canBeFollowed: jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed,
                 isBlittable: jarsCopy.All(jar => jar is IJarMetadataInternal && ((IJarMetadataInternal)jar).IsBlittable),
                 constLength: jarsCopy.Select(jar => jar.OptionalConstantSerializedLength()).Sum(),
@@ -37,9 +37,9 @@ namespace Strilanc.PickleJar.Internal.Basic {
                 r.Storage.ForValueIfConsumedCountAlreadyInScope,
                 new[] {
                     r.ParseDoer,
-                    Expression.Assign(resultArray, Expression.NewArrayBounds(typeof(T), cap)),
+                    resultArray.AssignTo(Expression.NewArrayBounds(typeof(T), cap)),
                     Enumerable.Range(0, jars.Length)
-                              .Select(i => Expression.Assign(Expression.ArrayAccess(resultArray, Expression.Constant(i)), r.ValueGetters[i]))
+                              .Select(i => resultArray.AccessIndex(i).AssignTo(r.ValueGetters[i]))
                               .Block(),
                 });
 
@@ -49,6 +49,16 @@ namespace Strilanc.PickleJar.Internal.Basic {
                 resultArray,
                 r.ConsumedCountGetter,
                 storage);
+        }
+
+        private static SpecializedPackerParts MakePackerComponents<T>(IEnumerable<IJar<T>> jars, Expression value) {
+            if (value == null) throw new ArgumentNullException("value");
+
+            return SpecializedPackerParts.FromSequence(
+                jars.Select((e, i) => e.MakeSpecializedPacker(Expression.MakeIndex(value,
+                                                                                   typeof(IReadOnlyList<T>).GetProperty("Item"),
+                                                                                   new[] {i.ConstExpr()})))
+                    .ToArray());
         }
     }
 }

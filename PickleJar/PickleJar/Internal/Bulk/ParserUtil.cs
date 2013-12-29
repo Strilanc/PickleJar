@@ -95,10 +95,31 @@ namespace Strilanc.PickleJar.Internal {
                 });
 
             return new SpecializedParserParts(
-                parseDoer: Expression.Assign(resultVar, parse),
-                valueGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Value")),
-                consumedCountGetter: Expression.MakeMemberAccess(resultVar, typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
+                parseDoer: resultVar.AssignTo(parse),
+                valueGetter: resultVar.AccessMember(typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Value")),
+                consumedCountGetter: resultVar.AccessMember(typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
                 storage: new SpecializedParserResultStorageParts(new[] {resultVar}, new[] { resultVar }));
+        }
+        private static SpecializedPackerParts MakeDefaulPackerComponents(object jar, Type valueType, Expression value) {
+            var resultVar = Expression.Variable(typeof(byte[]), "packed");
+            var doPack = resultVar.AssignTo(jar.ConstExpr().CallInstanceMethod(
+                typeof(IJar<>).MakeGenericType(valueType).GetMethod("Pack"),
+                value));
+            var resultLength = resultVar.AccessMember(typeof(byte[]).GetProperty("Length"));
+            
+            return new SpecializedPackerParts(
+                capacityComputer: doPack,
+                capacityGetter: resultLength,
+                capacityStorage: new[] {resultVar},
+                packDoer: (array, offset) => {
+                    var copyMethod = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(Array), typeof(int) });
+                    return Expression.Call(copyMethod, resultVar, array, resultLength);
+                });
+        }
+        public static SpecializedPackerParts MakeSpecializedPacker<T>(this IJar<T> jar, Expression value) {
+            var r = jar as IJarMetadataInternal;
+            return (r == null ? null : r.TryMakeSpecializedPackerParts(value))
+                   ?? MakeDefaulPackerComponents(jar, typeof(T), value);
         }
         public static SpecializedParserParts MakeInlinedParserComponents<T>(this IJar<T> jar, Expression array, Expression offset, Expression count) {
             var r = jar as IJarMetadataInternal;
@@ -109,6 +130,16 @@ namespace Strilanc.PickleJar.Internal {
             var r = jar.Jar as IJarMetadataInternal;
             return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jar.Jar, jar.JarValueType, array, offset, count);
+        }
+        public static SpecializedPackerParts MakePackerParts(this JarMeta jar, Expression value) {
+            var r = jar.Jar as IJarMetadataInternal;
+            return (r == null ? null : r.TryMakeSpecializedPackerParts(value))
+                   ?? MakeDefaulPackerComponents(jar.Jar, jar.JarValueType, value);
+        }
+        public static SpecializedPackerParts MakePackerParts(this IJarForMember jarForMember, Expression value) {
+            var r = jarForMember.Jar as IJarMetadataInternal;
+            return (r == null ? null : r.TryMakeSpecializedPackerParts(value))
+                   ?? MakeDefaulPackerComponents(jarForMember.Jar, jarForMember.MemberMatchInfo.MemberType, value);
         }
         public static SpecializedParserParts MakeInlinedParserComponents(this IJarForMember jarForMember, Expression array, Expression offset, Expression count) {
             var r = jarForMember.Jar as IJarMetadataInternal;
@@ -146,9 +177,48 @@ namespace Strilanc.PickleJar.Internal {
                    || type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                           .All(e => e.FieldType != type && e.FieldType.IsValueType && e.FieldType.IsBlittable());
         }
+        public static Expression Plus(this Expression expression, Expression other) {
+            return Expression.Add(expression, other);
+        }
+        public static Expression IsLessThan(this Expression expression, Expression other) {
+            return Expression.LessThan(expression, other);
+        }
+        public static Expression IfThenDo(this Expression condition, Expression action) {
+            return Expression.IfThen(condition, action);
+        }
+        public static Expression Plus(this Expression expression, int offset) {
+            if (offset == 0) return expression;
+            return expression.Plus(offset.ConstExpr());
+        }
+        public static Expression PlusEqual(this Expression expression, Expression other) {
+            return Expression.AddAssign(expression, other);
+        }
+        public static Expression CallInstanceMethod(this Expression expression, MethodInfo method, params Expression[] arguments) {
+            return Expression.Call(expression, method, arguments);
+        }
+        public static Expression AccessMember(this Expression expression, MemberInfo memberInfo) {
+            return Expression.MakeMemberAccess(expression, memberInfo);
+        }
+        public static Expression AssignTo(this Expression expression, Expression other) {
+            return Expression.Assign(expression, other);
+        }
+        public static Expression AccessIndex(this Expression array, Expression index) {
+            return Expression.ArrayAccess(array, index);
+        }
+        public static Expression AccessIndex(this Expression array, int index) {
+            return array.AccessIndex(index.ConstExpr());
+        }
+        public static Expression ConstExpr<T>(this T value) {
+            return Expression.Constant(value);
+        }
+
+        public static Expression FollowedBy(this Expression expression, Expression next) {
+            return Expression.Block(expression, next);
+        }
         public static Expression Block(this IEnumerable<Expression> expressions) {
             var exp = expressions.ToArray();
             if (exp.Length == 0) return Expression.Empty();
+            if (exp.Length == 1) return exp.Single();
             return Expression.Block(exp);
         }
         public static MemberMatchInfo MatchInfo(this PropertyInfo member) {

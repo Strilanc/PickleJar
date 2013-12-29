@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Strilanc.PickleJar.Internal.Basic;
-using Strilanc.PickleJar.Internal.Structured;
 
 namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     /// <summary>
@@ -45,9 +44,9 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             var jarsCopy = memberJars.ToArray();
             var canBeFollowed = jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed();
 
-            return AnonymousJar.CreateSpecialized(
+            return AnonymousJar.CreateSpecialized<T>(
                 specializedParserMaker: (array, offset, count) => MakeInlinedParserComponents<T>(jarsCopy, array, offset, count),
-                packer: MakePacker<T>(jarsCopy),
+                specializedPacker: value => MakeSpecializedPackerParts<T>(value, jarsCopy),
                 canBeFollowed: canBeFollowed,
                 isBlittable: false,
                 constLength: jarsCopy.Select(e => e.OptionalConstantSerializedLength()).Sum(),
@@ -102,16 +101,16 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             var assignMutableMembersBlock =
                 memberJarMap
                 .Where(e => !parameterMap.ContainsKey(e.Key))
-                .Select(e => Expression.Assign(
-                    Expression.MakeMemberAccess(varResultValue, mutableMemberMap[e.Key]),
-                    memberValueGetters[e.Key]))
+                .Select(e => varResultValue
+                    .AccessMember(mutableMemberMap[e.Key])
+                    .AssignTo(memberValueGetters[e.Key]))
                 .Block();
 
             var parseDoer = Expression.Block(
                 parseSequence.Storage.ForValueIfConsumedCountAlreadyInScope,
                 new[] {
                     parseSequence.ParseDoer,
-                    Expression.Assign(varResultValue, valueConstructedFromParsedValues),
+                    varResultValue.AssignTo(valueConstructedFromParsedValues),
                     assignMutableMembersBlock
                 });
 
@@ -122,33 +121,11 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                 storage: new SpecializedParserResultStorageParts(new[] {varResultValue}, parseSequence.Storage.ForConsumedCount));
         }
 
-        private static Func<T, byte[]> MakePacker<T>(IJarForMember[] memberJars) {
-            var memberMap = memberJars.ToDictionary(
-                e => e.MemberMatchInfo,
-                e => new { memberJar = e, memberGetter = e.PickMatchingMemberGetterForType(typeof (T))});
-
-            var param = Expression.Parameter(typeof (T), "value");
-            var resVar = Expression.Variable(typeof (List<byte[]>), "res");
-            var statements = Expression.Block(
-                (from memberJar in memberJars
-                 let packMethod = typeof(IJar<>).MakeGenericType(memberJar.MemberMatchInfo.MemberType).GetMethod("Pack")
-                 let packAccess = memberMap[memberJar.MemberMatchInfo].memberGetter(param)
-                 let packCall = Expression.Call(Expression.Constant(memberJar.Jar), packMethod, new[] {packAccess})
-                 select Expression.Call(resVar, typeof(List<byte[]>).GetMethod("Add"), new Expression[] { packCall })).Block(),
-                Expression.Assign(resVar, Expression.New(typeof (List<byte[]>).GetConstructor(new Type[0]).NotNull())));
-
-            // todo: inlining
-
-            var flattened = Expression.Call(typeof (CollectionUtil).GetMethod("Flatten"), new Expression[] {resVar});
-            var body = Expression.Block(
-                new[] {resVar},
-                statements,
-                flattened);
-            var method = Expression.Lambda<Func<T, byte[]>>(
-                body,
-                new[] { param });
-
-            return method.Compile();
+        private static SpecializedPackerParts MakeSpecializedPackerParts<T>(Expression value, IEnumerable<IJarForMember> memberJars) {
+            return SpecializedPackerParts.FromSequence(
+                memberJars
+                .Select(e => e.MakePackerParts(e.PickMatchingMemberGetterForType(typeof(T))(value)))
+                .ToArray());
         }
     }
 }

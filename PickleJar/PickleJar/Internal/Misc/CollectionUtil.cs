@@ -16,6 +16,9 @@ namespace Strilanc.PickleJar.Internal {
             }
         }
 
+        public static IEnumerable<int> Range(this int count) {
+            return Enumerable.Range(0, count);
+        } 
         ///<summary>Determines if any of the items in the sequence is a null value. Throws if the collection itself is null.</summary>
         public static bool HasNulls<T>(this IEnumerable<T> sequence) where T : class {
             if (sequence == null) throw new ArgumentNullException("sequence");

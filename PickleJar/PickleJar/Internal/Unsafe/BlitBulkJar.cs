@@ -52,9 +52,9 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
             var lengthVar = Expression.Variable(typeof (int), "length");
             var boundsCheck = Expression.IfThen(Expression.LessThan(count, lengthVar), DataFragmentException.CachedThrowExpression);
             var parseDoer = Expression.Block(
-                Expression.Assign(lengthVar, Expression.MultiplyChecked(itemCount, Expression.Constant(itemLength.Value))),
+                lengthVar.AssignTo(Expression.MultiplyChecked(itemCount, Expression.Constant(itemLength.Value))),
                 boundsCheck,
-                Expression.Assign(resultVar, MakeUnsafeArrayBlitParserExpression<T>(array, offset, count, itemCount)));
+                resultVar.AssignTo(MakeUnsafeArrayBlitParserExpression<T>(array, offset, count, itemCount)));
             var storage = new SpecializedParserResultStorageParts(new[] {resultVar}, new[] {lengthVar});
             return new SpecializedParserParts(
                 parseDoer: parseDoer,

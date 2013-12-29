@@ -31,6 +31,9 @@ namespace Strilanc.PickleJar.Internal.Repeated {
         public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
             return _bulkItemJar.MakeInlinedParserComponents(array, offset, count, Expression.Constant(_constantCount));
         }
+        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+            throw new NotImplementedException();
+        }
         public override string ToString() {
             return string.Format(
                 "{0}.RepeatNTimes({1})",

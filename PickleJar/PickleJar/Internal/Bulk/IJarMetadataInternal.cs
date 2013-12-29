@@ -25,6 +25,8 @@ namespace Strilanc.PickleJar.Internal {
         /// Returns the components used to inline a parser, or else null if this parser doesn't support inlining.
         /// </summary>
         SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count);
+
+        SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value);
     }
 
     internal struct JarMeta {
