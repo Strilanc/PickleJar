@@ -10,19 +10,17 @@ namespace Strilanc.PickleJar.Internal.Combinators {
             if (jar == null) throw new ArgumentNullException("jar");
             if (constraint == null) throw new ArgumentNullException("constraint");
             return new AnonymousJar<T>(
-                data => {
+                parse: data => {
                     var v = jar.Parse(data);
                     if (!constraint(v.Value)) throw new InvalidOperationException("Parsed value did not match constraint.");
                     return v;
                 },
-                item => {
+                pack: item => {
                     if (!constraint(item)) throw new InvalidOperationException("Value to pack did not match constraint.");
                     return jar.Pack(item);
                 },
-                jar.CanBeFollowed,
-                isBlittable: false,
-                optionalConstantSerializedLength: jar.OptionalConstantSerializedLength(),
-                tryInlinedParserComponents: null);
+                canBeFollowed: jar.CanBeFollowed,
+                optionalConstantSerializedLength: jar.OptionalConstantSerializedLength());
         }
 
         public static IJar<T> CreateSpecialized<T>(IJar<T> jar,
@@ -30,7 +28,7 @@ namespace Strilanc.PickleJar.Internal.Combinators {
             if (jar == null) throw new ArgumentNullException("jar");
             if (constraint == null) throw new ArgumentNullException("constraint");
 
-            SpecializedParserMaker parser = (array, offset, count) => {
+            ParseSpecializer parser = (array, offset, count) => {
                 var sub = jar.MakeInlinedParserComponents(array, offset, count);
                 return new SpecializedParserParts(
                     parseDoer: sub.ParseDoer.FollowedBy(
@@ -40,7 +38,7 @@ namespace Strilanc.PickleJar.Internal.Combinators {
                     consumedCountGetter: sub.ConsumedCountGetter,
                     storage: sub.Storage);
             };
-            SpecializedPackerMaker packer = value => {
+            PackSpecializer packer = value => {
                 var sub = jar.MakeSpecializedPacker(value);
                 return new SpecializedPackerParts(
                     capacityComputer: sub.CapacityComputer,
@@ -52,13 +50,11 @@ namespace Strilanc.PickleJar.Internal.Combinators {
             };
 
             return AnonymousJar.CreateSpecialized<T>(
-                specializedParserMaker: parser,
-                specializedPacker: packer,
+                parseSpecializer: parser,
+                packSpecializer: packer,
                 canBeFollowed: jar.CanBeFollowed,
-                isBlittable: false,
                 constLength: jar.OptionalConstantSerializedLength(),
-                desc: () => string.Format("{0}.Where({1})", jar, constraint),
-                components: null);
+                desc: () => string.Format("{0}.Where({1})", jar, constraint));
         }
     }
 }

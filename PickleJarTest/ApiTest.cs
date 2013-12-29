@@ -162,7 +162,7 @@ public class ApiTest {
             // inlined expression has same result?
             for (var i = 0; i < segments.Length; i++) {
                 if (ReferenceEquals(null, vs[i])) continue;
-                var inlined = metadata.TryMakeInlinedParserComponents(
+                var inlined = metadata.TrySpecializeParser(
                     Expression.Constant(segments[i].Array),
                     Expression.Constant(segments[i].Offset),
                     Expression.Constant(segments[i].Count));

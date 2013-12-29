@@ -13,7 +13,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         private readonly Func<string> _desc;
         public IJar<T> ItemJar { get; private set; }
         private readonly object _components;
-        private readonly SpecializedPackerMaker _makeSpecializedCollectionPacker; 
+        private readonly PackSpecializer _makeSpecializedCollectionPacker; 
 
         public bool CanBeFollowed { get { return true; } }
         public bool IsBlittable { get { return false; } }
@@ -23,7 +23,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
                                 Func<ArraySegment<byte>, int, ParsedValue<IReadOnlyList<T>>> parse,
                                 Func<IReadOnlyCollection<T>, byte[]> pack,
                                 InlinerBulkMaker makeInlinedParserComponents,
-                                SpecializedPackerMaker makeSpecializedCollectionPacker,
+                                PackSpecializer makeSpecializedCollectionPacker,
                                 Func<string> desc = null,
                                 object components = null) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
@@ -60,7 +60,7 @@ namespace Strilanc.PickleJar.Internal.Bulk {
     internal static class AnonymousBulkJar {
         public static AnonymousBulkJar<T> CreateSpecialized<T>(IJar<T> itemJar,
                                                                InlinerBulkMaker parser,
-                                                               SpecializedPackerMaker collectionPacker,
+                                                               PackSpecializer collectionPacker,
                                                                Func<string> desc,
                                                                object components) {
             return new AnonymousBulkJar<T>(itemJar,

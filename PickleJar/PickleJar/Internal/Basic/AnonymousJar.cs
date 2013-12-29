@@ -14,31 +14,29 @@ namespace Strilanc.PickleJar.Internal.Basic {
         public bool CanBeFollowed { get; private set; }
         public bool IsBlittable { get; private set; }
         public int? OptionalConstantSerializedLength { get; private set; }
-        private readonly SpecializedParserMaker _tryInlinedParserComponents;
-        private readonly Func<Expression, SpecializedPackerParts?> _tryMakeSpecializedPackerParts;
+        private readonly ParseSpecializer _trySpecializeParser;
+        private readonly PackSpecializer _specializePacker;
         private readonly Func<string> _desc;
         private readonly object _components;
 
         public AnonymousJar(Func<ArraySegment<byte>, ParsedValue<T>> parse,
                             Func<T, byte[]> pack,
                             bool canBeFollowed,
-                            bool isBlittable,
-                            int? optionalConstantSerializedLength,
-                            SpecializedParserMaker tryInlinedParserComponents,
+                            bool isBlittable = false,
+                            int? optionalConstantSerializedLength = null,
+                            ParseSpecializer trySpecializeParser = null,
+                            PackSpecializer specializePacker = null,
                             Func<string> desc = null,
-                            object components = null,
-                            Func<Expression, SpecializedPackerParts?> tryMakeSpecializedPackerParts = null) {
-            if (parse == null) throw new ArgumentNullException("parse");
-            if (pack == null) throw new ArgumentNullException("pack");
+                            object components = null) {
             _parse = parse;
             _pack = pack;
             CanBeFollowed = canBeFollowed;
             IsBlittable = isBlittable;
             OptionalConstantSerializedLength = optionalConstantSerializedLength;
-            _tryInlinedParserComponents = tryInlinedParserComponents;
+            _trySpecializeParser = trySpecializeParser;
             _desc = desc;
             _components = components;
-            _tryMakeSpecializedPackerParts = tryMakeSpecializedPackerParts;
+            _specializePacker = specializePacker;
         }
 
         public ParsedValue<T> Parse(ArraySegment<byte> data) {
@@ -47,13 +45,17 @@ namespace Strilanc.PickleJar.Internal.Basic {
         public byte[] Pack(T value) {
             return _pack(value);
         }
-        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            if (_tryInlinedParserComponents == null) return null;
-            return _tryInlinedParserComponents(array, offset, count);
+        public SpecializedParserParts TrySpecializeParser(Expression array, Expression offset, Expression count) {
+            if (array == null) throw new ArgumentNullException("array");
+            if (offset == null) throw new ArgumentNullException("offset");
+            if (count == null) throw new ArgumentNullException("count");
+            if (_trySpecializeParser == null) return null;
+            return _trySpecializeParser(array, offset, count);
         }
-        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
-            if (_tryMakeSpecializedPackerParts == null) return null;
-            return _tryMakeSpecializedPackerParts(value);
+        public SpecializedPackerParts? TrySpecializePacker(Expression value) {
+            if (value == null) throw new ArgumentNullException("value");
+            if (_specializePacker == null) return null;
+            return _specializePacker(value);
         }
         public override string ToString() {
             return _desc == null ? base.ToString() : _desc();
@@ -61,24 +63,24 @@ namespace Strilanc.PickleJar.Internal.Basic {
     }
 
     internal static class AnonymousJar {
-        public static AnonymousJar<T> CreateSpecialized<T>(SpecializedParserMaker specializedParserMaker,
-                                                           SpecializedPackerMaker specializedPacker,
+        public static AnonymousJar<T> CreateSpecialized<T>(ParseSpecializer parseSpecializer,
+                                                           PackSpecializer packSpecializer,
                                                            bool canBeFollowed,
-                                                           bool isBlittable,
-                                                           int? constLength,
+                                                           bool isBlittable = false,
+                                                           int? constLength = null,
                                                            Func<string> desc = null,
                                                            object components = null) {
-            if (specializedParserMaker == null) throw new ArgumentNullException("specializedParserMaker");
-            if (specializedPacker == null) throw new ArgumentNullException("specializedPacker");
-            return new AnonymousJar<T>(SpecializedParserParts.MakeParser<T>(specializedParserMaker),
-                                       SpecializedPackerParts.MakePacker<T>(specializedPacker),
+            if (parseSpecializer == null) throw new ArgumentNullException("parseSpecializer");
+            if (packSpecializer == null) throw new ArgumentNullException("packSpecializer");
+            return new AnonymousJar<T>(SpecializedParserParts.MakeParser<T>(parseSpecializer),
+                                       SpecializedPackerParts.MakePacker<T>(packSpecializer),
                                        canBeFollowed,
                                        isBlittable,
                                        constLength,
-                                       specializedParserMaker,
+                                       parseSpecializer,
+                                       packSpecializer,
                                        desc,
-                                       components,
-                                       e => specializedPacker(e));
+                                       components);
         }
     }
 }

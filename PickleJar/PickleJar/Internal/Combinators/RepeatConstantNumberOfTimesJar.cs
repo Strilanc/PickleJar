@@ -28,10 +28,10 @@ namespace Strilanc.PickleJar.Internal.Repeated {
             return _bulkItemJar.Pack(value);
         }
 
-        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TrySpecializeParser(Expression array, Expression offset, Expression count) {
             return _bulkItemJar.MakeInlinedParserComponents(array, offset, count, Expression.Constant(_constantCount));
         }
-        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+        public SpecializedPackerParts? TrySpecializePacker(Expression value) {
             throw new NotImplementedException();
         }
         public override string ToString() {

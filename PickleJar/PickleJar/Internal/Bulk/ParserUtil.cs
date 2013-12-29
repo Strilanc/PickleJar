@@ -99,7 +99,7 @@ namespace Strilanc.PickleJar.Internal {
                 parseDoer: resultVar.AssignTo(parse),
                 valueGetter: resultVar.AccessMember(typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Value")),
                 consumedCountGetter: resultVar.AccessMember(typeof(ParsedValue<>).MakeGenericType(valueType).GetField("Consumed")),
-                storage: new SpecializedParserResultStorageParts(new[] {resultVar}, new[] { resultVar }));
+                storage: new SpecializedParserStorageParts(new[] {resultVar}, new[] { resultVar }));
         }
         private static SpecializedPackerParts MakeDefaulPackerComponents(object jar, Type valueType, Expression value) {
             var capacityVar = Expression.Variable(typeof(byte[]), "packed");
@@ -122,32 +122,32 @@ namespace Strilanc.PickleJar.Internal {
         }
         public static SpecializedPackerParts MakeSpecializedPacker<T>(this IJar<T> jar, Expression value) {
             var r = jar as IJarMetadataInternal;
-            return (r == null ? null : r.TryMakeSpecializedPackerParts(value))
+            return (r == null ? null : r.TrySpecializePacker(value))
                    ?? MakeDefaulPackerComponents(jar, typeof(T), value);
         }
         public static SpecializedParserParts MakeInlinedParserComponents<T>(this IJar<T> jar, Expression array, Expression offset, Expression count) {
             var r = jar as IJarMetadataInternal;
-            return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
+            return (r == null ? null : r.TrySpecializeParser(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jar, typeof(T), array, offset, count);
         }
         public static SpecializedParserParts MakeInlinedParserComponents(this JarMeta jar, Expression array, Expression offset, Expression count) {
             var r = jar.Jar as IJarMetadataInternal;
-            return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
+            return (r == null ? null : r.TrySpecializeParser(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jar.Jar, jar.JarValueType, array, offset, count);
         }
         public static SpecializedPackerParts MakePackerParts(this JarMeta jar, Expression value) {
             var r = jar.Jar as IJarMetadataInternal;
-            return (r == null ? null : r.TryMakeSpecializedPackerParts(value))
+            return (r == null ? null : r.TrySpecializePacker(value))
                    ?? MakeDefaulPackerComponents(jar.Jar, jar.JarValueType, value);
         }
         public static SpecializedPackerParts MakePackerParts(this IJarForMember jarForMember, Expression value) {
             var r = jarForMember.Jar as IJarMetadataInternal;
-            return (r == null ? null : r.TryMakeSpecializedPackerParts(value))
+            return (r == null ? null : r.TrySpecializePacker(value))
                    ?? MakeDefaulPackerComponents(jarForMember.Jar, jarForMember.MemberMatchInfo.MemberType, value);
         }
         public static SpecializedParserParts MakeInlinedParserComponents(this IJarForMember jarForMember, Expression array, Expression offset, Expression count) {
             var r = jarForMember.Jar as IJarMetadataInternal;
-            return (r == null ? null : r.TryMakeInlinedParserComponents(array, offset, count))
+            return (r == null ? null : r.TrySpecializeParser(array, offset, count))
                    ?? MakeDefaultInlinedParserComponents(jarForMember.Jar, jarForMember.MemberMatchInfo.MemberType, array, offset, count);
         }
 
@@ -192,6 +192,10 @@ namespace Strilanc.PickleJar.Internal {
         }
         public static Expression IsLessThan(this Expression expression, Expression other) {
             return Expression.LessThan(expression, other);
+        }
+
+        public static Expression Not(this Expression expression) {
+            return Expression.Not(expression);
         }
         public static Expression IfThenDo(this Expression condition, Expression action) {
             return Expression.IfThen(condition, action);

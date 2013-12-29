@@ -39,18 +39,18 @@ namespace Strilanc.PickleJar.Internal.Repeated {
         }
         public bool IsBlittable { get { return false; } }
         public int? OptionalConstantSerializedLength { get { return null; } }
-        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TrySpecializeParser(Expression array, Expression offset, Expression count) {
             var countComp = _countPrefixJar.MakeInlinedParserComponents(array, offset, count);
             var itemsComp = _bulkItemJar.MakeInlinedParserComponents(array, offset, count, countComp.ValueGetter);
             return new SpecializedParserParts(
                 parseDoer: Expression.Block(countComp.Storage.ForValueIfConsumedCountAlreadyInScope, new[] {countComp.ParseDoer, itemsComp.ParseDoer}),
                 valueGetter: itemsComp.ValueGetter,
                 consumedCountGetter: Expression.Add(countComp.ConsumedCountGetter, itemsComp.ConsumedCountGetter),
-                storage: new SpecializedParserResultStorageParts(
+                storage: new SpecializedParserStorageParts(
                     variablesNeededForValue: itemsComp.Storage.ForValue,
                     variablesNeededForConsumedCount: itemsComp.Storage.ForConsumedCount.Concat(countComp.Storage.ForConsumedCount).ToArray()));
         }
-        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+        public SpecializedPackerParts? TrySpecializePacker(Expression value) {
             throw new NotImplementedException();
         }
     }

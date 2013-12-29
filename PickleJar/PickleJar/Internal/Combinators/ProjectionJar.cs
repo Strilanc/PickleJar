@@ -18,17 +18,16 @@ namespace Strilanc.PickleJar.Internal.Structured {
                 jar.CanBeFollowed,
                 isBlittable: false,
                 optionalConstantSerializedLength: jar.OptionalConstantSerializedLength(),
-                tryInlinedParserComponents: null);
+                trySpecializeParser: null);
         }
         public static IJar<TExposed> CreateSpecialized<TInternal, TExposed>(IJar<TInternal> internalJar,
                                                                             Func<Expression, Expression> getParsedValueProjection,
                                                                             Func<Expression, Expression> packProjection,
-                                                                            Func<string> desc = null,
-                                                                            object components = null) {
+                                                                            Func<string> desc = null) {
             if (internalJar == null) throw new ArgumentNullException("internalJar");
             if (packProjection == null) throw new ArgumentNullException("packProjection");
 
-            SpecializedParserMaker specializedParserMaker = (array, offset, count) => {
+            ParseSpecializer parseSpecializer = (array, offset, count) => {
                 var sub = internalJar.MakeInlinedParserComponents(array, offset, count);
                 var resultVar = Expression.Variable(typeof(TExposed), "result_projected");
                 return new SpecializedParserParts(
@@ -40,7 +39,7 @@ namespace Strilanc.PickleJar.Internal.Structured {
                         variablesNeededForConsumedCount: sub.Storage.ForConsumedCount));
             };
 
-            SpecializedPackerMaker packerMaker = value => {
+            PackSpecializer packerMaker = value => {
                 var sub = internalJar.MakeSpecializedPacker(packProjection(value));
                 return new SpecializedPackerParts(
                     capacityComputer: sub.CapacityComputer,
@@ -50,13 +49,12 @@ namespace Strilanc.PickleJar.Internal.Structured {
             };
 
             return AnonymousJar.CreateSpecialized<TExposed>(
-                specializedParserMaker: specializedParserMaker,
-                specializedPacker: packerMaker,
+                parseSpecializer: parseSpecializer,
+                packSpecializer: packerMaker,
                 canBeFollowed: internalJar.CanBeFollowed,
                 isBlittable: false,
                 constLength: internalJar.OptionalConstantSerializedLength(),
-                desc: desc ?? (() => string.Format("{0} (projected)", internalJar)),
-                components: components);
+                desc: desc ?? (() => string.Format("{0} (projected)", internalJar)));
         }
     }
 }

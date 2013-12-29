@@ -64,7 +64,7 @@ namespace Strilanc.PickleJar {
         /// Packing fails if given a value besides the constant value, and otherwise succeeds with empty data.
         /// </summary>
         public static IJar<T> Constant<T>(T constantValue) {
-            return new ConstantJar<T>(constantValue);
+            return ConstantJar.Create(constantValue);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Strilanc.PickleJar {
                 canBeFollowed: canBeFollowed,
                 isBlittable: false,
                 optionalConstantSerializedLength: null,
-                tryInlinedParserComponents: null);
+                trySpecializeParser: null);
         }
     }
 }

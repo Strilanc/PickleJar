@@ -13,7 +13,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     /// For example, a 32-bit integer parser can avoid using any space at all to holds its consumed count because it is always 4.
     /// In particular, having custom storage removes unnecessary creation and unwrapping of instances of ParsedValue.
     /// </remarks>
-    internal struct SpecializedParserResultStorageParts {
+    internal struct SpecializedParserStorageParts {
         private readonly ParameterExpression[] _forValue;
         private readonly ParameterExpression[] _forConsumedCount;
 
@@ -40,7 +40,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
         /// </summary>
         public IReadOnlyList<ParameterExpression> ForBoth { get { return ForConsumedCount.Concat(ForValue).Distinct().ToArray(); } }
 
-        public SpecializedParserResultStorageParts(IEnumerable<ParameterExpression> variablesNeededForValue,
+        public SpecializedParserStorageParts(IEnumerable<ParameterExpression> variablesNeededForValue,
                                   IEnumerable<ParameterExpression> variablesNeededForConsumedCount) {
             if (variablesNeededForValue == null) throw new ArgumentNullException("variablesNeededForValue");
             if (variablesNeededForConsumedCount == null) throw new ArgumentNullException("variablesNeededForConsumedCount");

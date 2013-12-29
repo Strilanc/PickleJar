@@ -1,41 +1,36 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Basic {
     /// <summary>
     /// A jar that consumes no data, and always returns the same fixed value.
     /// </summary>
-    internal struct ConstantJar<T> : IJarMetadataInternal, IJar<T> {
-        public bool IsBlittable { get { return false; } }
-        public int? OptionalConstantSerializedLength { get { return 0; } }
-        public bool CanBeFollowed { get { return true; } }
-        public readonly T ConstantValue;
-        public ConstantJar(T constantValue) {
-            ConstantValue = constantValue;
-        }
-
-        public ParsedValue<T> Parse(ArraySegment<byte> data) {
-            return new ParsedValue<T>(ConstantValue, 0);
-        }
-        public byte[] Pack(T value) {
-            if (!Equals(value, ConstantValue)) throw new ArgumentException("!Equals(value, ConstantValue)");
-            return new byte[0];
-        }
-        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
-            return new SpecializedParserParts(
-                Expression.Empty(),
-                Expression.Constant(ConstantValue),
-                Expression.Constant(0),
-                new SpecializedParserResultStorageParts(new ParameterExpression[0], new ParameterExpression[0]));
-        }
-        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
-            return default(SpecializedPackerParts);
-        }
-        public override string ToString() {
-            return string.Format(
-                "Constant[{0}]",
-                ConstantValue);
+    internal static class ConstantJar {
+        public static IJar<T> Create<T>(T constantValue) {
+            var constValExp = constantValue.ConstExpr();
+            return AnonymousJar.CreateSpecialized<T>(
+                parseSpecializer: (array, offset, count) => new SpecializedParserParts(
+                                                                parseDoer: Expression.Empty(),
+                                                                valueGetter: constValExp,
+                                                                consumedCountGetter: 0.ConstExpr(),
+                                                                storage: default(SpecializedParserStorageParts)),
+                packSpecializer: value => new SpecializedPackerParts(
+                                              capacityComputer: Expression.Empty(),
+                                              capacityGetter: 0.ConstExpr(),
+                                              capacityStorage: new ParameterExpression[0],
+                                              packDoer: (array, offset) =>
+                                                        Expression.Call(typeof(Object).GetMethod("Equals", BindingFlags.Static | BindingFlags.Public),
+                                                                        constValExp,
+                                                                        value)
+                                                                  .Not()
+                                                                  .IfThenDo(Expression.Throw(
+                                                                      new ArgumentException("!Equals(value, ConstantValue)").ConstExpr()))),
+                canBeFollowed: true,
+                constLength: 0,
+                desc: () => string.Format("Constant[{0}]", constantValue),
+                components: constantValue);
         }
     }
 }

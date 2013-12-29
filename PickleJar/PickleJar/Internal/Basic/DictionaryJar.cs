@@ -20,8 +20,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
                     Expression.Constant(key),
                     parsedValueExpression),
                 packProjection: e => e.AccessMember(typeof(KeyValuePair<TKey, TValue>).GetProperty("Value")),
-                desc: () => string.Format("{0}: {1}", key, valueJar),
-                components: null);
+                desc: () => string.Format("{0}: {1}", key, valueJar));
         }
 
         public static IJar<IReadOnlyDictionary<TKey, TValue>> Create<TKey, TValue>(IEnumerable<KeyValuePair<TKey, IJar<TValue>>> keyedJars) {
@@ -31,7 +30,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
 
             var subJar = ListJar.Create(_keyedJars.Select(CreateKeyedJar));
             return AnonymousJar.CreateSpecialized<IReadOnlyDictionary<TKey, TValue>>(
-                specializedParserMaker: (array, offset, count) => {
+                parseSpecializer: (array, offset, count) => {
                     var sub = subJar.MakeInlinedParserComponents(array, offset, count);
                     return new SpecializedParserParts(
                         parseDoer: sub.ParseDoer,
@@ -40,7 +39,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
                         consumedCountGetter: sub.ConsumedCountGetter,
                         storage: sub.Storage);
                 },
-                specializedPacker: value => {
+                packSpecializer: value => {
                     // todo: check keys
                     //if (value.Count != _keyedJars.Length) throw new ArgumentException("value.Count != _keyedJars.Length");
                     return SpecializedPackerParts.FromSequence(keyedJars.Select(keyedSubJar => {

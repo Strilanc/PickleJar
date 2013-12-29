@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
-    internal delegate SpecializedParserParts SpecializedParserMaker(Expression array, Expression offset, Expression count);
+    internal delegate SpecializedParserParts ParseSpecializer(Expression array, Expression offset, Expression count);
     internal delegate SpecializedParserParts InlinerBulkMaker(Expression array, Expression offset, Expression count, Expression itemCount);
 
     internal sealed class SpecializedParserParts {
         public readonly Expression ParseDoer;
-        public readonly SpecializedParserResultStorageParts Storage;
+        public readonly SpecializedParserStorageParts Storage;
         public readonly Expression ValueGetter;
         public readonly Expression ConsumedCountGetter;
 
-        public SpecializedParserParts(Expression parseDoer, Expression valueGetter, Expression consumedCountGetter, SpecializedParserResultStorageParts storage) {
+        public SpecializedParserParts(Expression parseDoer, Expression valueGetter, Expression consumedCountGetter, SpecializedParserStorageParts storage) {
             if (parseDoer == null) throw new ArgumentNullException("parseDoer");
             if (valueGetter == null) throw new ArgumentNullException("valueGetter");
             if (consumedCountGetter == null) throw new ArgumentNullException("consumedCountGetter");
@@ -22,7 +22,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             Storage = storage;
         }
 
-        public static Func<ArraySegment<byte>, ParsedValue<T>> MakeParser<T>(SpecializedParserMaker inlineMaker) {
+        public static Func<ArraySegment<byte>, ParsedValue<T>> MakeParser<T>(ParseSpecializer inlineMaker) {
             var paramData = Expression.Parameter(typeof(ArraySegment<byte>), "data");
             var paramDataArray = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Array"));
             var paramDataOffset = Expression.MakeMemberAccess(paramData, typeof(ArraySegment<byte>).GetProperty("Offset"));

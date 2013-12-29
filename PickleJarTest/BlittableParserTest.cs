@@ -93,7 +93,7 @@ public class BlittableParserTest {
         var meta = (IJarMetadataInternal)exposedParser;
         var array = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 0xFF };
         var d = new ArraySegment<byte>(array, 0, array.Length);
-        var inlinedParseComponents = meta.TryMakeInlinedParserComponents(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
+        var inlinedParseComponents = meta.TrySpecializeParser(Expression.Constant(array), Expression.Constant(0), Expression.Constant(array.Length));
 
         var body = Expression.Block(
             inlinedParseComponents.Storage.ForBoth,

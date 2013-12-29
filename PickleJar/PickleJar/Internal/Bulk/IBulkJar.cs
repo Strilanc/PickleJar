@@ -13,5 +13,6 @@ namespace Strilanc.PickleJar.Internal.Bulk {
         int? OptionalConstantSerializedValueLength { get; }
         byte[] Pack(IReadOnlyCollection<T> values);
         SpecializedParserParts MakeInlinedParserComponents(Expression array, Expression offset, Expression count, Expression itemCount);
+        SpecializedPackerParts MakeSpecializedCollectionPacker(Expression collection);
     }
 }

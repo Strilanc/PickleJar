@@ -74,10 +74,10 @@ namespace Strilanc.PickleJar.Internal.Unsafe {
             return true;
         }
 
-        public SpecializedParserParts TryMakeInlinedParserComponents(Expression array, Expression offset, Expression count) {
+        public SpecializedParserParts TrySpecializeParser(Expression array, Expression offset, Expression count) {
             return null;
         }
-        public SpecializedPackerParts? TryMakeSpecializedPackerParts(Expression value) {
+        public SpecializedPackerParts? TrySpecializePacker(Expression value) {
             throw new NotImplementedException();
         }
 

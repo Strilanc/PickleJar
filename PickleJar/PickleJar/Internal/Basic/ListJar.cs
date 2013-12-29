@@ -14,8 +14,8 @@ namespace Strilanc.PickleJar.Internal.Basic {
             if (jarsCopy.SkipLast(1).Any(jar => !jar.CanBeFollowed)) throw new ArgumentException("itemJars.SkipLast(1).Any(jar => !jar.CanBeFollowed)");
 
             return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
-                specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),
-                specializedPacker: v => MakePackerComponents(jarsCopy, v),
+                parseSpecializer: (array, offset, count) => MakeInlinedParserComponentsForJarSequence(jarsCopy, array, offset, count),
+                packSpecializer: v => MakePackerComponents(jarsCopy, v),
                 canBeFollowed: jarsCopy.Length == 0 || jarsCopy.Last().CanBeFollowed,
                 isBlittable: jarsCopy.All(jar => jar is IJarMetadataInternal && ((IJarMetadataInternal)jar).IsBlittable),
                 constLength: jarsCopy.Select(jar => jar.OptionalConstantSerializedLength()).Sum(),
@@ -38,12 +38,12 @@ namespace Strilanc.PickleJar.Internal.Basic {
                 new[] {
                     r.ParseDoer,
                     resultArray.AssignTo(Expression.NewArrayBounds(typeof(T), cap)),
-                    Enumerable.Range(0, jars.Length)
-                              .Select(i => resultArray.AccessIndex(i).AssignTo(r.ValueGetters[i]))
-                              .Block(),
+                    jars.Length.Range()
+                        .Select(i => resultArray.AccessIndex(i).AssignTo(r.ValueGetters[i]))
+                        .Block()
                 });
 
-            var storage = new SpecializedParserResultStorageParts(r.Storage.ForConsumedCount, new[] {resultArray});
+            var storage = new SpecializedParserStorageParts(r.Storage.ForConsumedCount, new[] {resultArray});
             return new SpecializedParserParts(
                 parserDoer,
                 resultArray,

@@ -5,7 +5,7 @@ using Strilanc.PickleJar.Internal.Basic;
 public class ConstantJarTest {
     [TestMethod]
     public void TestConstantJar() {
-        var jar = new ConstantJar<string>("test");
+        var jar = ConstantJar.Create("test");
         jar.AssertPicklesNoMoreNoLess("test", new byte[0]);
     }
 }

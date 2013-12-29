@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
     internal delegate Expression PackDoer(Expression array, ParameterExpression offset);
-    internal delegate SpecializedPackerParts SpecializedPackerMaker(Expression value);
+    internal delegate SpecializedPackerParts PackSpecializer(Expression value);
 
     internal struct SpecializedPackerParts {
         private readonly Expression _capacityComputer;
@@ -46,7 +46,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             return new SpecializedPackerParts(capacityComputer, capacityVar, capacityStorage, doer);
         }
 
-        public static Func<T, byte[]> MakePacker<T>(SpecializedPackerMaker maker) {
+        public static Func<T, byte[]> MakePacker<T>(PackSpecializer maker) {
             var paramValue = Expression.Parameter(typeof(T), "value");
             var specialized = maker(paramValue);
 

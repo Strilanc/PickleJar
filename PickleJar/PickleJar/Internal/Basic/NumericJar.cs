@@ -52,8 +52,8 @@ namespace Strilanc.PickleJar.Internal.Basic {
             var isSystemEndian = size == 1 || isLittleEndian == BitConverter.IsLittleEndian;
 
             return AnonymousJar.CreateSpecialized<TNumber>(
-                specializedParserMaker: (array, offset, count) => SpecializedNumberParserPartsForType<TNumber>(isSystemEndian, array, offset, count),
-                specializedPacker: v => SpecializedNumberPackerPartsForType<TNumber>(v, endianess),
+                parseSpecializer: (array, offset, count) => SpecializedNumberParserPartsForType<TNumber>(isSystemEndian, array, offset, count),
+                packSpecializer: v => SpecializedNumberPackerPartsForType<TNumber>(v, endianess),
                 canBeFollowed: true,
                 isBlittable: isSystemEndian,
                 constLength: size,
@@ -67,7 +67,7 @@ namespace Strilanc.PickleJar.Internal.Basic {
                 parseDoer: varParsedNumber.AssignTo(SpecializedNumberParseExpressionForType<TNumber>(isSystemEndian, array, offset, count)),
                 valueGetter: varParsedNumber,
                 consumedCountGetter: SizeOf<TNumber>().ConstExpr(),
-                storage: new SpecializedParserResultStorageParts(new[] {varParsedNumber}, new ParameterExpression[0]));
+                storage: new SpecializedParserStorageParts(new[] {varParsedNumber}, new ParameterExpression[0]));
         }
 
         private static SpecializedPackerParts SpecializedNumberPackerPartsForType<TNumber>(Expression value, Endianess endianess) {

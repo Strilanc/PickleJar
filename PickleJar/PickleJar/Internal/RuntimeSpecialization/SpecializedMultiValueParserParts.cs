@@ -8,17 +8,17 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
         private readonly Expression _parseDoer;
         private readonly Expression[] _valueGetters;
         private readonly Expression _consumedCountGetter;
-        private readonly SpecializedParserResultStorageParts _storage;
+        private readonly SpecializedParserStorageParts _storage;
 
         public Expression ParseDoer { get { return _parseDoer ?? Expression.Empty(); } }
         public IReadOnlyList<Expression> ValueGetters { get { return _valueGetters ?? new Expression[0]; } }
         public Expression ConsumedCountGetter { get { return _consumedCountGetter ?? Expression.Constant(0); } }
-        public SpecializedParserResultStorageParts Storage { get { return _storage; } }
+        public SpecializedParserStorageParts Storage { get { return _storage; } }
 
         public SpecializedMultiValueParserParts(Expression parseDoer,
                                                   IEnumerable<Expression> valueGetters,
                                                   Expression consumedCountGetter,
-                                                  SpecializedParserResultStorageParts storage) {
+                                                  SpecializedParserStorageParts storage) {
             if (parseDoer == null) throw new ArgumentNullException("parseDoer");
             if (valueGetters == null) throw new ArgumentNullException("valueGetters");
             if (consumedCountGetter == null) throw new ArgumentNullException("consumedCountGetter");
@@ -60,7 +60,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                 initLocals,
                 jarParseComponents.Select(e => e.parseStatement).Block());
 
-            var storage = new SpecializedParserResultStorageParts(
+            var storage = new SpecializedParserStorageParts(
                 variablesNeededForValue: jarParseComponents.SelectMany(e => e.inlinedParse.Storage.ForValue),
                 variablesNeededForConsumedCount: new[] { varConsumed });
 

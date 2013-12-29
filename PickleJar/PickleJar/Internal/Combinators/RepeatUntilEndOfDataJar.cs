@@ -9,26 +9,25 @@ using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 namespace Strilanc.PickleJar.Internal.Repeated {
     internal static class RepeatUntilEndOfDataJarUtil {
         public static IJar<IReadOnlyList<T>> MakeRepeatUntilEndOfDataJar<T>(IBulkJar<T> bulkItemJar) {
-            throw new NotImplementedException();
-            //if (bulkItemJar.ItemJar.OptionalConstantSerializedLength().GetValueOrDefault() > 0) {
-            //    return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
-            //        specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForConstantLength(bulkItemJar, array, offset, count),
-            //        packer: bulkItemJar.Pack,
-            //        canBeFollowed: false,
-            //        isBlittable: false,
-            //        constLength: null,
-            //        desc: () => string.Format("{0}.RepeatUntilEndOfDatah()", bulkItemJar),
-            //        components: bulkItemJar);
-            //}
+            if (bulkItemJar.ItemJar.OptionalConstantSerializedLength().GetValueOrDefault() > 0) {
+                return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
+                    parseSpecializer: (array, offset, count) => MakeInlinedParserComponentsForConstantLength(bulkItemJar, array, offset, count),
+                    packSpecializer: bulkItemJar.MakeSpecializedCollectionPacker,
+                    canBeFollowed: false,
+                    isBlittable: false,
+                    constLength: null,
+                    desc: () => string.Format("{0}.RepeatUntilEndOfDatah()", bulkItemJar),
+                    components: bulkItemJar);
+            }
 
-            //return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
-            //    specializedParserMaker: (array, offset, count) => MakeInlinedParserComponentsForVaryingLength(bulkItemJar, array, offset, count),
-            //    packer: bulkItemJar.Pack,
-            //    canBeFollowed: false,
-            //    isBlittable: false,
-            //    constLength: null,
-            //    desc: () => string.Format("{0}.RepeatUntilEndOfData()", bulkItemJar),
-            //    components: bulkItemJar.ItemJar);
+            return AnonymousJar.CreateSpecialized<IReadOnlyList<T>>(
+                parseSpecializer: (array, offset, count) => MakeInlinedParserComponentsForVaryingLength(bulkItemJar, array, offset, count),
+                packSpecializer: bulkItemJar.MakeSpecializedCollectionPacker,
+                canBeFollowed: false,
+                isBlittable: false,
+                constLength: null,
+                desc: () => string.Format("{0}.RepeatUntilEndOfData()", bulkItemJar),
+                components: bulkItemJar.ItemJar);
         }
 
         public static SpecializedParserParts MakeInlinedParserComponentsForConstantLength<T>(IBulkJar<T> bulkItemJar,

@@ -16,7 +16,7 @@ public static class TestingUtilities {
         var offset = Expression.Parameter(typeof(int), "offset");
         var count = Expression.Parameter(typeof(int), "count");
 
-        var inlined = meta.TryMakeInlinedParserComponents(
+        var inlined = meta.TrySpecializeParser(
             array,
             offset,
             count);
