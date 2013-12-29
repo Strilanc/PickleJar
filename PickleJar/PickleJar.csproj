@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="PickleJar\Internal\Basic\AnonymousJar.cs" />
     <Compile Include="PickleJar\Internal\Bulk\AnonymousBulkJar.cs" />
+    <Compile Include="PickleJar\Internal\Combinators\ConstraintJar.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\PackBuilder.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedPackerParts.cs" />
     <Compile Include="PickleJar\Internal\RuntimeSpecialization\SpecializedMultiValueParserParts.cs" />

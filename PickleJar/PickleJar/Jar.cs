@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Strilanc.PickleJar.Internal;
 using Strilanc.PickleJar.Internal.Basic;
+using Strilanc.PickleJar.Internal.Combinators;
 using Strilanc.PickleJar.Internal.Misc;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 using Strilanc.PickleJar.Internal.Unsafe;
@@ -154,16 +155,7 @@ namespace Strilanc.PickleJar {
         /// When packing, the exposed value is transformed into a value of the internal type and then packed by the given jar.
         /// </summary>
         public static IJar<TExposed> Select<TInternal, TExposed>(this IJar<TInternal> jar, Func<TInternal, TExposed> parseProjection, Func<TExposed, TInternal> packProjection) {
-            if (jar == null) throw new ArgumentNullException("jar");
-            if (parseProjection == null) throw new ArgumentNullException("parseProjection");
-            if (packProjection == null) throw new ArgumentNullException("packProjection");
-            return new AnonymousJar<TExposed>(
-                data => jar.Parse(data).Select(parseProjection),
-                e => jar.Pack(packProjection(e)),
-                jar.CanBeFollowed,
-                isBlittable: false,
-                optionalConstantSerializedLength: jar.OptionalConstantSerializedLength(),
-                tryInlinedParserComponents: null);
+            return ProjectionJar.Create(jar, parseProjection, packProjection);
         }
 
         /// <summary>
@@ -171,22 +163,7 @@ namespace Strilanc.PickleJar {
         /// Parsing and packing fail when the involved value doesn't match the constraint.
         /// </summary>
         public static IJar<T> Where<T>(this IJar<T> jar, Func<T, bool> constraint) {
-            if (jar == null) throw new ArgumentNullException("jar");
-            if (constraint == null) throw new ArgumentNullException("constraint");
-            return new AnonymousJar<T>(
-                data => {
-                    var v = jar.Parse(data);
-                    if (!constraint(v.Value)) throw new InvalidOperationException("Data did not match Where constraint");
-                    return v;
-                },
-                item => {
-                    if (!constraint(item)) throw new InvalidOperationException("Data did not match Where constraint");
-                    return jar.Pack(item);
-                },
-                jar.CanBeFollowed,
-                isBlittable: false,
-                optionalConstantSerializedLength: jar.OptionalConstantSerializedLength(),
-                tryInlinedParserComponents: null);
+            return ConstraintJar.Create(jar, constraint);
         }
 
         /// <summary>
