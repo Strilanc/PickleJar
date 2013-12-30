@@ -54,9 +54,10 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             var varResult = Expression.Variable(typeof(byte[]), "result");
 
             var body = Expression.Block(
-                specialized.PrecomputedSizeStorage.Concat(new[] { varOffset, varResult }),
+                specialized.PrecomputedSizeStorage.Concat(new[] {varOffset, varResult}),
                 specialized.SizePrecomputer,
                 varResult.AssignTo(Expression.NewArrayBounds(typeof(byte), specialized.PrecomputedSizeGetter)),
+                varOffset.AssignTo(0.ConstExpr()),
                 specialized.PackDoer(varResult, varOffset),
                 varResult);
 

@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Linq;
 using Strilanc.PickleJar.Internal.Bulk;
 
@@ -59,10 +60,11 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
             var itemPacker = itemJar.MakeSpecializedPacker(varItem);
             var varSpaceNeeded = Expression.Variable(typeof(int), "bufferSize");
             var knownLength = itemJar.OptionalConstantSerializedLength();
-
+            
             Expression consumedCountComputer;
             if (knownLength.HasValue) {
-                consumedCountComputer = varSpaceNeeded.AssignTo(collection.AccessMember("Count").Times(knownLength.Value));
+                var countProperty = typeof(IReadOnlyCollection<T>).GetProperty("Count");
+                consumedCountComputer = varSpaceNeeded.AssignTo(collection.AccessMember(countProperty).Times(knownLength.Value));
             } else {
                 consumedCountComputer = collection.ForEach(item => Expression.Block(
                     itemPacker.PrecomputedSizeStorage.Concat(new[] {varItem}),
@@ -73,7 +75,7 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
 
             PackDoer packDoer = (array, offset) => Expression.Block(
                 new[] {varItem}, 
-                collection.ForEach(item => itemPacker.PackDoer(array, offset)));
+                collection.ForEach(item => varItem.AssignTo(item).FollowedBy(itemPacker.PackDoer(array, offset))));
 
             return new SpecializedPackerParts(
                 sizePrecomputer: consumedCountComputer,

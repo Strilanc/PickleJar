@@ -1,37 +1,55 @@
 ﻿using System;
-using System.Linq;
+using System.Linq.Expressions;
+using Strilanc.PickleJar.Internal.Basic;
+using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
 namespace Strilanc.PickleJar.Internal.Combinators {
-    internal sealed class NullTerminatedJar<T> : IJar<T> {
-        private readonly IJar<T> _itemJar;
-        public bool CanBeFollowed { get { return true; } }
-
-        public NullTerminatedJar(IJar<T> itemJar) {
+    internal sealed class NullTerminatedJar {
+        public static IJar<T> Create<T>(IJar<T> itemJar) {
             if (itemJar == null) throw new ArgumentNullException("itemJar");
-            this._itemJar = itemJar;
-        }
 
-        public ParsedValue<T> Parse(ArraySegment<byte> data) {
-            var index = data.IndexesOf((byte)0).FirstOrNull();
-            if (!index.HasValue) throw new ArgumentException("Null terminator not found.");
+            ParseSpecializer parseSpecializer = (array, offset, count) => {
+                var varLengthToTerminator = Expression.Variable(typeof(int), "lengthToTerminator");
+                var findTerminator = Expression.Block(
+                    varLengthToTerminator.AssignTo(0.ConstExpr()),
+                    varLengthToTerminator.IsGreaterThanOrEqualTo(count)
+                                         .IfThenDo(Expression.Throw(new InvalidOperationException("Null terminator not found.").ConstExpr()))
+                                         .DoWhileTrueDo(
+                                             loopCondition: array.AccessIndex(offset.Plus(varLengthToTerminator)).IsNotEqualTo(((byte)0).ConstExpr()),
+                                             loopBodyEnd: varLengthToTerminator.PlusEqual(1)));
 
-            var itemDataLength = index.Value;
-            var parsedItem = _itemJar.Parse(data.Take(itemDataLength));
-            if (parsedItem.Consumed != itemDataLength) throw new LeftoverDataException();
+                var sub = itemJar.MakeInlinedParserComponents(array, offset, varLengthToTerminator);
+                return new SpecializedParserParts(
+                    parseDoer: Expression.Block(
+                        sub.Storage.ForConsumedCountIfValueAlreadyInScope,
+                        findTerminator,
+                        // todo: check that all data was consumed
+                        sub.ParseDoer),
+                    valueGetter: sub.ValueGetter,
+                    consumedCountGetter: varLengthToTerminator.Plus(1),
+                    storage: new SpecializedParserStorageParts(
+                        variablesNeededForValue: sub.Storage.ForValue,
+                        variablesNeededForConsumedCount: new[] {varLengthToTerminator}));
+            };
 
-            var dataLength = itemDataLength + 1;
-            return parsedItem.Value.AsParsed(dataLength);
-        }
+            PackSpecializer packSpecializer = value => {
+                var sub = itemJar.MakeSpecializedPacker(value);
+                return new SpecializedPackerParts(
+                    sizePrecomputer: sub.SizePrecomputer,
+                    precomputedSizeGetter: sub.PrecomputedSizeGetter.Plus(1),
+                    precomputedSizeStorage: sub.PrecomputedSizeStorage,
+                    packDoer: (array, offset) => Expression.Block(
+                        sub.PackDoer(array, offset), // todo: check that no zeroes were in the output
+                        array.AccessIndex(offset).AssignTo(((byte)0).ConstExpr()),
+                        offset.PlusEqual(1)));
+            };
 
-        public byte[] Pack(T value) {
-            var itemData = _itemJar.Pack(value);
-            if (itemData.Contains((byte)0)) throw new ArgumentException("Null terminated data contains a zero.");
-            return itemData.Concat(new byte[] { 0 }).ToArray();
-        }
-        public override string ToString() {
-            return string.Format(
-                "{0}.NullTerminated()",
-                _itemJar);
+            return AnonymousJar.CreateSpecialized<T>(
+                parseSpecializer: parseSpecializer,
+                packSpecializer: packSpecializer,
+                canBeFollowed: true,
+                constLength: itemJar.OptionalConstantSerializedLength() + 1,
+                desc: () => string.Format("{0}.NullTerminated()", itemJar));
         }
     }
 }

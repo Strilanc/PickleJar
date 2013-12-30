@@ -78,13 +78,15 @@ namespace Strilanc.PickleJar.Internal.Basic {
                     var getByteMethods = typeof(BitConverter).GetMethod("GetBytes", new[] {typeof(TNumber)});
                     var output = Expression.Call(getByteMethods, input);
                     var copyMethod = typeof(Array).GetMethod("Copy", new[] {typeof(Array), typeof(Array), typeof(int)});
-                    return Expression.Call(copyMethod, output, array, SizeOf<TNumber>().ConstExpr());
+                    return Expression.Call(copyMethod, output, array, SizeOf<TNumber>().ConstExpr())
+                        .FollowedBy(offset.PlusEqual(SizeOf<TNumber>()));
                 };
             } else {
                 packDoer = (array, offset) => SizeOf<TNumber>()
                                                   .Range()
                                                   .Select(i => array.AccessIndex(offset.Plus(i)).AssignTo(value.ExtractByte<TNumber>(i, endianess)))
-                                                  .Block();
+                                                  .Block()
+                                                  .FollowedBy(offset.PlusEqual(SizeOf<TNumber>()));
             }
 
             return new SpecializedPackerParts(
@@ -105,15 +107,6 @@ namespace Strilanc.PickleJar.Internal.Basic {
             var value = Expression.Call(typeof(BitConverter).GetMethod("To" + typeof(TNumber).Name), array, offset);
             var result = ReverseBytesIf<TNumber>(value, !isSystemEndian);
             return Expression.Block(boundsCheck, result);
-        }
-        private static Expression SpecializedNumberPackExpressionForType<TNumber>(bool isSystemEndian, Expression value) {
-            if (typeof(TNumber) == typeof(byte) || typeof(TNumber) == typeof(sbyte)) {
-                return Expression.NewArrayInit(typeof(byte), value.ConvertIfNecessary<byte>());
-            }
-
-            var input = value.ReverseBytesIf<TNumber>(!isSystemEndian);
-            var getByteMethods = typeof(BitConverter).GetMethod("GetBytes", new[] {typeof(TNumber)});
-            return Expression.Call(getByteMethods, input);
         }
 
         private static int SizeOf<TNumber>() {

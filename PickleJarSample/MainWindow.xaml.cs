@@ -9,6 +9,8 @@ namespace PickleJarSample {
             this.Loaded += (sender, arg) => Test();
         }
         public void Test() {
+            var xx = Jar.Int16LittleEndian.RepeatUntilEndOfData().NullTerminated().DataSizePrefixed(Jar.Int32LittleEndian, includePrefixInSize: false);
+
             var r = 
                     new[] {
                         Jar.UInt8.RepeatNTimes(3),

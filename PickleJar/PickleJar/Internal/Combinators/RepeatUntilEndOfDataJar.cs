@@ -16,7 +16,7 @@ namespace Strilanc.PickleJar.Internal.Combinators {
                     canBeFollowed: false,
                     isBlittable: false,
                     constLength: null,
-                    desc: () => string.Format("{0}.RepeatUntilEndOfDatah()", bulkItemJar),
+                    desc: () => string.Format("{0}.RepeatUntilEndOfData()", bulkItemJar),
                     components: bulkItemJar);
             }
 

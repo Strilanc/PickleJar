@@ -105,8 +105,7 @@ namespace Strilanc.PickleJar {
         /// When parsing, looks for the zero byte and ensures all the data up to it (and no more) is parsed.
         /// </summary>
         public static IJar<T> NullTerminated<T>(this IJar<T> itemJar) {
-            if (itemJar == null) throw new ArgumentNullException("itemJar");
-            return new NullTerminatedJar<T>(itemJar);
+            return NullTerminatedJar.Create(itemJar);
         }
 
         /// <summary>

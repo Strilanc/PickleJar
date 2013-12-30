@@ -102,7 +102,7 @@ namespace Strilanc.PickleJar.Internal {
                 storage: new SpecializedParserStorageParts(new[] {resultVar}, new[] { resultVar }));
         }
         private static SpecializedPackerParts MakeDefaulPackerComponents(object jar, Type valueType, Expression value) {
-            var capacityVar = Expression.Variable(typeof(byte[]), "packed");
+            var capacityVar = Expression.Variable(typeof(int), "packed");
             var computePack = jar.ConstExpr().CallInstanceMethod(
                 "Pack",
                 value);
@@ -200,8 +200,14 @@ namespace Strilanc.PickleJar.Internal {
         public static Expression IsLessThan(this Expression expression, Expression other) {
             return Expression.LessThan(expression, other);
         }
+        public static Expression IsGreaterThanOrEqualTo(this Expression expression, Expression other) {
+            return Expression.GreaterThanOrEqual(expression, other);
+        }
         public static Expression IsNotEqualTo(this Expression expression, Expression other) {
             return Expression.NotEqual(expression, other);
+        }
+        public static Expression AndAlso(this Expression left, Expression right) {
+            return Expression.AndAlso(left, right);
         }
 
         public static Expression Not(this Expression expression) {
@@ -227,6 +233,30 @@ namespace Strilanc.PickleJar.Internal {
         public static Expression CallInstanceMethod(this Expression expression, string unambiguousMethodName, params Expression[] arguments) {
             return expression.CallInstanceMethod(expression.Type.GetMethod(unambiguousMethodName), arguments);
         }
+        public static Expression DoWhileTrueDo(this Expression loopBodyStart, Expression loopCondition, Expression loopBodyEnd) {
+            if (loopBodyStart == null) throw new ArgumentNullException("loopBodyStart");
+            if (loopCondition == null) throw new ArgumentNullException("loopCondition");
+            if (loopBodyEnd == null) throw new ArgumentNullException("loopBodyEnd");
+
+            var breakTarget = Expression.Label("loopBreakTarget");
+            return Expression.Loop(
+                loopBodyStart.FollowedBy(
+                    Expression.IfThenElse(loopCondition,
+                                          loopBodyEnd,
+                                          Expression.Break(breakTarget))),
+                breakTarget);
+        }
+        public static Expression WhileTrueDo(this Expression condition, Expression body) {
+            if (condition == null) throw new ArgumentNullException("condition");
+            if (body == null) throw new ArgumentNullException("body");
+
+            var breakTarget = Expression.Label("loopBreakTarget");
+            return Expression.Loop(
+                Expression.IfThenElse(condition,
+                                      body,
+                                      Expression.Break(breakTarget)),
+                breakTarget);
+        }
         public static Expression ForEach(this Expression collection, Func<Expression, Expression> currentValueToBody) {
             if (collection == null) throw new ArgumentNullException("collection");
             if (currentValueToBody == null) throw new ArgumentNullException("currentValueToBody");
@@ -237,7 +267,6 @@ namespace Strilanc.PickleJar.Internal {
                                      .GetGenericArguments()
                                      .Single();
             var enumeratorType = typeof(IEnumerator<>).MakeGenericType(itemType);
-            var breakTarget = Expression.Label("forEachBreak");
             var varEnumerator = Expression.Variable(enumeratorType, "forEachEnumerator");
             var disposeMethod = typeof(IDisposable).GetMethod("Dispose");
             var moveNextMethod = typeof(IEnumerator).GetMethod("MoveNext");
@@ -245,11 +274,7 @@ namespace Strilanc.PickleJar.Internal {
             return Expression.Block(
                 new[] {varEnumerator},
                 Expression.TryFinally(
-                    Expression.Loop(
-                        Expression.IfThenElse(varEnumerator.CallInstanceMethod(moveNextMethod),
-                                              currentValueToBody(varEnumerator.AccessMember(currentProperty)),
-                                              Expression.Break(breakTarget)),
-                        breakTarget),
+                    varEnumerator.CallInstanceMethod(moveNextMethod).WhileTrueDo(currentValueToBody(varEnumerator.AccessMember(currentProperty))),
                     varEnumerator.CallInstanceMethod(disposeMethod)));
         }
         public static Expression AccessMember(this Expression expression, MemberInfo memberInfo) {
