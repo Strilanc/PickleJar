@@ -4,7 +4,7 @@ using Strilanc.PickleJar.Internal.Basic;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 using System.Linq;
 
-namespace Strilanc.PickleJar.Internal.Structured {
+namespace Strilanc.PickleJar.Internal.Combinators {
     internal static class ProjectionJar {
         public static IJar<TExposed> Create<TInternal, TExposed>(IJar<TInternal> jar,
                                                                  Func<TInternal, TExposed> parseProjection,
@@ -42,9 +42,9 @@ namespace Strilanc.PickleJar.Internal.Structured {
             PackSpecializer packerMaker = value => {
                 var sub = internalJar.MakeSpecializedPacker(packProjection(value));
                 return new SpecializedPackerParts(
-                    capacityComputer: sub.CapacityComputer,
-                    capacityGetter: sub.CapacityGetter,
-                    capacityStorage: sub.CapacityStorage,
+                    sizePrecomputer: sub.SizePrecomputer,
+                    precomputedSizeGetter: sub.PrecomputedSizeGetter,
+                    precomputedSizeStorage: sub.PrecomputedSizeStorage,
                     packDoer: sub.PackDoer);
             };
 

@@ -65,10 +65,10 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                 consumedCountComputer = varSpaceNeeded.AssignTo(collection.AccessMember("Count").Times(knownLength.Value));
             } else {
                 consumedCountComputer = collection.ForEach(item => Expression.Block(
-                    itemPacker.CapacityStorage.Concat(new[] {varItem}),
+                    itemPacker.PrecomputedSizeStorage.Concat(new[] {varItem}),
                     varItem.AssignTo(item),
-                    itemPacker.CapacityComputer,
-                    varSpaceNeeded.PlusEqual(itemPacker.CapacityGetter)));
+                    itemPacker.SizePrecomputer,
+                    varSpaceNeeded.PlusEqual(itemPacker.PrecomputedSizeGetter)));
             }
 
             PackDoer packDoer = (array, offset) => Expression.Block(
@@ -76,9 +76,9 @@ namespace Strilanc.PickleJar.Internal.RuntimeSpecialization {
                 collection.ForEach(item => itemPacker.PackDoer(array, offset)));
 
             return new SpecializedPackerParts(
-                capacityComputer: consumedCountComputer,
-                capacityGetter: varSpaceNeeded,
-                capacityStorage: new[] { varSpaceNeeded },
+                sizePrecomputer: consumedCountComputer,
+                precomputedSizeGetter: varSpaceNeeded,
+                precomputedSizeStorage: new[] { varSpaceNeeded },
                 packDoer: packDoer);
         }
     }

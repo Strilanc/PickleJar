@@ -27,9 +27,9 @@ namespace Strilanc.PickleJar.Internal.Basic {
             var varEncodedLength = Expression.Variable(typeof(int), "encodedLength");
             var getByteCountMethod = typeof(Encoding).GetMethod("GetByteCount", new[] { typeof(string) });
             return new SpecializedPackerParts(
-                capacityComputer: varEncodedLength.AssignTo(_encoding.ConstExpr().CallInstanceMethod(getByteCountMethod, value)),
-                capacityGetter: varEncodedLength,
-                capacityStorage: new[] { varEncodedLength },
+                sizePrecomputer: varEncodedLength.AssignTo(_encoding.ConstExpr().CallInstanceMethod(getByteCountMethod, value)),
+                precomputedSizeGetter: varEncodedLength,
+                precomputedSizeStorage: new[] { varEncodedLength },
                 packDoer: (array, offset) => {
                     var getBytesMethod = typeof(Encoding).GetMethod("GetBytes", new[] {typeof(string), typeof(int), typeof(int), typeof(byte[]), typeof(int)});
                     var stringLengthProperty = typeof(String).GetProperty("Length");

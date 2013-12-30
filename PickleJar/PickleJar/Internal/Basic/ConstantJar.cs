@@ -17,9 +17,9 @@ namespace Strilanc.PickleJar.Internal.Basic {
                                                                 consumedCountGetter: 0.ConstExpr(),
                                                                 storage: default(SpecializedParserStorageParts)),
                 packSpecializer: value => new SpecializedPackerParts(
-                                              capacityComputer: Expression.Empty(),
-                                              capacityGetter: 0.ConstExpr(),
-                                              capacityStorage: new ParameterExpression[0],
+                                              sizePrecomputer: Expression.Empty(),
+                                              precomputedSizeGetter: 0.ConstExpr(),
+                                              precomputedSizeStorage: new ParameterExpression[0],
                                               packDoer: (array, offset) =>
                                                         Expression.Call(typeof(Object).GetMethod("Equals", BindingFlags.Static | BindingFlags.Public),
                                                                         constValExp,

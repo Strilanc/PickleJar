@@ -8,7 +8,6 @@ using Strilanc.PickleJar.Internal.Combinators;
 using Strilanc.PickleJar.Internal.Misc;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 using Strilanc.PickleJar.Internal.Unsafe;
-using Strilanc.PickleJar.Internal.Repeated;
 using Strilanc.PickleJar.Internal.Structured;
 using System.Linq;
 
@@ -113,9 +112,7 @@ namespace Strilanc.PickleJar {
         /// <summary>
         /// Augments a jar to pickle values into/outof a representation prefixed by its size.</summary>
         public static IJar<T> DataSizePrefixed<T>(this IJar<T> itemJar, IJar<int> dataSizePrefixJar, bool includePrefixInSize) {
-            if (itemJar == null) throw new ArgumentNullException("itemJar");
-            if (dataSizePrefixJar == null) throw new ArgumentNullException("dataSizePrefixJar");
-            return new DataSizePrefixedJar<T>(dataSizePrefixJar, itemJar, includePrefixInSize);
+            return DataSizePrefixedJar.Create(dataSizePrefixJar, itemJar, includePrefixInSize);
         }
         
         /// <summary>

@@ -5,7 +5,7 @@ using Strilanc.PickleJar.Internal.Bulk;
 using System.Linq;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Repeated {
+namespace Strilanc.PickleJar.Internal.Combinators {
     internal struct RepeatBasedOnPrefixJar<T> : IJar<IReadOnlyList<T>>, IJarMetadataInternal {
         private readonly IJar<int> _countPrefixJar; 
         private readonly IBulkJar<T> _bulkItemJar;

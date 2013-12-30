@@ -88,9 +88,9 @@ namespace Strilanc.PickleJar.Internal.Basic {
             }
 
             return new SpecializedPackerParts(
-                capacityComputer: Expression.Empty(),
-                capacityGetter: SizeOf<TNumber>().ConstExpr(),
-                capacityStorage: new ParameterExpression[0],
+                sizePrecomputer: Expression.Empty(),
+                precomputedSizeGetter: SizeOf<TNumber>().ConstExpr(),
+                precomputedSizeStorage: new ParameterExpression[0],
                 packDoer: packDoer);
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Strilanc.PickleJar.Internal.Structured {
+namespace Strilanc.PickleJar.Internal.Combinators {
     internal sealed class NullTerminatedJar<T> : IJar<T> {
         private readonly IJar<T> _itemJar;
         public bool CanBeFollowed { get { return true; } }

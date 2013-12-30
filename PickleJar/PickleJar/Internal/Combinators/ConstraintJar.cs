@@ -41,9 +41,9 @@ namespace Strilanc.PickleJar.Internal.Combinators {
             PackSpecializer packer = value => {
                 var sub = jar.MakeSpecializedPacker(value);
                 return new SpecializedPackerParts(
-                    capacityComputer: sub.CapacityComputer,
-                    capacityGetter: sub.CapacityGetter,
-                    capacityStorage: sub.CapacityStorage,
+                    sizePrecomputer: sub.SizePrecomputer,
+                    precomputedSizeGetter: sub.PrecomputedSizeGetter,
+                    precomputedSizeStorage: sub.PrecomputedSizeStorage,
                     packDoer: (array, offset) => sub.PackDoer(array, offset).FollowedBy(
                         Expression.Invoke(constraint, value)
                                   .IfThenDo(Expression.Throw(new InvalidOperationException("Value to pack did not match constraint.").ConstExpr()))));

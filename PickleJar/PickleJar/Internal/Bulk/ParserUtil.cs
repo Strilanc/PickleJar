@@ -108,9 +108,9 @@ namespace Strilanc.PickleJar.Internal {
                 value);
             
             return new SpecializedPackerParts(
-                capacityComputer: capacityVar.AssignTo(computePack.AccessMember("Length")),
-                capacityGetter: capacityVar,
-                capacityStorage: new[] { capacityVar },
+                sizePrecomputer: capacityVar.AssignTo(computePack.AccessMember("Length")),
+                precomputedSizeGetter: capacityVar,
+                precomputedSizeStorage: new[] { capacityVar },
                 packDoer: (array, offset) => {
                     var copyMethod = typeof(Array).GetMethod("Copy", new[] { typeof(Array), typeof(Array), typeof(int) });
                     var varArray = Expression.Variable(typeof(byte[]), "result");
@@ -181,6 +181,13 @@ namespace Strilanc.PickleJar.Internal {
                    || type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                           .All(e => e.FieldType != type && e.FieldType.IsValueType && e.FieldType.IsBlittable());
         }
+        public static Expression Minus(this Expression expression, Expression other) {
+            return Expression.Subtract(expression, other);
+        }
+        public static Expression Minus(this Expression expression, int other) {
+            if (other == 0) return expression;
+            return Expression.Subtract(expression, other.ConstExpr());
+        }
         public static Expression Plus(this Expression expression, Expression other) {
             return Expression.Add(expression, other);
         }
@@ -192,6 +199,9 @@ namespace Strilanc.PickleJar.Internal {
         }
         public static Expression IsLessThan(this Expression expression, Expression other) {
             return Expression.LessThan(expression, other);
+        }
+        public static Expression IsNotEqualTo(this Expression expression, Expression other) {
+            return Expression.NotEqual(expression, other);
         }
 
         public static Expression Not(this Expression expression) {
@@ -206,6 +216,10 @@ namespace Strilanc.PickleJar.Internal {
         }
         public static Expression PlusEqual(this Expression expression, Expression other) {
             return Expression.AddAssign(expression, other);
+        }
+        public static Expression PlusEqual(this Expression target, int adjust) {
+            if (adjust == 0) return target;
+            return Expression.AddAssign(target, adjust.ConstExpr());
         }
         public static Expression CallInstanceMethod(this Expression expression, MethodInfo method, params Expression[] arguments) {
             return Expression.Call(expression, method, arguments);

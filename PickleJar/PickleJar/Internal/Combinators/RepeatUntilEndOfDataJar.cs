@@ -6,7 +6,7 @@ using Strilanc.PickleJar.Internal.Basic;
 using Strilanc.PickleJar.Internal.Bulk;
 using Strilanc.PickleJar.Internal.RuntimeSpecialization;
 
-namespace Strilanc.PickleJar.Internal.Repeated {
+namespace Strilanc.PickleJar.Internal.Combinators {
     internal static class RepeatUntilEndOfDataJarUtil {
         public static IJar<IReadOnlyList<T>> MakeRepeatUntilEndOfDataJar<T>(IBulkJar<T> bulkItemJar) {
             if (bulkItemJar.ItemJar.OptionalConstantSerializedLength().GetValueOrDefault() > 0) {
